@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "Trackify",
+  "display": "standalone",
+  "name": "Trackify",
+  "short_name": "Trackify",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}
