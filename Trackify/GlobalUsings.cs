@@ -4,6 +4,7 @@ global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Localization;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+global using Trackify.Helpers;
 global using Trackify.Models;
 global using Trackify.Presentation;
 global using ApplicationExecutionState = Windows.ApplicationModel.Activation.ApplicationExecutionState;

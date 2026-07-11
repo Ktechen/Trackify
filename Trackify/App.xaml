@@ -19,6 +19,7 @@
             </ResourceDictionary>
           </um:MaterialTheme.FontOverrideDictionary> -->
         </um:MaterialTheme>
+        <ResourceDictionary Source="ms-appx:///Styles/DesignTokens.xaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <!-- Add resources here -->

@@ -1,32 +1,405 @@
-﻿<Page x:Class="Trackify.Presentation.SecondPage"
+<Page x:Class="Trackify.Presentation.SecondPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Trackify.Presentation"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:uen="using:Uno.Extensions.Navigation.UI"
-      xmlns:um="using:Uno.Material"
       Background="{ThemeResource BackgroundBrush}">
+
+  <Page.Resources>
+    <local:HexToBrushConverter x:Key="HexToBrushConverter" />
+    <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+    <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <local:SegmentBackgroundConverter x:Key="SegmentBackgroundConverter" />
+    <local:SegmentForegroundConverter x:Key="SegmentForegroundConverter" />
+  </Page.Resources>
 
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition />
     </Grid.RowDefinitions>
-    <TextBlock Text="Second Page" HorizontalAlignment="Center" />
-    <StackPanel Grid.Row="1"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center">
-      <TextBlock Text="{Binding Entity.Name}"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Margin="8" />
-      <Button Content="Back to Main Page"
-        HorizontalAlignment="Left"
-        VerticalAlignment="Top"
-        AutomationProperties.AutomationId="BackButton"
-        uen:Navigation.Request="-"/>
-    </StackPanel>
 
+    <!-- HEADER -->
+    <Grid Grid.Row="0"
+          Padding="24,13"
+          Background="{ThemeResource SurfaceBrush}"
+          BorderBrush="{ThemeResource SurfaceVariantBrush}"
+          BorderThickness="0,0,0,1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <Button Grid.Column="0" Style="{StaticResource IconButtonStyle}" Command="{Binding GoBackCommand}"
+              AutomationProperties.AutomationId="BackButton" Margin="0,0,10,0" ToolTipService.ToolTip="Zurück zur Train-Konfiguration">
+        <FontIcon Glyph="&#xE72B;" FontSize="16" />
+      </Button>
+
+      <Border Grid.Column="1" Width="42" Height="42" CornerRadius="13" Background="{ThemeResource PrimaryContainerBrush}" Margin="0,0,14,0">
+        <Grid Width="24" Height="24">
+          <Path Data="M4 7h16M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2M4 7v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7"
+                Stroke="{ThemeResource OnPrimaryContainerBrush}" StrokeThickness="2" />
+          <Ellipse Width="3.2" Height="3.2" Fill="{ThemeResource OnPrimaryContainerBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6.9,17.4,0,0" />
+          <Ellipse Width="3.2" Height="3.2" Fill="{ThemeResource OnPrimaryContainerBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="13.9,17.4,0,0" />
+          <Path Data="M8 15v3M16 15v3" Stroke="{ThemeResource OnPrimaryContainerBrush}" StrokeThickness="1.6" />
+        </Grid>
+      </Border>
+
+      <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
+        <TextBlock Text="Streckenplaner" FontSize="16" FontWeight="Bold" />
+        <TextBlock Text="2D · Segmente &amp; Sensoren" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,16,0">
+        <TextBlock Text="{Binding SegmentCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
+        <TextBlock Text="Segmente" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+        <TextBlock Text="{Binding SensorCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" Margin="10,0,0,0" />
+        <TextBlock Text="Sensoren" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+        <TextBlock Text="Ø" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" Margin="10,0,0,0" />
+        <TextBlock Text="{Binding AverageSpeed}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
+      </StackPanel>
+
+      <Border Grid.Column="5" Style="{StaticResource ChipBorderStyle}">
+        <TextBlock Text="Backend folgt" FontSize="11" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+      </Border>
+    </Grid>
+
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="372" />
+      </Grid.ColumnDefinitions>
+
+      <!-- CANVAS -->
+      <Border Grid.Column="0" Margin="24,24,24,18"
+              Background="{ThemeResource SurfaceVariantBrush}"
+              BorderBrush="{ThemeResource OutlineVariantBrush}"
+              BorderThickness="1"
+              CornerRadius="{StaticResource RadiusExtraLarge}">
+        <Grid>
+          <Viewbox Stretch="Uniform" Margin="16">
+            <Canvas Width="900" Height="600">
+
+              <Path Data="{Binding TrackBedPathData}" Stroke="{ThemeResource OutlineVariantBrush}" StrokeThickness="30"
+                    StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+
+              <Path Data="{Binding SelectedSegment.HitPathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="36" Opacity=".26"
+                    StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                    Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}}" IsHitTestVisible="False" />
+
+              <ItemsControl ItemsSource="{Binding Segments}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <Canvas />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Path Data="{Binding PathData}" Stroke="{Binding SpeedColor, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="22"
+                          StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <ItemsControl ItemsSource="{Binding Segments}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <Canvas />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Path Data="{Binding HitPathData}" Stroke="Transparent" StrokeThickness="38"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" Tapped="SegmentHit_Tapped" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <ItemsControl ItemsSource="{Binding Segments}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <Canvas />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Path Data="M -7 -6 L 9 0 L -7 6 Z" Fill="White" Opacity=".9" IsHitTestVisible="False">
+                      <Path.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="{Binding ArrowRotationDeg}" CenterX="0" CenterY="0" />
+                          <TranslateTransform X="{Binding MidX}" Y="{Binding MidY}" />
+                        </TransformGroup>
+                      </Path.RenderTransform>
+                    </Path>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <ItemsControl ItemsSource="{Binding Segments}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <Canvas />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding MaxSpeed}" Width="40" TextAlignment="Center" FontSize="16" FontWeight="Bold"
+                               Foreground="{ThemeResource OnSurfaceBrush}" IsHitTestVisible="False"
+                               Canvas.Left="{Binding LabelLeft}" Canvas.Top="{Binding LabelTop}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <ItemsControl ItemsSource="{Binding Segments}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <Canvas />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Line X1="{Binding SensorLineX1}" Y1="{Binding SensorLineY1}" X2="{Binding SensorLineX2}" Y2="{Binding SensorLineY2}"
+                          Stroke="{Binding SensorColor, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="2.5"
+                          StrokeDashArray="3,3" Opacity=".55" IsHitTestVisible="False"
+                          Visibility="{Binding HasSensor, Converter={StaticResource BoolToVisibilityConverter}}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <ItemsControl ItemsSource="{Binding Segments}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <Canvas />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Grid Width="30" Height="30" Canvas.Left="{Binding SensorLeft}" Canvas.Top="{Binding SensorTop}"
+                          Visibility="{Binding HasSensor, Converter={StaticResource BoolToVisibilityConverter}}"
+                          Tapped="SegmentHit_Tapped">
+                      <Ellipse Fill="{Binding SensorColor, Converter={StaticResource HexToBrushConverter}}"
+                               Stroke="{ThemeResource SurfaceBrush}" StrokeThickness="2.5" />
+                      <TextBlock Text="{Binding SensorGlyph}" FontSize="13" FontWeight="Bold" Foreground="White"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <TextBlock Text="STRECKE 01" Canvas.Left="382" Canvas.Top="284" FontFamily="{StaticResource MonoFontFamily}"
+                         FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource MutedTextBrush}" IsHitTestVisible="False" />
+              <StackPanel Orientation="Horizontal" Spacing="4" Canvas.Left="330" Canvas.Top="303" IsHitTestVisible="False">
+                <TextBlock Text="{Binding SegmentCount}" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <TextBlock Text="Segmente ·" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <TextBlock Text="{Binding SensorCount}" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <TextBlock Text="Sensoren" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+              </StackPanel>
+            </Canvas>
+          </Viewbox>
+
+          <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,18"
+                  Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="1"
+                  CornerRadius="{StaticResource RadiusMedium}" Padding="14,9">
+            <StackPanel Orientation="Horizontal" Spacing="14">
+              <TextBlock Text="Tempo" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <ItemsControl ItemsSource="{Binding Legend}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="14" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <Border Width="12" Height="12" CornerRadius="4" Background="{Binding Color, Converter={StaticResource HexToBrushConverter}}" />
+                      <TextBlock Text="{Binding Label}" FontSize="11" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,20,0"
+                  Background="{ThemeResource SurfaceBrush}" CornerRadius="{StaticResource RadiusMedium}" Padding="12,7">
+            <TextBlock Text="Segment oder Sensor anklicken" FontSize="11.5" Foreground="{ThemeResource MutedTextBrush}" />
+          </Border>
+        </Grid>
+      </Border>
+
+      <!-- INSPECTOR -->
+      <Grid Grid.Column="1" Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="1,0,0,0">
+        <ScrollViewer Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}}">
+          <StackPanel Margin="24,24,24,40" Spacing="16">
+
+            <StackPanel Orientation="Horizontal" Spacing="11">
+              <Border Width="14" Height="14" CornerRadius="5" Background="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+              <Border Background="{ThemeResource PrimaryContainerBrush}" CornerRadius="7" Padding="10,3">
+                <TextBlock Text="{Binding SelectedSegment.TypeLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OnPrimaryContainerBrush}" />
+              </Border>
+              <TextBlock Text="{Binding SelectedSegment.Id}" FontFamily="{StaticResource MonoFontFamily}" FontSize="11"
+                         Foreground="{ThemeResource MutedTextBrush}" HorizontalAlignment="Right" />
+            </StackPanel>
+            <TextBlock Text="{Binding SelectedSegment.Name}" FontSize="22" FontWeight="ExtraBold" TextWrapping="Wrap" />
+
+            <!-- FAHRVERHALTEN -->
+            <Border Style="{StaticResource SectionCardStyle}" Padding="20">
+              <StackPanel Spacing="16">
+                <TextBlock Text="Fahrverhalten" Style="{StaticResource SectionTitleTextBlockStyle}" FontWeight="Bold" />
+
+                <StackPanel Spacing="11">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Max. Geschwindigkeit" Style="{StaticResource LabelTextBlockStyle}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                      <TextBlock Text="{Binding SelectedSegment.MaxSpeed}" FontFamily="{StaticResource MonoFontFamily}" FontSize="17" FontWeight="ExtraBold"
+                                 Foreground="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+                      <TextBlock Text="%" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource MutedTextBrush}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                    </StackPanel>
+                  </Grid>
+                  <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedSegment.MaxSpeed, Mode=TwoWay}" />
+                </StackPanel>
+
+                <StackPanel Spacing="10">
+                  <TextBlock Text="Fahrtrichtung" Style="{StaticResource LabelTextBlockStyle}" />
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Vorwärts" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="19,0,0,19"
+                            Background="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Forward}"
+                            Foreground="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Forward}"
+                            Command="{Binding SetDirectionCommand}" CommandParameter="Forward" />
+                    <Button Grid.Column="1" Content="Rückwärts" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="0,19,19,0" Margin="-1,0,0,0"
+                            Background="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Reverse}"
+                            Foreground="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Reverse}"
+                            Command="{Binding SetDirectionCommand}" CommandParameter="Reverse" />
+                  </Grid>
+                </StackPanel>
+
+                <StackPanel Spacing="10">
+                  <TextBlock Text="Geschwindigkeitsprofil f(x)" Style="{StaticResource LabelTextBlockStyle}" />
+                  <Border Background="{ThemeResource SurfaceVariantBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="1"
+                          CornerRadius="{StaticResource RadiusLarge}" Padding="12,12,12,8">
+                    <StackPanel Spacing="2">
+                      <Viewbox Height="90" Stretch="Uniform">
+                        <Canvas Width="300" Height="130">
+                          <Path Data="{Binding SelectedSegment.Graph.FillPathData}" Fill="{ThemeResource PrimaryBrush}" Opacity=".12" />
+                          <Path Data="{Binding SelectedSegment.Graph.LinePathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="2.5"
+                                StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                        </Canvas>
+                      </Viewbox>
+                      <Grid Margin="34,0,0,0">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Beschl." Style="{StaticResource MonoCaptionTextBlockStyle}" FontSize="9.5" HorizontalAlignment="Left" />
+                        <TextBlock Grid.Column="1" Text="konstant" Style="{StaticResource MonoCaptionTextBlockStyle}" FontSize="9.5" HorizontalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="Bremsen" Style="{StaticResource MonoCaptionTextBlockStyle}" FontSize="9.5" HorizontalAlignment="Right" />
+                      </Grid>
+                    </StackPanel>
+                  </Border>
+
+                  <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="7">
+                      <TextBlock Text="Beschleunigung" FontSize="11.5" FontWeight="Medium" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                      <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                SelectedValue="{Binding SelectedSegment.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                      <TextBlock Text="{Binding SelectedSegment.AccelFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="7">
+                      <TextBlock Text="Bremsen" FontSize="11.5" FontWeight="Medium" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                      <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                SelectedValue="{Binding SelectedSegment.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                      <TextBlock Text="{Binding SelectedSegment.BrakeFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
+                    </StackPanel>
+                  </Grid>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+            <!-- SENSOR -->
+            <Border Style="{StaticResource SectionCardStyle}" Padding="20">
+              <StackPanel Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="9">
+                  <TextBlock Text="Sensor" Style="{StaticResource SectionTitleTextBlockStyle}" FontWeight="Bold" />
+                  <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                           Fill="{Binding SelectedSegment.SensorColor, Converter={StaticResource HexToBrushConverter}}"
+                           Visibility="{Binding SelectedSegment.HasSensor, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+
+                <StackPanel Spacing="10">
+                  <TextBlock Text="Typ" Style="{StaticResource LabelTextBlockStyle}" />
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Kein" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="19,0,0,19"
+                            Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=None}"
+                            Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=None}"
+                            Command="{Binding SetSensorCommand}" CommandParameter="None" />
+                    <Button Grid.Column="1" Content="Farbe" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="0" Margin="-1,0,0,0"
+                            Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Color}"
+                            Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Color}"
+                            Command="{Binding SetSensorCommand}" CommandParameter="Color" />
+                    <Button Grid.Column="2" Content="Abstand" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="0,19,19,0" Margin="-1,0,0,0"
+                            Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Distance}"
+                            Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Distance}"
+                            Command="{Binding SetSensorCommand}" CommandParameter="Distance" />
+                  </Grid>
+                </StackPanel>
+
+                <StackPanel Spacing="18" Visibility="{Binding SelectedSegment.HasSensor, Converter={StaticResource BoolToVisibilityConverter}}">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="Aktion beim Auslösen" Style="{StaticResource LabelTextBlockStyle}" />
+                    <ComboBox ItemsSource="{Binding SensorActionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                              SelectedValue="{Binding SelectedSegment.Action, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                  </StackPanel>
+
+                  <StackPanel Spacing="10" Visibility="{Binding SelectedSegment.ShowSlowTarget, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Grid.Column="0" Text="Ziel-Tempo" Style="{StaticResource LabelTextBlockStyle}" VerticalAlignment="Center" />
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                        <TextBlock Text="{Binding SelectedSegment.SlowTarget}" FontFamily="{StaticResource MonoFontFamily}" FontSize="15" FontWeight="Bold" />
+                        <TextBlock Text="%" FontFamily="{StaticResource MonoFontFamily}" FontSize="15" FontWeight="Bold" />
+                      </StackPanel>
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedSegment.SlowTarget, Mode=TwoWay}" />
+                  </StackPanel>
+
+                  <TextBlock Text="{Binding SelectedSegment.SensorToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Padding="40">
+          <TextBlock Text="Kein Segment ausgewählt." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+        </StackPanel>
+      </Grid>
+    </Grid>
   </Grid>
 </Page>
