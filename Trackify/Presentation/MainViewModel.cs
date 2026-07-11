@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Trackify.Models.Trains;
+using Trackify.Models.Trains.Enums;
+using Train = Trackify.Models.Trains.Train;
 
 namespace Trackify.Presentation;
 
@@ -10,7 +13,7 @@ public partial class MainViewModel : ObservableObject
     private int _sequence = 4;
 
     [ObservableProperty] private string search = "";
-    [ObservableProperty] private TrainFilter filter = TrainFilter.All;
+    [ObservableProperty] private TrainFilterType filter = TrainFilterType.All;
     [ObservableProperty] private Train? selectedTrain;
     [ObservableProperty] private int activeCount;
     [ObservableProperty] private int totalCount;
@@ -39,7 +42,7 @@ public partial class MainViewModel : ObservableObject
 
     public IRelayCommand<string> SetFilterCommand { get; }
 
-    public IRelayCommand<LedColor?> SetColorCommand { get; }
+    public IRelayCommand<LedColorType?> SetColorCommand { get; }
 
     public IAsyncRelayCommand GoToStreckenplanerCommand { get; }
 
@@ -52,8 +55,8 @@ public partial class MainViewModel : ObservableObject
         DuplicateTrainCommand = new RelayCommand(DuplicateTrain, () => SelectedTrain is not null);
         DeleteTrainCommand = new RelayCommand(DeleteTrain, () => SelectedTrain is not null);
         ToggleActiveCommand = new RelayCommand(ToggleActive, () => SelectedTrain is not null);
-        SetFilterCommand = new RelayCommand<string>(f => Filter = Enum.Parse<TrainFilter>(f!));
-        SetColorCommand = new RelayCommand<LedColor?>(c => { if (SelectedTrain is not null && c is { } color) SelectedTrain.Color = color; });
+        SetFilterCommand = new RelayCommand<string>(f => Filter = Enum.Parse<TrainFilterType>(f!));
+        SetColorCommand = new RelayCommand<LedColorType?>(c => { if (SelectedTrain is not null && c is { } color) SelectedTrain.Color = color; });
         GoToStreckenplanerCommand = new AsyncRelayCommand(GoToStreckenplaner);
 
         ColorSwatches = [.. LegoinoCatalog.Colors.Select(c => new ColorSwatchItem { Value = c.Value, Name = c.Name, Hex = c.Hex })];
@@ -68,19 +71,19 @@ public partial class MainViewModel : ObservableObject
         Add(new Train
         {
             Id = "trn-1", Name = "Roter Express", Hub = HubType.PoweredUpHub, BleAddress = "90:84:2B:00:1A:07",
-            Color = LedColor.Red, PortA = DeviceType.TrainMotor, PortB = DeviceType.Light, Speed = 80,
+            Color = LedColorType.Red, PortA = DeviceType.TrainMotor, PortB = DeviceType.Light, Speed = 80,
             AccelFn = SpeedFunctionType.EaseOut, BrakeFn = SpeedFunctionType.EaseIn, IsActive = true,
         });
         Add(new Train
         {
             Id = "trn-2", Name = "Cargo Blau", Hub = HubType.ControlPlusHub, BleAddress = "90:84:2B:11:4C:2E",
-            Color = LedColor.Blue, PortA = DeviceType.TrainMotor, PortB = DeviceType.TrainMotor, Speed = 100,
+            Color = LedColorType.Blue, PortA = DeviceType.TrainMotor, PortB = DeviceType.TrainMotor, Speed = 100,
             AccelFn = SpeedFunctionType.SCurve, BrakeFn = SpeedFunctionType.SCurve, IsActive = true,
         });
         Add(new Train
         {
             Id = "trn-3", Name = "Nacht-Tram", Hub = HubType.BoostMoveHub, BleAddress = "90:84:2B:22:9F:D1",
-            Color = LedColor.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = -40,
+            Color = LedColorType.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = -40,
             AccelFn = SpeedFunctionType.Linear, BrakeFn = SpeedFunctionType.EaseIn, IsActive = false,
         });
 
@@ -92,11 +95,11 @@ public partial class MainViewModel : ObservableObject
         var train = new Train
         {
             Id = $"trn-{_sequence++}", Name = "Neuer Train", Hub = HubType.PoweredUpHub, BleAddress = "",
-            Color = LedColor.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = 70,
+            Color = LedColorType.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = 70,
             AccelFn = SpeedFunctionType.EaseOut, BrakeFn = SpeedFunctionType.EaseIn, IsActive = true,
         };
         Trains.Add(train);
-        Filter = TrainFilter.All;
+        Filter = TrainFilterType.All;
         Search = "";
         SelectedTrain = train;
         ApplyFilter();
@@ -130,7 +133,7 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnSearchChanged(string value) => ApplyFilter();
 
-    partial void OnFilterChanged(TrainFilter value) => ApplyFilter();
+    partial void OnFilterChanged(TrainFilterType value) => ApplyFilter();
 
     partial void OnSelectedTrainChanged(Train? oldValue, Train? newValue)
     {
@@ -184,8 +187,8 @@ public partial class MainViewModel : ObservableObject
         var matches = Trains.Where(t =>
             Filter switch
             {
-                TrainFilter.Active => t.IsActive,
-                TrainFilter.Inactive => !t.IsActive,
+                TrainFilterType.Active => t.IsActive,
+                TrainFilterType.Inactive => !t.IsActive,
                 _ => true,
             } &&
             (string.IsNullOrEmpty(query) ||

@@ -1,5 +1,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Trackify.Models.Trains;
+using Trackify.Models.Trains.Enums;
+using TrackSegment = Trackify.Models.Trains.TrackSegment;
 
 namespace Trackify.Presentation;
 
@@ -66,7 +69,7 @@ public partial class SecondViewModel : ObservableObject
         TrackSegment Create(
             string id, int maxSpeed,
             SpeedFunctionType accel = SpeedFunctionType.EaseOut, SpeedFunctionType brake = SpeedFunctionType.EaseIn,
-            SensorType sensor = SensorType.None, SensorAction action = SensorAction.Notify, int slow = 30)
+            SensorType sensor = SensorType.None, SensorActionType action = SensorActionType.Notify, int slow = 30)
         {
             var g = geometry[id];
             var segment = new TrackSegment
@@ -100,11 +103,11 @@ public partial class SecondViewModel : ObservableObject
         }
 
         Segments.Add(Create("SEG-1", 80));
-        Segments.Add(Create("SEG-2", 20, brake: SpeedFunctionType.SCurve, sensor: SensorType.Color, action: SensorAction.Stop));
+        Segments.Add(Create("SEG-2", 20, brake: SpeedFunctionType.SCurve, sensor: SensorType.Color, action: SensorActionType.Stop));
         Segments.Add(Create("SEG-3", 55));
-        Segments.Add(Create("SEG-4", 50, sensor: SensorType.Distance, action: SensorAction.Slower, slow: 30));
+        Segments.Add(Create("SEG-4", 50, sensor: SensorType.Distance, action: SensorActionType.Slower, slow: 30));
         Segments.Add(Create("SEG-5", 90));
-        Segments.Add(Create("SEG-6", 85, sensor: SensorType.Color, action: SensorAction.Notify));
+        Segments.Add(Create("SEG-6", 85, sensor: SensorType.Color, action: SensorActionType.Notify));
         Segments.Add(Create("SEG-7", 50));
         Segments.Add(Create("SEG-8", 55));
     }

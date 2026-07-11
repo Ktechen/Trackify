@@ -1,4 +1,5 @@
 using System.Globalization;
+using Trackify.Models.Trains.Enums;
 
 namespace Trackify.Helpers;
 

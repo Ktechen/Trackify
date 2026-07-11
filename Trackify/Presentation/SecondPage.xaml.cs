@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Input;
+using TrackSegment = Trackify.Models.Trains.TrackSegment;
 
 namespace Trackify.Presentation;
 

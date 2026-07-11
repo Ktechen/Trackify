@@ -8,6 +8,8 @@ try
     builder.Services.Configure<RouteOptions>(options =>
         options.LowercaseUrls = true);
 
+    builder.Services.AddSingleton<LegoHubManager>();
+
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
@@ -37,6 +39,7 @@ try
     app.MapFallbackToFile("index.html");
 
     app.MapWeatherApi();
+    app.MapLegoHubApi();
     app.UseStaticFiles();
 
     await app.RunAsync();

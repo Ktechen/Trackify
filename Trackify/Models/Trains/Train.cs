@@ -1,4 +1,6 @@
-namespace Trackify.Models;
+using Trackify.Models.Trains.Enums;
+
+namespace Trackify.Models.Trains;
 
 public partial class Train : ObservableObject
 {
@@ -6,7 +8,7 @@ public partial class Train : ObservableObject
     [ObservableProperty] private string name = "";
     [ObservableProperty] private HubType hub = HubType.PoweredUpHub;
     [ObservableProperty] private string bleAddress = "";
-    [ObservableProperty] private LedColor color = LedColor.Green;
+    [ObservableProperty] private LedColorType color = LedColorType.Green;
     [ObservableProperty] private DeviceType portA = DeviceType.TrainMotor;
     [ObservableProperty] private DeviceType portB = DeviceType.None;
     [ObservableProperty] private int speed = 70;
@@ -53,11 +55,11 @@ public partial class Train : ObservableObject
         : LegoinoCatalog.SpeedFunction(BrakeFn).Formula;
 
     public SpeedProfileGraph Graph => SpeedCurve.BuildGraph(
-        Math.Abs(Speed) / 100.0,
+        Math.Abs((int)Speed) / 100.0,
         SpeedCurve.ResolvePhaseFunction(AccelFn, AccelExpression),
         SpeedCurve.ResolvePhaseFunction(BrakeFn, BrakeExpression));
 
-    partial void OnColorChanged(LedColor value)
+    partial void OnColorChanged(LedColorType value)
     {
         OnPropertyChanged(nameof(ColorHex));
         OnPropertyChanged(nameof(ColorToken));

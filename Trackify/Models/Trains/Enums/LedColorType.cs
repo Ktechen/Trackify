@@ -1,6 +1,6 @@
-namespace Trackify.Models;
+namespace Trackify.Models.Trains.Enums;
 
-public enum LedColor
+public enum LedColorType
 {
     Red,
     Orange,

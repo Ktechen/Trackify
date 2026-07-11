@@ -1,10 +1,12 @@
-namespace Trackify.Models;
+using Trackify.Models.Trains.Enums;
+
+namespace Trackify.Models.Trains;
 
 public record HubOption(HubType Value, string Label, string Short);
 
 public record DeviceOption(DeviceType Value, string Label, string Short, string ListLabel);
 
-public record ColorOption(LedColor Value, string Name, string Hex);
+public record ColorOption(LedColorType Value, string Name, string Hex);
 
 public record SpeedFunctionOption(SpeedFunctionType Value, string Label, string Formula);
 
@@ -12,7 +14,7 @@ public record DirectionOption(TrackDirection Value, string Label);
 
 public record SensorTypeOption(SensorType Value, string Label);
 
-public record SensorActionOption(SensorAction Value, string Label);
+public record SensorActionOption(SensorActionType Value, string Label);
 
 public static class LegoinoCatalog
 {
@@ -37,18 +39,18 @@ public static class LegoinoCatalog
 
     public static readonly IReadOnlyList<ColorOption> Colors =
     [
-        new(LedColor.Red, "Rot", "#D3282F"),
-        new(LedColor.Orange, "Orange", "#E8730C"),
-        new(LedColor.Yellow, "Gelb", "#F5B716"),
-        new(LedColor.Green, "Grün", "#2FAE4A"),
-        new(LedColor.Cyan, "Cyan", "#17C3D6"),
-        new(LedColor.LightBlue, "Hellblau", "#38B6FF"),
-        new(LedColor.Blue, "Blau", "#0A54C9"),
-        new(LedColor.Purple, "Violett", "#8B3FF0"),
-        new(LedColor.Pink, "Pink", "#FF5FB0"),
-        new(LedColor.White, "Weiß", "#F2F2EE"),
-        new(LedColor.Black, "Schwarz", "#2A2D2A"),
-        new(LedColor.None, "Aus", "#C9CCC4"),
+        new(LedColorType.Red, "Rot", "#D3282F"),
+        new(LedColorType.Orange, "Orange", "#E8730C"),
+        new(LedColorType.Yellow, "Gelb", "#F5B716"),
+        new(LedColorType.Green, "Grün", "#2FAE4A"),
+        new(LedColorType.Cyan, "Cyan", "#17C3D6"),
+        new(LedColorType.LightBlue, "Hellblau", "#38B6FF"),
+        new(LedColorType.Blue, "Blau", "#0A54C9"),
+        new(LedColorType.Purple, "Violett", "#8B3FF0"),
+        new(LedColorType.Pink, "Pink", "#FF5FB0"),
+        new(LedColorType.White, "Weiß", "#F2F2EE"),
+        new(LedColorType.Black, "Schwarz", "#2A2D2A"),
+        new(LedColorType.None, "Aus", "#C9CCC4"),
     ];
 
     public static readonly IReadOnlyList<SpeedFunctionOption> SpeedFunctions =
@@ -76,14 +78,14 @@ public static class LegoinoCatalog
 
     public static readonly IReadOnlyList<SensorActionOption> SensorActions =
     [
-        new(SensorAction.Stop, "Stopp"),
-        new(SensorAction.Slower, "Langsamer"),
-        new(SensorAction.Notify, "Melden"),
-        new(SensorAction.ReverseDirection, "Richtung wechseln"),
+        new(SensorActionType.Stop, "Stopp"),
+        new(SensorActionType.Slower, "Langsamer"),
+        new(SensorActionType.Notify, "Melden"),
+        new(SensorActionType.ReverseDirection, "Richtung wechseln"),
     ];
 
     public static HubOption Hub(HubType value) => Hubs.First(h => h.Value == value);
     public static DeviceOption Device(DeviceType value) => Devices.First(d => d.Value == value);
-    public static ColorOption Color(LedColor value) => Colors.First(c => c.Value == value);
+    public static ColorOption Color(LedColorType value) => Colors.First(c => c.Value == value);
     public static SpeedFunctionOption SpeedFunction(SpeedFunctionType value) => SpeedFunctions.First(f => f.Value == value);
 }

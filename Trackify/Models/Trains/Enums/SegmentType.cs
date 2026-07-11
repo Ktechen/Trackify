@@ -1,4 +1,4 @@
-namespace Trackify.Models;
+namespace Trackify.Models.Trains.Enums;
 
 public enum SegmentType
 {

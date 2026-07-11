@@ -1,4 +1,6 @@
-namespace Trackify.Models;
+using Trackify.Models.Trains.Enums;
+
+namespace Trackify.Models.Trains;
 
 public partial class TrackSegment : ObservableObject
 {
@@ -10,7 +12,7 @@ public partial class TrackSegment : ObservableObject
     [ObservableProperty] private SpeedFunctionType accelFn = SpeedFunctionType.EaseOut;
     [ObservableProperty] private SpeedFunctionType brakeFn = SpeedFunctionType.EaseIn;
     [ObservableProperty] private SensorType sensor = SensorType.None;
-    [ObservableProperty] private SensorAction action = SensorAction.Notify;
+    [ObservableProperty] private SensorActionType action = SensorActionType.Notify;
     [ObservableProperty] private int slowTarget = 30;
 
     /// <summary>Static SVG-style path data for the track centerline, in the shared 900x600 canvas viewBox.</summary>
@@ -66,7 +68,7 @@ public partial class TrackSegment : ObservableObject
 
     public string SensorToken => "DeviceType." + (Sensor == SensorType.None ? "NONE" : "COLOR_DISTANCE_SENSOR");
 
-    public bool ShowSlowTarget => Action == SensorAction.Slower;
+    public bool ShowSlowTarget => Action == SensorActionType.Slower;
 
     public string AccelFormulaDisplay => LegoinoCatalog.SpeedFunction(AccelFn).Formula;
 
@@ -103,7 +105,7 @@ public partial class TrackSegment : ObservableObject
         OnPropertyChanged(nameof(SensorToken));
     }
 
-    partial void OnActionChanged(SensorAction value) => OnPropertyChanged(nameof(ShowSlowTarget));
+    partial void OnActionChanged(SensorActionType value) => OnPropertyChanged(nameof(ShowSlowTarget));
 
     partial void OnDirectionChanged(TrackDirection value) => OnPropertyChanged(nameof(ArrowRotationDeg));
 }
