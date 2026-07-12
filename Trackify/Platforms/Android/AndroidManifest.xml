@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Bluetooth LE for controlling LEGO Powered Up hubs. -->
+  <!-- Android 12+ (API 31): runtime BLE permissions; neverForLocation asserts we don't derive location from scans. -->
+  <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+  <!-- Legacy (API <= 30): classic Bluetooth perms + fine location (required for BLE scanning back then). -->
+  <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+  <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
   <application android:allowBackup="true" android:supportsRtl="true"></application>
 </manifest>

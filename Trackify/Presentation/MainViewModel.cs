@@ -3,14 +3,19 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Trackify.Models.Trains;
 using Trackify.Models.Trains.Enums;
+using Trackify.Services;
 using Train = Trackify.Models.Trains.Train;
 
 namespace Trackify.Presentation;
 
+/// <summary>
+/// Main screen: the train list/editor and its commands. Hub (Bluetooth) control lives in the
+/// <c>MainViewModel.Hub.cs</c> partial to keep the two concerns separate.
+/// </summary>
 public partial class MainViewModel : ObservableObject
 {
     private readonly INavigator _navigator;
-    private int _sequence = 4;
+    private int _sequence = 1;
 
     [ObservableProperty] private string search = "";
     [ObservableProperty] private TrainFilterType filter = TrainFilterType.All;
@@ -46,9 +51,28 @@ public partial class MainViewModel : ObservableObject
 
     public IAsyncRelayCommand GoToStreckenplanerCommand { get; }
 
-    public MainViewModel(INavigator navigator)
+    public IAsyncRelayCommand ConnectCommand { get; }
+
+    public IAsyncRelayCommand DisconnectCommand { get; }
+
+    public IAsyncRelayCommand DiscoverCommand { get; }
+
+    public IRelayCommand StopDiscoverCommand { get; }
+
+    public IRelayCommand<DiscoveredHub> UseDiscoveredHubCommand { get; }
+
+    public IRelayCommand ClearDiscoverCommand { get; }
+
+    public IAsyncRelayCommand ConfirmAddHubCommand { get; }
+
+    public IRelayCommand CancelAddHubCommand { get; }
+
+    public IRelayCommand BackToListCommand { get; }
+
+    public MainViewModel(INavigator navigator, ILegoService lego)
     {
         _navigator = navigator;
+        _lego = lego;
 
         SelectTrainCommand = new RelayCommand<Train>(t => SelectedTrain = t);
         AddTrainCommand = new RelayCommand(AddTrain);
@@ -58,36 +82,20 @@ public partial class MainViewModel : ObservableObject
         SetFilterCommand = new RelayCommand<string>(f => Filter = Enum.Parse<TrainFilterType>(f!));
         SetColorCommand = new RelayCommand<LedColorType?>(c => { if (SelectedTrain is not null && c is { } color) SelectedTrain.Color = color; });
         GoToStreckenplanerCommand = new AsyncRelayCommand(GoToStreckenplaner);
+        ConnectCommand = new AsyncRelayCommand(ConnectSelectedTrainAsync, () => SelectedTrain is { IsHardwareConnected: false });
+        DisconnectCommand = new AsyncRelayCommand(DisconnectSelectedTrainAsync, () => SelectedTrain is { IsHardwareConnected: true });
+        DiscoverCommand = new AsyncRelayCommand(DiscoverAsync);
+        StopDiscoverCommand = new RelayCommand(StopDiscover);
+        UseDiscoveredHubCommand = new RelayCommand<DiscoveredHub>(UseDiscoveredHub);
+        ClearDiscoverCommand = new RelayCommand(ClearDiscoverResults);
+        ConfirmAddHubCommand = new AsyncRelayCommand(ConfirmAddHubAsync);
+        CancelAddHubCommand = new RelayCommand(CancelAddHub);
+        BackToListCommand = new RelayCommand(() => SelectedTrain = null);
 
         ColorSwatches = [.. LegoinoCatalog.Colors.Select(c => new ColorSwatchItem { Value = c.Value, Name = c.Name, Hex = c.Hex })];
 
         Trains.CollectionChanged += TrainsOnCollectionChanged;
-        Seed();
         ApplyFilter();
-    }
-
-    private void Seed()
-    {
-        Add(new Train
-        {
-            Id = "trn-1", Name = "Roter Express", Hub = HubType.PoweredUpHub, BleAddress = "90:84:2B:00:1A:07",
-            Color = LedColorType.Red, PortA = DeviceType.TrainMotor, PortB = DeviceType.Light, Speed = 80,
-            AccelFn = SpeedFunctionType.EaseOut, BrakeFn = SpeedFunctionType.EaseIn, IsActive = true,
-        });
-        Add(new Train
-        {
-            Id = "trn-2", Name = "Cargo Blau", Hub = HubType.ControlPlusHub, BleAddress = "90:84:2B:11:4C:2E",
-            Color = LedColorType.Blue, PortA = DeviceType.TrainMotor, PortB = DeviceType.TrainMotor, Speed = 100,
-            AccelFn = SpeedFunctionType.SCurve, BrakeFn = SpeedFunctionType.SCurve, IsActive = true,
-        });
-        Add(new Train
-        {
-            Id = "trn-3", Name = "Nacht-Tram", Hub = HubType.BoostMoveHub, BleAddress = "90:84:2B:22:9F:D1",
-            Color = LedColorType.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = -40,
-            AccelFn = SpeedFunctionType.Linear, BrakeFn = SpeedFunctionType.EaseIn, IsActive = false,
-        });
-
-        void Add(Train t) => Trains.Add(t);
     }
 
     private void AddTrain()
@@ -143,6 +151,7 @@ public partial class MainViewModel : ObservableObject
         DuplicateTrainCommand.NotifyCanExecuteChanged();
         DeleteTrainCommand.NotifyCanExecuteChanged();
         ToggleActiveCommand.NotifyCanExecuteChanged();
+        NotifyHubCommandsCanExecute();
         UpdateColorSwatchSelection();
     }
 
@@ -150,6 +159,9 @@ public partial class MainViewModel : ObservableObject
     {
         if (e.PropertyName is nameof(Train.Name) or nameof(Train.IsActive)) ApplyFilter();
         if (e.PropertyName is nameof(Train.Color)) UpdateColorSwatchSelection();
+
+        if (sender is Train train)
+            OnSelectedTrainHubPropertyChanged(train, e.PropertyName);
     }
 
     private void TrainsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

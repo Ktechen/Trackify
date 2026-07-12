@@ -34,6 +34,10 @@
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 
+		<!-- Required to scan for and connect to LEGO Powered Up hubs over Bluetooth LE. -->
+		<key>NSBluetoothAlwaysUsageDescription</key>
+		<string>Trackify verwendet Bluetooth, um LEGO Powered Up Hubs zu finden und zu steuern.</string>
+
 		<!--
 		Adjust this to your application's encryption usage.
 		<key>ITSAppUsesNonExemptEncryption</key>

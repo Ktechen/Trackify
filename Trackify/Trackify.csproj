@@ -33,4 +33,15 @@
         </UnoFeatures>
     </PropertyGroup>
 
+    <!--
+      On-device Bluetooth LE control of LEGO Powered Up hubs. Only the mobile heads have a
+      usable native BLE stack (via Plugin.BLE), so these references are scoped to android/ios;
+      desktop/wasm fall back to UnsupportedLegoService.
+    -->
+    <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios'))">
+        <PackageReference Include="SharpBrick.PoweredUp" />
+        <PackageReference Include="SharpBrick.PoweredUp.Mobile" />
+        <PackageReference Include="Plugin.BLE" />
+    </ItemGroup>
+
 </Project>

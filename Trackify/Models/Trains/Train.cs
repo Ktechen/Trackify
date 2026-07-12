@@ -8,6 +8,8 @@ public partial class Train : ObservableObject
     [ObservableProperty] private string name = "";
     [ObservableProperty] private HubType hub = HubType.PoweredUpHub;
     [ObservableProperty] private string bleAddress = "";
+    // Platform BLE device id captured during discovery (Android MAC / iOS UUID); the key used to connect.
+    [ObservableProperty] private string hubId = "";
     [ObservableProperty] private LedColorType color = LedColorType.Green;
     [ObservableProperty] private DeviceType portA = DeviceType.TrainMotor;
     [ObservableProperty] private DeviceType portB = DeviceType.None;
@@ -17,6 +19,8 @@ public partial class Train : ObservableObject
     [ObservableProperty] private SpeedFunctionType brakeFn = SpeedFunctionType.EaseIn;
     [ObservableProperty] private string brakeExpression = "1-(1-x)^2";
     [ObservableProperty] private bool isActive = true;
+    [ObservableProperty] private bool isHardwareConnected;
+    [ObservableProperty] private string connectionStatus = "Nicht verbunden";
 
     public string ColorHex => LegoinoCatalog.Color(Color).Hex;
 

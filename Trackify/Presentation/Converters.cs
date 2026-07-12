@@ -44,6 +44,16 @@ public sealed partial class NullToVisibilityConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
+/// <summary>bool -&gt; inverted bool. Used to disable a control while a flag (e.g. IsDiscovering) is true.</summary>
+public sealed partial class InverseBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => value is not bool b || !b;
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => value is not bool b || !b;
+}
+
 /// <summary>bool -&gt; Visibility. Pass ConverterParameter="Invert" to flip.</summary>
 public sealed partial class BoolToVisibilityConverter : IValueConverter
 {

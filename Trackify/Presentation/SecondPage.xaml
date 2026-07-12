@@ -83,11 +83,9 @@
           <Viewbox Stretch="Uniform" Margin="16">
             <Canvas Width="900" Height="600">
 
-              <Path Data="{Binding TrackBedPathData}" Stroke="{ThemeResource OutlineVariantBrush}" StrokeThickness="30"
-                    StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+              <Path Data="{Binding TrackBedPathData}" Stroke="{ThemeResource OutlineVariantBrush}" StrokeThickness="30" />
 
               <Path Data="{Binding SelectedSegment.HitPathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="36" Opacity=".26"
-                    StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                     Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}}" IsHitTestVisible="False" />
 
               <ItemsControl ItemsSource="{Binding Segments}">
@@ -99,7 +97,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
                     <Path Data="{Binding PathData}" Stroke="{Binding SpeedColor, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="22"
-                          StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
+                          IsHitTestVisible="False" />
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
@@ -113,7 +111,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
                     <Path Data="{Binding HitPathData}" Stroke="Transparent" StrokeThickness="38"
-                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" Tapped="SegmentHit_Tapped" />
+                          Tapped="SegmentHit_Tapped" />
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
@@ -292,8 +290,7 @@
                       <Viewbox Height="90" Stretch="Uniform">
                         <Canvas Width="300" Height="130">
                           <Path Data="{Binding SelectedSegment.Graph.FillPathData}" Fill="{ThemeResource PrimaryBrush}" Opacity=".12" />
-                          <Path Data="{Binding SelectedSegment.Graph.LinePathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="2.5"
-                                StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                          <Path Data="{Binding SelectedSegment.Graph.LinePathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="2.5" />
                         </Canvas>
                       </Viewbox>
                       <Grid Margin="34,0,0,0">

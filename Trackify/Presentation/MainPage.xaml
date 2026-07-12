@@ -15,6 +15,7 @@
     <local:SegmentForegroundConverter x:Key="SegmentForegroundConverter" />
     <local:BoolToThicknessConverter x:Key="BoolToThicknessConverter" />
     <local:ValidityToBrushConverter x:Key="ValidityToBrushConverter" />
+    <local:InverseBoolConverter x:Key="InverseBoolConverter" />
   </Page.Resources>
 
   <Grid>
@@ -25,11 +26,12 @@
 
     <!-- HEADER -->
     <Grid Grid.Row="0"
-          Padding="24,13"
+          Padding="16,12"
           Background="{ThemeResource SurfaceBrush}"
           BorderBrush="{ThemeResource SurfaceVariantBrush}"
           BorderThickness="0,0,0,1">
       <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
@@ -38,7 +40,13 @@
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
 
-      <Border Grid.Column="0" Width="42" Height="42" CornerRadius="13" Background="{ThemeResource PrimaryContainerBrush}" Margin="0,0,14,0">
+      <!-- Back to list (narrow layout only; toggled from code-behind) -->
+      <Button x:Name="BackButton" Grid.Column="0" Style="{StaticResource IconButtonStyle}" Margin="0,0,6,0"
+              Visibility="Collapsed" Command="{Binding BackToListCommand}" ToolTipService.ToolTip="Zurück zur Liste">
+        <FontIcon Glyph="&#xE72B;" FontSize="16" />
+      </Button>
+
+      <Border Grid.Column="1" Width="42" Height="42" CornerRadius="13" Background="{ThemeResource PrimaryContainerBrush}" Margin="0,0,14,0">
         <Grid Width="24" Height="24">
           <Path Data="M5 4h11a3 3 0 0 1 3 3v8H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" Fill="{ThemeResource OnPrimaryContainerBrush}" />
           <Ellipse Width="4" Height="4" Fill="{ThemeResource OnPrimaryContainerBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6,16,0,0" />
@@ -46,35 +54,40 @@
         </Grid>
       </Border>
 
-      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+      <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
         <TextBlock Text="Train-Konfiguration" FontSize="16" FontWeight="Bold" />
         <TextBlock Text="Powered Up · Legoino-Schnittstelle" Style="{StaticResource MonoCaptionTextBlockStyle}" />
       </StackPanel>
 
-      <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,16,0">
+      <StackPanel x:Name="HeaderStats" Grid.Column="4" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,16,0">
         <TextBlock Text="{Binding ActiveCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
         <TextBlock Text="aktiv ·" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
         <TextBlock Text="{Binding TotalCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
         <TextBlock Text="gesamt" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
       </StackPanel>
 
-      <Border Grid.Column="4" Style="{StaticResource ChipBorderStyle}" Margin="0,0,10,0">
-        <TextBlock Text="Backend folgt" FontSize="11" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+      <!-- Visibility is owned by ApplyResponsiveLayout in code-behind (depends on width AND selection). -->
+      <Border x:Name="HeaderChip" Grid.Column="5" Style="{StaticResource ChipBorderStyle}" Margin="0,0,10,0" Visibility="Collapsed">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+          <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                    Fill="{Binding SelectedTrain.IsHardwareConnected, Converter={StaticResource BoolToStatusBrushConverter}}" />
+          <TextBlock Text="{Binding SelectedTrain.ConnectionStatus}" FontSize="11" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+        </StackPanel>
       </Border>
 
-      <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}" Command="{Binding GoToStreckenplanerCommand}" ToolTipService.ToolTip="Streckenplaner öffnen">
+      <Button Grid.Column="6" Style="{StaticResource IconButtonStyle}" Command="{Binding GoToStreckenplanerCommand}" ToolTipService.ToolTip="Streckenplaner öffnen">
         <FontIcon Glyph="&#xE8A1;" FontSize="16" />
       </Button>
     </Grid>
 
-    <Grid Grid.Row="1">
+    <Grid x:Name="ContentGrid" Grid.Row="1">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="346" />
-        <ColumnDefinition Width="*" />
+        <ColumnDefinition x:Name="ListColumn" Width="346" />
+        <ColumnDefinition x:Name="EditorColumn" Width="*" />
       </Grid.ColumnDefinitions>
 
       <!-- LIST -->
-      <Grid Grid.Column="0" Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="0,0,1,0">
+      <Grid x:Name="ListPanel" Grid.Column="0" Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="0,0,1,0">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition />
@@ -92,6 +105,55 @@
                      FontSize="13.5" />
             <FontIcon Glyph="&#xE721;" FontSize="14" Margin="13,0,0,0" HorizontalAlignment="Left" Foreground="{ThemeResource OnSurfaceVariantBrush}" IsHitTestVisible="False" />
           </Grid>
+
+          <!-- DISCOVER -->
+          <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                  Command="{Binding DiscoverCommand}" IsEnabled="{Binding IsDiscovering, Converter={StaticResource InverseBoolConverter}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <FontIcon Glyph="&#xE702;" FontSize="15" />
+              <TextBlock Text="Hub suchen" />
+            </StackPanel>
+          </Button>
+
+          <Border Background="{ThemeResource SurfaceVariantBrush}" CornerRadius="{StaticResource RadiusLarge}" Padding="12,10"
+                  Visibility="{Binding DiscoverStatus, Converter={StaticResource NullToVisibilityConverter}}">
+            <StackPanel Spacing="8">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ProgressRing Grid.Column="0" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"
+                              IsActive="{Binding IsDiscovering}"
+                              Visibility="{Binding IsDiscovering, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock Grid.Column="1" Text="{Binding DiscoverStatus}" TextWrapping="Wrap" VerticalAlignment="Center"
+                           FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <!-- While scanning: Stopp. Otherwise: clear the results. -->
+                <Button Grid.Column="2" Content="Stopp" Padding="12,4" Command="{Binding StopDiscoverCommand}"
+                        Visibility="{Binding IsDiscovering, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Command="{Binding ClearDiscoverCommand}"
+                        ToolTipService.ToolTip="Ergebnisse ausblenden"
+                        Visibility="{Binding IsDiscovering, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+                  <FontIcon Glyph="&#xE711;" FontSize="12" />
+                </Button>
+              </Grid>
+              <ItemsControl ItemsSource="{Binding DiscoveredHubs}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Margin="0,4,0,0" Padding="12,8"
+                            Command="{Binding ElementName=RootPage, Path=DataContext.UseDiscoveredHubCommand}"
+                            CommandParameter="{Binding}">
+                      <StackPanel Spacing="2">
+                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding MacAddress}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
 
           <Grid>
             <Grid.ColumnDefinitions>
@@ -169,9 +231,9 @@
       </Grid>
 
       <!-- EDITOR -->
-      <Grid Grid.Column="1">
+      <Grid x:Name="EditorHost" Grid.Column="1">
         <ScrollViewer Visibility="{Binding SelectedTrain, Converter={StaticResource NullToVisibilityConverter}}">
-          <StackPanel MaxWidth="780" HorizontalAlignment="Stretch" Margin="40,30,40,68" Spacing="16">
+          <StackPanel MaxWidth="560" HorizontalAlignment="Stretch" Margin="16,20,16,48" Spacing="16">
 
             <!-- HEADER ROW -->
             <Grid ColumnSpacing="16">
@@ -217,24 +279,37 @@
             <Border Style="{StaticResource SectionCardStyle}">
               <StackPanel>
                 <TextBlock Text="Verbindung" Style="{StaticResource SectionTitleTextBlockStyle}" Margin="0,0,0,16" />
-                <Grid ColumnSpacing="16">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
-                  <StackPanel Grid.Column="0" Spacing="7">
+                <StackPanel Spacing="14">
+                  <StackPanel Spacing="7">
                     <TextBlock Text="Hub-Typ" Style="{StaticResource LabelTextBlockStyle}" />
                     <ComboBox ItemsSource="{Binding HubOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
                               SelectedValue="{Binding SelectedTrain.Hub, Mode=TwoWay}" HorizontalAlignment="Stretch" />
                     <TextBlock Text="{Binding SelectedTrain.HubToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
                   </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="7">
+                  <StackPanel Spacing="7">
                     <TextBlock Text="BLE-Adresse" Style="{StaticResource LabelTextBlockStyle}" />
                     <TextBox Text="{Binding SelectedTrain.BleAddress, Mode=TwoWay}" PlaceholderText="90:84:2B:xx:xx:xx"
                              FontFamily="{StaticResource MonoFontFamily}" FontSize="12.5" />
                     <TextBlock Text="MAC · zum Verbinden" Style="{StaticResource MonoCaptionTextBlockStyle}" />
                   </StackPanel>
-                </Grid>
+                </StackPanel>
+
+                <StackPanel Margin="0,16,0,0" Spacing="10">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button Content="Verbinden" Command="{Binding ConnectCommand}" Style="{StaticResource FabButtonStyle}" Padding="16,0" />
+                    <Button Content="Trennen" Command="{Binding DisconnectCommand}" Padding="16,0" />
+                  </StackPanel>
+                  <Grid ColumnSpacing="6">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Top" Margin="0,4,0,0"
+                             Fill="{Binding SelectedTrain.IsHardwareConnected, Converter={StaticResource BoolToStatusBrushConverter}}" />
+                    <TextBlock Grid.Column="1" Text="{Binding SelectedTrain.ConnectionStatus}"
+                               Style="{StaticResource MonoCaptionTextBlockStyle}" TextWrapping="Wrap" />
+                  </Grid>
+                </StackPanel>
               </StackPanel>
             </Border>
 
@@ -242,13 +317,9 @@
             <Border Style="{StaticResource SectionCardStyle}">
               <StackPanel>
                 <TextBlock Text="Ports &amp; Geräte" Style="{StaticResource SectionTitleTextBlockStyle}" Margin="0,0,0,18" />
-                <Grid ColumnSpacing="26">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="164" />
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
+                <StackPanel Spacing="18">
 
-                  <Border Grid.Column="0" Background="{ThemeResource SurfaceVariantBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}"
+                  <Border Width="164" HorizontalAlignment="Left" Background="{ThemeResource SurfaceVariantBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}"
                           BorderThickness="1" CornerRadius="{StaticResource RadiusLarge}" Padding="14" VerticalAlignment="Top">
                     <StackPanel Spacing="10">
                       <Border Height="28" CornerRadius="8" Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="1">
@@ -277,7 +348,7 @@
                     </StackPanel>
                   </Border>
 
-                  <StackPanel Grid.Column="1" Spacing="16">
+                  <StackPanel Spacing="16">
                     <StackPanel Spacing="7">
                       <TextBlock Text="Port A · Gerät" Style="{StaticResource LabelTextBlockStyle}" />
                       <ComboBox ItemsSource="{Binding DeviceOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
@@ -291,7 +362,7 @@
                       <TextBlock Text="{Binding SelectedTrain.PortBToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
                     </StackPanel>
                   </StackPanel>
-                </Grid>
+                </StackPanel>
               </StackPanel>
             </Border>
 
@@ -333,8 +404,7 @@
                       <Viewbox Height="90" Stretch="Uniform">
                         <Canvas Width="300" Height="130">
                           <Path Data="{Binding SelectedTrain.Graph.FillPathData}" Fill="{ThemeResource PrimaryBrush}" Opacity=".12" />
-                          <Path Data="{Binding SelectedTrain.Graph.LinePathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="2.5"
-                                StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                          <Path Data="{Binding SelectedTrain.Graph.LinePathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="2.5" />
                         </Canvas>
                       </Viewbox>
                       <Grid Margin="34,0,0,0">
@@ -350,12 +420,8 @@
                     </StackPanel>
                   </Border>
 
-                  <Grid ColumnSpacing="16">
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Spacing="7">
+                  <StackPanel Spacing="16">
+                    <StackPanel Spacing="7">
                       <TextBlock Text="Beschleunigung" Style="{StaticResource LabelTextBlockStyle}" />
                       <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
                                 SelectedValue="{Binding SelectedTrain.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
@@ -372,7 +438,7 @@
                                  Foreground="{Binding SelectedTrain.IsAccelFormulaValid, Converter={StaticResource ValidityToBrushConverter}}"
                                  FontFamily="{StaticResource MonoFontFamily}" FontSize="10.5" />
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="7">
+                    <StackPanel Spacing="7">
                       <TextBlock Text="Bremsen" Style="{StaticResource LabelTextBlockStyle}" />
                       <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
                                 SelectedValue="{Binding SelectedTrain.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
@@ -389,7 +455,7 @@
                                  Foreground="{Binding SelectedTrain.IsBrakeFormulaValid, Converter={StaticResource ValidityToBrushConverter}}"
                                  FontFamily="{StaticResource MonoFontFamily}" FontSize="10.5" />
                     </StackPanel>
-                  </Grid>
+                  </StackPanel>
                 </StackPanel>
               </StackPanel>
             </Border>
@@ -431,6 +497,44 @@
           <Button Content="+ Neuer Train" Style="{StaticResource FabButtonStyle}" Command="{Binding AddTrainCommand}" HorizontalAlignment="Center" Padding="20,0" />
         </StackPanel>
       </Grid>
+    </Grid>
+
+    <!-- ADD-HUB POPUP (styled, modal) - shown while a discovered hub awaits confirmation -->
+    <Grid Grid.Row="0" Grid.RowSpan="2" Background="#B3000000"
+          Visibility="{Binding PendingHub, Converter={StaticResource NullToVisibilityConverter}}">
+      <Border MaxWidth="360" Margin="24" VerticalAlignment="Center" HorizontalAlignment="Center"
+              Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="1"
+              CornerRadius="{StaticResource RadiusLarge}" Padding="24">
+        <StackPanel Spacing="16">
+          <Border Width="48" Height="48" CornerRadius="14" Background="{ThemeResource PrimaryContainerBrush}" HorizontalAlignment="Left">
+            <FontIcon Glyph="&#xE702;" FontSize="22" Foreground="{ThemeResource OnPrimaryContainerBrush}" />
+          </Border>
+
+          <StackPanel Spacing="4">
+            <TextBlock Text="Hub gefunden" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="Als Train hinzufügen und verbinden?" FontSize="13"
+                       Foreground="{ThemeResource OnSurfaceVariantBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+
+          <Border Background="{ThemeResource SurfaceVariantBrush}" CornerRadius="{StaticResource RadiusMedium}" Padding="14,10">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding PendingHub.Name}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding PendingHub.MacAddress}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+            </StackPanel>
+          </Border>
+
+          <Grid ColumnSpacing="10" Margin="0,4,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Abbrechen" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Command="{Binding CancelAddHubCommand}" />
+            <Button Grid.Column="1" Content="Verbinden" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Style="{StaticResource FabButtonStyle}" Command="{Binding ConfirmAddHubCommand}" />
+          </Grid>
+        </StackPanel>
+      </Border>
     </Grid>
   </Grid>
 </Page>
