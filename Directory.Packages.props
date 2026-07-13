@@ -6,9 +6,11 @@
     See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
   -->
   <ItemGroup>
-    <!-- On-device LEGO Powered Up control over Bluetooth LE (android/ios heads only, wired in Trackify.csproj). -->
+    <!-- On-device LEGO Powered Up control over Bluetooth LE (wired per head in Trackify.csproj):
+         .Mobile (Plugin.BLE) on android/ios, .WinRT on the Windows head. -->
     <PackageVersion Include="SharpBrick.PoweredUp" Version="5.0.2" />
     <PackageVersion Include="SharpBrick.PoweredUp.Mobile" Version="5.0.2" />
+    <PackageVersion Include="SharpBrick.PoweredUp.WinRT" Version="5.0.2" />
     <!-- Must match the version SharpBrick.PoweredUp.Mobile 5.0.2 was built against (3.0.0);
          newer Plugin.BLE changed API signatures SharpBrick calls, causing a runtime
          MissingMethodException on connect. Its net7.0-android33.0 asset is consumable by net10.0-android. -->

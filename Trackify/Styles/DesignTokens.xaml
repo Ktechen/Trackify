@@ -28,17 +28,7 @@
 
   <FontFamily x:Key="MonoFontFamily">Consolas,Courier New,Courier,monospace</FontFamily>
 
-  <!-- Typografie · Headline 26/800, Title Large 20/700, Title/Body 14/600, Label 12/500 -->
-  <Style x:Key="HeadlineTextBlockStyle" TargetType="TextBlock">
-    <Setter Property="FontSize" Value="26" />
-    <Setter Property="FontWeight" Value="ExtraBold" />
-    <Setter Property="CharacterSpacing" Value="-20" />
-  </Style>
-  <Style x:Key="TitleLargeTextBlockStyle" TargetType="TextBlock">
-    <Setter Property="FontSize" Value="20" />
-    <Setter Property="FontWeight" Value="ExtraBold" />
-    <Setter Property="CharacterSpacing" Value="-20" />
-  </Style>
+  <!-- Typografie · Title/Body 14/600, Label 12/500, mono caption/value -->
   <Style x:Key="SectionTitleTextBlockStyle" TargetType="TextBlock">
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontWeight" Value="SemiBold" />

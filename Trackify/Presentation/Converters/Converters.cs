@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
-namespace Trackify.Presentation;
+namespace Trackify.Presentation.Converters;
 
 /// <summary>"#RRGGBB" -&gt; SolidColorBrush.</summary>
 public sealed partial class HexToBrushConverter : IValueConverter
@@ -61,23 +61,6 @@ public sealed partial class BoolToVisibilityConverter : IValueConverter
     {
         var visible = value is bool b && b;
         if ("Invert".Equals(parameter as string, StringComparison.OrdinalIgnoreCase)) visible = !visible;
-        return visible ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-        => throw new NotSupportedException();
-}
-
-/// <summary>Visible when the bound enum's string representation equals ConverterParameter (prefix "!" to invert).</summary>
-public sealed partial class EnumEqualsVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        var param = parameter as string ?? "";
-        var invert = param.StartsWith('!');
-        var compareTo = invert ? param[1..] : param;
-        var isMatch = string.Equals(value?.ToString(), compareTo, StringComparison.Ordinal);
-        var visible = invert ? !isMatch : isMatch;
         return visible ? Visibility.Visible : Visibility.Collapsed;
     }
 

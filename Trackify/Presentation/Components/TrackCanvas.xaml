@@ -1,0 +1,173 @@
+<UserControl x:Class="Trackify.Presentation.Components.TrackCanvas"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Trackify.Presentation.Behaviors"
+             xmlns:vm="using:Trackify.Presentation.ViewModels"
+             xmlns:models="using:Trackify.Models.Trains"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:SecondViewModel}">
+
+  <!-- 2D track layout with tappable segments/sensors. Binds to the hosting SecondViewModel. -->
+  <Border Margin="24,24,24,18"
+          Background="{ThemeResource SurfaceVariantBrush}"
+          BorderBrush="{ThemeResource OutlineVariantBrush}"
+          BorderThickness="1"
+          CornerRadius="{StaticResource RadiusExtraLarge}">
+    <Grid>
+      <Viewbox Stretch="Uniform" Margin="16">
+        <Canvas Width="900" Height="600">
+
+          <Path Data="{Binding TrackBedPathData}" Stroke="{ThemeResource OutlineVariantBrush}" StrokeThickness="30" />
+
+          <Path Data="{Binding SelectedSegment.HitPathData}" Stroke="{ThemeResource PrimaryBrush}" StrokeThickness="36" Opacity=".26"
+                Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}}" IsHitTestVisible="False" />
+
+          <ItemsControl ItemsSource="{Binding Segments}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Path d:DataContext="{d:DesignInstance Type=models:TrackSegment}"
+                      Data="{Binding PathData}" Stroke="{Binding SpeedColor, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="22"
+                      IsHitTestVisible="False" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl ItemsSource="{Binding Segments}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Path d:DataContext="{d:DesignInstance Type=models:TrackSegment}"
+                      Data="{Binding HitPathData}" Stroke="Transparent" StrokeThickness="38"
+                      local:TappedCommandBehavior.Command="{Binding ElementName=Root, Path=DataContext.SelectSegmentCommand}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl ItemsSource="{Binding Segments}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Path d:DataContext="{d:DesignInstance Type=models:TrackSegment}"
+                      Data="M -7 -6 L 9 0 L -7 6 Z" Fill="White" Opacity=".9" IsHitTestVisible="False">
+                  <Path.RenderTransform>
+                    <TransformGroup>
+                      <RotateTransform Angle="{Binding ArrowRotationDeg}" CenterX="0" CenterY="0" />
+                      <TranslateTransform X="{Binding MidX}" Y="{Binding MidY}" />
+                    </TransformGroup>
+                  </Path.RenderTransform>
+                </Path>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl ItemsSource="{Binding Segments}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock d:DataContext="{d:DesignInstance Type=models:TrackSegment}"
+                           Text="{Binding MaxSpeed}" Width="40" TextAlignment="Center" FontSize="16" FontWeight="Bold"
+                           Foreground="{ThemeResource OnSurfaceBrush}" IsHitTestVisible="False"
+                           Canvas.Left="{Binding LabelLeft}" Canvas.Top="{Binding LabelTop}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl ItemsSource="{Binding Segments}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Line d:DataContext="{d:DesignInstance Type=models:TrackSegment}"
+                      X1="{Binding SensorLineX1}" Y1="{Binding SensorLineY1}" X2="{Binding SensorLineX2}" Y2="{Binding SensorLineY2}"
+                      Stroke="{Binding SensorColor, Converter={StaticResource HexToBrushConverter}}" StrokeThickness="2.5"
+                      StrokeDashArray="3,3" Opacity=".55" IsHitTestVisible="False"
+                      Visibility="{Binding HasSensor, Converter={StaticResource BoolToVisibilityConverter}}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl ItemsSource="{Binding Segments}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid d:DataContext="{d:DesignInstance Type=models:TrackSegment}"
+                      Width="30" Height="30" Canvas.Left="{Binding SensorLeft}" Canvas.Top="{Binding SensorTop}"
+                      Visibility="{Binding HasSensor, Converter={StaticResource BoolToVisibilityConverter}}"
+                      local:TappedCommandBehavior.Command="{Binding ElementName=Root, Path=DataContext.SelectSegmentCommand}">
+                  <Ellipse Fill="{Binding SensorColor, Converter={StaticResource HexToBrushConverter}}"
+                           Stroke="{ThemeResource SurfaceBrush}" StrokeThickness="2.5" />
+                  <TextBlock Text="{Binding SensorGlyph}" FontSize="13" FontWeight="Bold" Foreground="White"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <TextBlock Text="STRECKE 01" Canvas.Left="382" Canvas.Top="284" FontFamily="{StaticResource MonoFontFamily}"
+                     FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource MutedTextBrush}" IsHitTestVisible="False" />
+          <StackPanel Orientation="Horizontal" Spacing="4" Canvas.Left="330" Canvas.Top="303" IsHitTestVisible="False">
+            <TextBlock Text="{Binding SegmentCount}" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+            <TextBlock Text="Segmente ·" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+            <TextBlock Text="{Binding SensorCount}" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+            <TextBlock Text="Sensoren" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+          </StackPanel>
+        </Canvas>
+      </Viewbox>
+
+      <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,18"
+              Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="1"
+              CornerRadius="{StaticResource RadiusMedium}" Padding="14,9">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <TextBlock Text="Tempo" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <ItemsControl ItemsSource="{Binding Legend}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="14" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="6" d:DataContext="{d:DesignInstance Type=vm:LegendItem}">
+                  <Border Width="12" Height="12" CornerRadius="4" Background="{Binding Color, Converter={StaticResource HexToBrushConverter}}" />
+                  <TextBlock Text="{Binding Label}" FontSize="11" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,20,0"
+              Background="{ThemeResource SurfaceBrush}" CornerRadius="{StaticResource RadiusMedium}" Padding="12,7">
+        <TextBlock Text="Segment oder Sensor anklicken" FontSize="11.5" Foreground="{ThemeResource MutedTextBrush}" />
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

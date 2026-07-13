@@ -2,7 +2,7 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Trackify.Presentation;
+namespace Trackify.Presentation.Pages;
 
 public sealed partial class MainPage : Page
 {

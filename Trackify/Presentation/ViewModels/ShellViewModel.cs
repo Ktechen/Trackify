@@ -1,4 +1,4 @@
-namespace Trackify.Presentation;
+namespace Trackify.Presentation.ViewModels;
 
 public class ShellViewModel
 {

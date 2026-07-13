@@ -4,7 +4,7 @@ using Trackify.Models.Trains;
 using Trackify.Models.Trains.Enums;
 using TrackSegment = Trackify.Models.Trains.TrackSegment;
 
-namespace Trackify.Presentation;
+namespace Trackify.Presentation.ViewModels;
 
 public record LegendItem(string Color, string Label);
 

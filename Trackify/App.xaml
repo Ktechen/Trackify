@@ -20,6 +20,7 @@
           </um:MaterialTheme.FontOverrideDictionary> -->
         </um:MaterialTheme>
         <ResourceDictionary Source="ms-appx:///Styles/DesignTokens.xaml" />
+        <ResourceDictionary Source="ms-appx:///Styles/Converters.xaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <!-- Add resources here -->

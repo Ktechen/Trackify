@@ -16,11 +16,11 @@ internal static class NativeBluetooth
         => new IosDeviceInfoProvider();
 #endif
 
-    public static IBluetoothPermissions CreatePermissions()
+    public static IBluetoothPermissionService CreatePermissionService()
 #if __ANDROID__
-        => new AndroidBluetoothPermissions();
+        => new AndroidBluetoothPermissionService();
 #elif __IOS__
-        => new IosBluetoothPermissions();
+        => new IosBluetoothPermissionService();
 #endif
 }
 
@@ -31,7 +31,7 @@ internal sealed class AndroidDeviceInfoProvider : INativeDeviceInfoProvider
         => new() { DeviceIdentifier = ((Android.Bluetooth.BluetoothDevice)device).Address ?? string.Empty };
 }
 
-internal sealed class AndroidBluetoothPermissions : IBluetoothPermissions
+internal sealed class AndroidBluetoothPermissionService : IBluetoothPermissionService
 {
     // The permission grant flow lives on the Activity (it owns OnRequestPermissionsResult).
     public Task<bool> EnsureGrantedAsync()
@@ -46,7 +46,7 @@ internal sealed class IosDeviceInfoProvider : INativeDeviceInfoProvider
         => new() { DeviceIdentifier = ((CoreBluetooth.CBPeripheral)device).Identifier.AsString() };
 }
 
-internal sealed class IosBluetoothPermissions : IBluetoothPermissions
+internal sealed class IosBluetoothPermissionService : IBluetoothPermissionService
 {
     // iOS shows its own system prompt (backed by NSBluetoothAlwaysUsageDescription) the first time
     // the central manager is used, so there is nothing to request up front here.

@@ -1,4 +1,4 @@
-﻿namespace Trackify.Presentation;
+﻿namespace Trackify.Presentation.Pages;
 
 public sealed partial class Shell : UserControl, IContentControlProvider
 {

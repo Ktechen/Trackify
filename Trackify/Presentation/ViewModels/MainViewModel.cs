@@ -6,7 +6,7 @@ using Trackify.Models.Trains.Enums;
 using Trackify.Services;
 using Train = Trackify.Models.Trains.Train;
 
-namespace Trackify.Presentation;
+namespace Trackify.Presentation.ViewModels;
 
 /// <summary>
 /// Main screen: the train list/editor and its commands. Hub (Bluetooth) control lives in the
@@ -27,7 +27,7 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<Train> FilteredTrains { get; } = [];
 
-    public ObservableCollection<ColorSwatchItem> ColorSwatches { get; }
+    public ObservableCollection<ColorSwatchItemViewModel> ColorSwatches { get; }
 
     public IReadOnlyList<HubOption> HubOptions => LegoinoCatalog.Hubs;
 
@@ -35,15 +35,11 @@ public partial class MainViewModel : ObservableObject
 
     public IReadOnlyList<SpeedFunctionOption> SpeedFunctionOptions => LegoinoCatalog.SpeedFunctions;
 
-    public IRelayCommand<Train> SelectTrainCommand { get; }
-
     public IRelayCommand AddTrainCommand { get; }
 
     public IRelayCommand DuplicateTrainCommand { get; }
 
     public IRelayCommand DeleteTrainCommand { get; }
-
-    public IRelayCommand ToggleActiveCommand { get; }
 
     public IRelayCommand<string> SetFilterCommand { get; }
 
@@ -59,8 +55,6 @@ public partial class MainViewModel : ObservableObject
 
     public IRelayCommand StopDiscoverCommand { get; }
 
-    public IRelayCommand<DiscoveredHub> UseDiscoveredHubCommand { get; }
-
     public IRelayCommand ClearDiscoverCommand { get; }
 
     public IAsyncRelayCommand ConfirmAddHubCommand { get; }
@@ -74,25 +68,22 @@ public partial class MainViewModel : ObservableObject
         _navigator = navigator;
         _lego = lego;
 
-        SelectTrainCommand = new RelayCommand<Train>(t => SelectedTrain = t);
         AddTrainCommand = new RelayCommand(AddTrain);
         DuplicateTrainCommand = new RelayCommand(DuplicateTrain, () => SelectedTrain is not null);
         DeleteTrainCommand = new RelayCommand(DeleteTrain, () => SelectedTrain is not null);
-        ToggleActiveCommand = new RelayCommand(ToggleActive, () => SelectedTrain is not null);
-        SetFilterCommand = new RelayCommand<string>(f => Filter = Enum.Parse<TrainFilterType>(f!));
-        SetColorCommand = new RelayCommand<LedColorType?>(c => { if (SelectedTrain is not null && c is { } color) SelectedTrain.Color = color; });
+        SetFilterCommand = new RelayCommand<string>(name => Filter = Enum.Parse<TrainFilterType>(name!));
+        SetColorCommand = new RelayCommand<LedColorType?>(SetSelectedTrainColor);
         GoToStreckenplanerCommand = new AsyncRelayCommand(GoToStreckenplaner);
         ConnectCommand = new AsyncRelayCommand(ConnectSelectedTrainAsync, () => SelectedTrain is { IsHardwareConnected: false });
         DisconnectCommand = new AsyncRelayCommand(DisconnectSelectedTrainAsync, () => SelectedTrain is { IsHardwareConnected: true });
         DiscoverCommand = new AsyncRelayCommand(DiscoverAsync);
         StopDiscoverCommand = new RelayCommand(StopDiscover);
-        UseDiscoveredHubCommand = new RelayCommand<DiscoveredHub>(UseDiscoveredHub);
-        ClearDiscoverCommand = new RelayCommand(ClearDiscoverResults);
+        ClearDiscoverCommand = new RelayCommand(HideDiscoverStatus);
         ConfirmAddHubCommand = new AsyncRelayCommand(ConfirmAddHubAsync);
         CancelAddHubCommand = new RelayCommand(CancelAddHub);
         BackToListCommand = new RelayCommand(() => SelectedTrain = null);
 
-        ColorSwatches = [.. LegoinoCatalog.Colors.Select(c => new ColorSwatchItem { Value = c.Value, Name = c.Name, Hex = c.Hex })];
+        ColorSwatches = [.. LegoinoCatalog.Colors.Select(c => new ColorSwatchItemViewModel { Value = c.Value, Name = c.Name, Hex = c.Hex })];
 
         Trains.CollectionChanged += TrainsOnCollectionChanged;
         ApplyFilter();
@@ -107,18 +98,15 @@ public partial class MainViewModel : ObservableObject
             AccelFn = SpeedFunctionType.EaseOut, BrakeFn = SpeedFunctionType.EaseIn, IsActive = true,
         };
         Trains.Add(train);
-        Filter = TrainFilterType.All;
-        Search = "";
-        SelectedTrain = train;
-        ApplyFilter();
+        SelectAfresh(train);
     }
 
     private void DuplicateTrain()
     {
         if (SelectedTrain is null) return;
+
         var copy = SelectedTrain.Clone($"trn-{_sequence++}");
-        var index = Trains.IndexOf(SelectedTrain);
-        Trains.Insert(index + 1, copy);
+        Trains.Insert(Trains.IndexOf(SelectedTrain) + 1, copy);
         SelectedTrain = copy;
         ApplyFilter();
     }
@@ -126,15 +114,25 @@ public partial class MainViewModel : ObservableObject
     private void DeleteTrain()
     {
         if (SelectedTrain is null) return;
+
         Trains.Remove(SelectedTrain);
-        SelectedTrain = Trains.Count > 0 ? Trains[0] : null;
+        SelectedTrain = Trains.FirstOrDefault();
         ApplyFilter();
     }
 
-    private void ToggleActive()
+    private void SetSelectedTrainColor(LedColorType? color)
     {
-        if (SelectedTrain is null) return;
-        SelectedTrain.IsActive = !SelectedTrain.IsActive;
+        if (SelectedTrain is not null && color is { } value)
+            SelectedTrain.Color = value;
+    }
+
+    // Clears search/filter so a just-added train is visible, then selects it.
+    private void SelectAfresh(Train train)
+    {
+        Filter = TrainFilterType.All;
+        Search = "";
+        SelectedTrain = train;
+        ApplyFilter();
     }
 
     private async Task GoToStreckenplaner() => await _navigator.NavigateViewModelAsync<SecondViewModel>(this);
@@ -150,7 +148,6 @@ public partial class MainViewModel : ObservableObject
 
         DuplicateTrainCommand.NotifyCanExecuteChanged();
         DeleteTrainCommand.NotifyCanExecuteChanged();
-        ToggleActiveCommand.NotifyCanExecuteChanged();
         NotifyHubCommandsCanExecute();
         UpdateColorSwatchSelection();
     }
@@ -166,14 +163,8 @@ public partial class MainViewModel : ObservableObject
 
     private void TrainsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.OldItems is not null)
-        {
-            foreach (Train t in e.OldItems) t.PropertyChanged -= TrainOnPropertyChanged;
-        }
-        if (e.NewItems is not null)
-        {
-            foreach (Train t in e.NewItems) t.PropertyChanged += TrainOnPropertyChanged;
-        }
+        foreach (Train t in e.OldItems ?? Array.Empty<object>()) t.PropertyChanged -= TrainOnPropertyChanged;
+        foreach (Train t in e.NewItems ?? Array.Empty<object>()) t.PropertyChanged += TrainOnPropertyChanged;
         RefreshCounts();
     }
 
@@ -190,25 +181,33 @@ public partial class MainViewModel : ObservableObject
 
     private void UpdateColorSwatchSelection()
     {
-        foreach (var swatch in ColorSwatches) swatch.IsSelected = SelectedTrain is not null && swatch.Value == SelectedTrain.Color;
+        foreach (var swatch in ColorSwatches)
+            swatch.IsSelected = SelectedTrain is not null && swatch.Value == SelectedTrain.Color;
     }
 
     private void ApplyFilter()
     {
-        var query = Search.Trim();
-        var matches = Trains.Where(t =>
-            Filter switch
-            {
-                TrainFilterType.Active => t.IsActive,
-                TrainFilterType.Inactive => !t.IsActive,
-                _ => true,
-            } &&
-            (string.IsNullOrEmpty(query) ||
-             t.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-             t.Hub.ToString().Contains(query, StringComparison.OrdinalIgnoreCase))).ToList();
-
         FilteredTrains.Clear();
-        foreach (var t in matches) FilteredTrains.Add(t);
+        foreach (var train in Trains.Where(MatchesFilterAndSearch))
+            FilteredTrains.Add(train);
+
         RefreshCounts();
+    }
+
+    private bool MatchesFilterAndSearch(Train train)
+    {
+        var matchesFilter = Filter switch
+        {
+            TrainFilterType.Active => train.IsActive,
+            TrainFilterType.Inactive => !train.IsActive,
+            _ => true,
+        };
+
+        var query = Search.Trim();
+        var matchesSearch = query.Length == 0
+            || train.Name.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || train.Hub.ToString().Contains(query, StringComparison.OrdinalIgnoreCase);
+
+        return matchesFilter && matchesSearch;
     }
 }

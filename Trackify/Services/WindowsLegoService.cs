@@ -1,43 +1,34 @@
-#if __ANDROID__ || __IOS__
-using Plugin.BLE.Abstractions;
-using Plugin.BLE.Abstractions.Contracts;
+#if WINDOWS
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Bluetooth;
-using SharpBrick.PoweredUp.Mobile;
 using SharpBrick.PoweredUp.Protocol;
 using HubType = Trackify.Models.Trains.Enums.HubType;
 
 namespace Trackify.Services;
 
 /// <summary>
-/// Controls LEGO Powered Up hubs over Bluetooth LE on Android/iOS (SharpBrick.PoweredUp on
-/// Plugin.BLE) - no server. Discovers a device, opens a protocol for it, and keeps the connected
-/// protocol keyed by its platform device id so later commands reuse the open connection.
+/// Controls LEGO Powered Up hubs over Windows (WinRT) Bluetooth (SharpBrick.PoweredUp.WinRT).
+/// Same protocol-layer flow as the mobile service - discover, open a protocol, keep it keyed by
+/// the hub's MAC address - but WinRT connects by numeric address, so ids are parsed to/from MAC.
 /// Wire-level details live in <see cref="LwpProtocol"/>.
 /// </summary>
-public sealed class DirectLegoService : ILegoService
+public sealed class WindowsLegoService : ILegoService
 {
     private readonly PoweredUpHost _host;
     private readonly IPoweredUpBluetoothAdapter _adapter;
-    private readonly IBluetoothLE _bluetooth;
-    private readonly IBluetoothPermissionService _permissions;
     private readonly Lock _gate = new();
     private readonly Dictionary<string, ConnectedHub> _connectedHubs = new();
 
-    public DirectLegoService(PoweredUpHost host, IPoweredUpBluetoothAdapter adapter, IBluetoothLE bluetooth, IBluetoothPermissionService permissions)
+    public WindowsLegoService(PoweredUpHost host, IPoweredUpBluetoothAdapter adapter)
     {
         _host = host;
         _adapter = adapter;
-        _bluetooth = bluetooth;
-        _permissions = permissions;
     }
 
     public bool IsSupported => true;
 
     public async Task<IReadOnlyList<DiscoveredHub>> DiscoverAsync(CancellationToken ct = default)
     {
-        await EnsureRadioReadyAsync();
-
         var found = new Dictionary<string, DiscoveredHub>();
 
         // Scan runs until the first hub is seen or the caller cancels - no fixed time window.
@@ -47,9 +38,9 @@ public sealed class DirectLegoService : ILegoService
 
         _adapter.Discover(deviceInfo =>
         {
-            if (deviceInfo is XamarinBluetoothDeviceInfo info && !string.IsNullOrEmpty(info.DeviceIdentifier))
+            if (deviceInfo is PoweredUpBluetoothDeviceInfoWithMacAddress info && info.MacAddressAsUInt64 != 0)
             {
-                lock (found) found[info.DeviceIdentifier] = ToDiscoveredHub(info);
+                lock (found) found[LwpProtocol.FormatMacAddress(info.MacAddressAsUInt64)] = ToDiscoveredHub(info);
                 firstFound.TrySetResult();
             }
 
@@ -58,7 +49,6 @@ public sealed class DirectLegoService : ILegoService
 
         await firstFound.Task;
 
-        // Stop the watcher (its cancellation unhooks the handler); harmless if already cancelled.
         if (!scan.IsCancellationRequested)
             scan.Cancel();
 
@@ -70,15 +60,14 @@ public sealed class DirectLegoService : ILegoService
 
     public async Task ConnectAsync(string hubId, HubType hubType, CancellationToken ct = default)
     {
-        await EnsureRadioReadyAsync();
-
         lock (_gate)
         {
             if (_connectedHubs.ContainsKey(hubId))
                 return;
         }
 
-        var deviceInfo = await _adapter.CreateDeviceInfoByKnownStateAsync(hubId)
+        // WinRT identifies devices by numeric address, so connect from the MAC id.
+        var deviceInfo = await _adapter.CreateDeviceInfoByKnownStateAsync(LwpProtocol.ParseMacAddress(hubId))
             ?? throw new InvalidOperationException("Ungültige Hub-Adresse.");
         var protocol = _host.CreateProtocol(deviceInfo);
 
@@ -125,29 +114,11 @@ public sealed class DirectLegoService : ILegoService
         return LwpProtocol.SetRgbColorAsync(entry.Protocol, rgbPort, red, green, blue);
     }
 
-    private static DiscoveredHub ToDiscoveredHub(XamarinBluetoothDeviceInfo info) => new(
-        info.DeviceIdentifier,
+    private static DiscoveredHub ToDiscoveredHub(PoweredUpBluetoothDeviceInfoWithMacAddress info) => new(
+        LwpProtocol.FormatMacAddress(info.MacAddressAsUInt64),
         string.IsNullOrWhiteSpace(info.Name) ? null : info.Name,
-        info.MacAddressAsUInt64 == 0 ? null : LwpProtocol.FormatMacAddress(info.MacAddressAsUInt64),
+        LwpProtocol.FormatMacAddress(info.MacAddressAsUInt64),
         LwpProtocol.MapHubType(info.ManufacturerData));
-
-    // Ensures the app may use the radio AND that the radio is actually on before we touch it.
-    private async Task EnsureRadioReadyAsync()
-    {
-        if (!await _permissions.EnsureGrantedAsync())
-            throw new InvalidOperationException("Bluetooth-Berechtigung wurde nicht erteilt. Bitte in den Einstellungen erlauben.");
-
-        switch (_bluetooth.State)
-        {
-            case BluetoothState.Off:
-            case BluetoothState.TurningOff:
-                throw new InvalidOperationException("Bluetooth ist ausgeschaltet. Bitte einschalten und erneut versuchen.");
-            case BluetoothState.Unauthorized:
-                throw new InvalidOperationException("Bluetooth-Zugriff ist nicht erlaubt. Bitte die Berechtigung erteilen.");
-            case BluetoothState.Unavailable:
-                throw new InvalidOperationException("Dieses Gerät unterstützt kein Bluetooth LE.");
-        }
-    }
 
     private ConnectedHub RequireHub(string hubId)
     {

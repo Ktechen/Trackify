@@ -3,13 +3,24 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Run the IDE code-style analyzers during build so the namespace rules (IDE0130/IDE0161) are enforced. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!--
+      CS7064: Uno.Resizetizer can generate the wasm favicon.ico after the compiler first references
+      it (mostly on clean builds), so keep this one a warning instead of a hard error.
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS7064</WarningsNotAsErrors>
 
     <!--
       Adding NoWarn to remove build warnings
       NU1507: Warning when there are multiple package sources when using CPM with no source mapping
       NETSDK1201: Warning that specifying RID won't create self containing app
       PRI257: Ignore default language (en) not being one of the included resources (eg en-us, en-uk)
+      MVVMTK0045: WinRT-AOT advice to use partial properties; we use field-based [ObservableProperty]
+                  on purpose (keeps default values readable) and don't target WinRT AOT.
+      NETSDK1198: Windows head has no publish profile - only relevant when packaging for the Store.
     -->
-    <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257</NoWarn>
+    <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257;MVVMTK0045;NETSDK1198</NoWarn>
   </PropertyGroup>
 </Project>

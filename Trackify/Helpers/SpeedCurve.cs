@@ -28,10 +28,9 @@ public static class SpeedCurve
             var parser = new ExpressionParser(expression);
             var parsed = parser.ParseExpression();
             parser.ExpectEnd();
-            foreach (var probe in ProbePoints)
+            if (ProbePoints.Select(probe => parsed(probe)).Any(r => double.IsNaN(r) || double.IsInfinity(r)))
             {
-                var r = parsed(probe);
-                if (double.IsNaN(r) || double.IsInfinity(r)) return false;
+                return false;
             }
             fn = parsed;
             return true;
