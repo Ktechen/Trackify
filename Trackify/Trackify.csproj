@@ -51,4 +51,11 @@
         <PackageReference Include="SharpBrick.PoweredUp.WinRT" />
     </ItemGroup>
 
+    <!-- Clean Architecture shared core (the CLI shares Application/Infrastructure with this app). -->
+    <ItemGroup>
+        <ProjectReference Include="..\Trackify.Domain\Trackify.Domain.csproj" />
+        <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
+        <ProjectReference Include="..\Trackify.Infrastructure\Trackify.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>

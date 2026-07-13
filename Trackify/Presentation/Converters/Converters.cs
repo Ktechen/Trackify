@@ -75,7 +75,7 @@ public sealed partial class SegmentBackgroundConverter : IValueConverter
     {
         var isSelected = string.Equals(value?.ToString(), parameter as string, StringComparison.Ordinal);
         var key = isSelected ? "SecondaryContainerBrush" : "SurfaceBrush";
-        return Application.Current.Resources.TryGetValue(key, out var brush) ? brush : new SolidColorBrush(Colors.Transparent);
+        return Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(key, out var brush) ? brush : new SolidColorBrush(Colors.Transparent);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -89,7 +89,7 @@ public sealed partial class SegmentForegroundConverter : IValueConverter
     {
         var isSelected = string.Equals(value?.ToString(), parameter as string, StringComparison.Ordinal);
         var key = isSelected ? "OnSecondaryContainerBrush" : "OnSurfaceVariantBrush";
-        return Application.Current.Resources.TryGetValue(key, out var brush) ? brush : new SolidColorBrush(Colors.Black);
+        return Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(key, out var brush) ? brush : new SolidColorBrush(Colors.Black);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -117,7 +117,7 @@ public sealed partial class ValidityToBrushConverter : IValueConverter
     {
         var isValid = value is bool b && b;
         var key = isValid ? "MutedTextBrush" : "ErrorBrush";
-        return Application.Current.Resources.TryGetValue(key, out var brush) ? brush : new SolidColorBrush(Colors.Red);
+        return Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(key, out var brush) ? brush : new SolidColorBrush(Colors.Red);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

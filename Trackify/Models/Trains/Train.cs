@@ -1,4 +1,3 @@
-using Trackify.Models.Trains.Enums;
 
 namespace Trackify.Models.Trains;
 
@@ -46,9 +45,9 @@ public partial class Train : ObservableObject
 
     public bool IsBrakeCustom => BrakeFn == SpeedFunctionType.Custom;
 
-    public bool IsAccelFormulaValid => AccelFn != SpeedFunctionType.Custom || SpeedCurve.TryCompile(AccelExpression, out _);
+    public bool IsAccelFormulaValid => AccelFn != SpeedFunctionType.Custom || SpeedFunction.TryCompile(AccelExpression, out _);
 
-    public bool IsBrakeFormulaValid => BrakeFn != SpeedFunctionType.Custom || SpeedCurve.TryCompile(BrakeExpression, out _);
+    public bool IsBrakeFormulaValid => BrakeFn != SpeedFunctionType.Custom || SpeedFunction.TryCompile(BrakeExpression, out _);
 
     public string AccelFormulaDisplay => AccelFn == SpeedFunctionType.Custom
         ? (IsAccelFormulaValid ? $"f(x) = {AccelExpression}" : "⚠ ungültige Formel")
@@ -60,8 +59,8 @@ public partial class Train : ObservableObject
 
     public SpeedProfileGraph Graph => SpeedCurve.BuildGraph(
         Math.Abs((int)Speed) / 100.0,
-        SpeedCurve.ResolvePhaseFunction(AccelFn, AccelExpression),
-        SpeedCurve.ResolvePhaseFunction(BrakeFn, BrakeExpression));
+        SpeedFunction.ResolvePhaseFunction(AccelFn, AccelExpression),
+        SpeedFunction.ResolvePhaseFunction(BrakeFn, BrakeExpression));
 
     partial void OnColorChanged(LedColorType value)
     {

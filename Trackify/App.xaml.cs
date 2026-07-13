@@ -9,7 +9,7 @@ using SharpBrick.PoweredUp;
 
 namespace Trackify;
 
-public partial class App : Application
+public partial class App : Microsoft.UI.Xaml.Application
 {
     /// <summary>
     /// Initializes the singleton application object. This is the first line of authored code

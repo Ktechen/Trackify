@@ -1,25 +1,20 @@
-#if __ANDROID__ || __IOS__ || WINDOWS
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Hubs;
 using SharpBrick.PoweredUp.Protocol;
 using SharpBrick.PoweredUp.Protocol.Messages;
 using HubType = Trackify.Domain.Enums.HubType;
 
-namespace Trackify.Services;
+namespace Trackify.Infrastructure.Ble.Linux;
 
 /// <summary>
-/// LEGO Wireless Protocol details shared by the platform hub services, kept in one place.
-/// See https://lego.github.io/lego-ble-wireless-protocol-docs/.
-/// Every hub is addressed as hub id 0 (one hub per protocol connection).
+/// LEGO Wireless Protocol commands built on SharpBrick's typed messages, for the BlueZ transport.
+/// Mirrors the app's in-project protocol helper; kept here because the shared Application layer must
+/// stay free of the SharpBrick dependency. See https://lego.github.io/lego-ble-wireless-protocol-docs/.
 /// </summary>
-internal static class LwpProtocol
+internal static class LwpCommands
 {
-    private const byte SingleHub = 0;
+    private const byte SingleHub = 0; // one hub per protocol connection.
 
-    /// <summary>
-    /// Drives the motor on <paramref name="port"/>. Power: 1..100 forward, -1..-100 reverse,
-    /// 0 = stop (float), 127 = stop (brake).
-    /// </summary>
     public static Task StartPowerAsync(ILegoWirelessProtocol protocol, byte port, sbyte power)
         => protocol.SendPortOutputCommandAsync(new PortOutputCommandStartPowerMessage(
             port,
@@ -30,11 +25,21 @@ internal static class LwpProtocol
             HubId = SingleHub,
         });
 
-    /// <summary>
-    /// Connects the protocol, retrying a transient BLE/GATT hiccup. SharpBrick's BluetoothKernel
-    /// connect chain isn't null-hardened (sharpbrick/powered-up#188), so it can throw on the first
-    /// try; a short bounded retry makes connecting reliable. Throws a friendly error if it can't.
-    /// </summary>
+    public static async Task SetRgbColorAsync(ILegoWirelessProtocol protocol, byte rgbPort, byte red, byte green, byte blue)
+    {
+        await protocol.SendMessageAsync(new PortInputFormatSetupSingleMessage(rgbPort, 0x01, 10000, false)
+            { HubId = SingleHub });
+        await protocol.SendPortOutputCommandAsync(new PortOutputCommandSetRgbColorNo2Message(
+            rgbPort,
+            PortOutputCommandStartupInformation.ExecuteImmediately,
+            PortOutputCommandCompletionInformation.CommandFeedback,
+            red, green, blue)
+        {
+            HubId = SingleHub,
+        });
+    }
+
+    /// <summary>Connects the protocol, retrying the transient null-deref in SharpBrick's connect chain (sharpbrick/powered-up#188).</summary>
     public static async Task ConnectWithRetryAsync(ILegoWirelessProtocol protocol, CancellationToken ct)
     {
         const int maxAttempts = 3;
@@ -52,32 +57,12 @@ internal static class LwpProtocol
             catch (Exception ex) when (ex is NullReferenceException or ArgumentNullException)
             {
                 throw new InvalidOperationException(
-                    "Verbindung zum Hub fehlgeschlagen (nicht erreichbar oder GATT nicht bereit). " +
-                    "Ist der Hub eingeschaltet und in Reichweite?", ex);
+                    "Connecting to the hub failed (unreachable or GATT not ready). Is it powered on and in range?", ex);
             }
         }
     }
 
-    /// <summary>Sets the built-in RGB LED: select the absolute-RGB mode, then push the color.</summary>
-    public static async Task SetRgbColorAsync(ILegoWirelessProtocol protocol, byte rgbPort, byte red, byte green,
-        byte blue)
-    {
-        await protocol.SendMessageAsync(new PortInputFormatSetupSingleMessage(rgbPort, 0x01, 10000, false)
-            { HubId = SingleHub });
-        await protocol.SendPortOutputCommandAsync(new PortOutputCommandSetRgbColorNo2Message(
-            rgbPort,
-            PortOutputCommandStartupInformation.ExecuteImmediately,
-            PortOutputCommandCompletionInformation.CommandFeedback,
-            red, green, blue)
-        {
-            HubId = SingleHub,
-        });
-    }
-
-    /// <summary>
-    /// Maps the advertising "System Type and Device Number" byte (manufacturer data byte 1) to a
-    /// hub model, or null if unrecognized.
-    /// </summary>
+    /// <summary>Maps the advertising "System Type" byte (manufacturer data byte 1) to a hub model, or null.</summary>
     public static HubType? MapHubType(byte[]? manufacturerData)
     {
         if (manufacturerData is null || manufacturerData.Length < 2)
@@ -102,4 +87,3 @@ internal static class LwpProtocol
         }
     }
 }
-#endif

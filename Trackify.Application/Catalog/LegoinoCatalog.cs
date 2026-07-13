@@ -1,6 +1,6 @@
-using Trackify.Models.Trains.Enums;
+using Trackify.Domain.Enums;
 
-namespace Trackify.Models.Trains;
+namespace Trackify.Application.Catalog;
 
 public record HubOption(HubType Value, string Label, string Short);
 

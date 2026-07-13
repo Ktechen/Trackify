@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Implements Application ports that need no BLE stack (JSON train store). Shared by every front-end. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
+  </ItemGroup>
+
+</Project>

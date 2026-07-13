@@ -1,29 +1,20 @@
-#if WINDOWS
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Bluetooth;
 using SharpBrick.PoweredUp.Protocol;
+using Trackify.Application.Lego;
 using HubType = Trackify.Domain.Enums.HubType;
 
-namespace Trackify.Services;
+namespace Trackify.Infrastructure.Ble.Linux;
 
 /// <summary>
-/// Controls LEGO Powered Up hubs over Windows (WinRT) Bluetooth (SharpBrick.PoweredUp.WinRT).
-/// Same protocol-layer flow as the mobile service - discover, open a protocol, keep it keyed by
-/// the hub's MAC address - but WinRT connects by numeric address, so ids are parsed to/from MAC.
-/// Wire-level details live in <see cref="LwpProtocol"/>.
+/// Controls LEGO Powered Up hubs over the Pi's onboard Bluetooth (BlueZ). Same protocol-layer flow as
+/// the Windows service — discover, open a SharpBrick protocol, keep it keyed by MAC — but the transport
+/// is <see cref="BlueZPoweredUpBluetoothAdapter"/>. Command building lives in <see cref="LwpCommands"/>.
 /// </summary>
-public sealed class WindowsLegoService : ILegoService
+public sealed class BlueZLegoService(PoweredUpHost host, IPoweredUpBluetoothAdapter adapter) : ILegoService
 {
-    private readonly PoweredUpHost _host;
-    private readonly IPoweredUpBluetoothAdapter _adapter;
     private readonly Lock _gate = new();
     private readonly Dictionary<string, ConnectedHub> _connectedHubs = new();
-
-    public WindowsLegoService(PoweredUpHost host, IPoweredUpBluetoothAdapter adapter)
-    {
-        _host = host;
-        _adapter = adapter;
-    }
 
     public bool IsSupported => true;
 
@@ -34,11 +25,11 @@ public sealed class WindowsLegoService : ILegoService
         // Scan runs until the first hub is seen or the caller cancels - no fixed time window.
         var firstFound = new TaskCompletionSource();
         using var scan = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        using var stopOnCancel = scan.Token.Register(() => firstFound.TrySetResult());
+        await using var stopOnCancel = scan.Token.Register(() => firstFound.TrySetResult());
 
-        _adapter.Discover(deviceInfo =>
+        adapter.Discover(deviceInfo =>
         {
-            if (deviceInfo is PoweredUpBluetoothDeviceInfoWithMacAddress info && info.MacAddressAsUInt64 != 0)
+            if (deviceInfo is BlueZDeviceInfo info && info.MacAddressAsUInt64 != 0)
             {
                 lock (found) found[LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64)] = ToDiscoveredHub(info);
                 firstFound.TrySetResult();
@@ -50,7 +41,7 @@ public sealed class WindowsLegoService : ILegoService
         await firstFound.Task;
 
         if (!scan.IsCancellationRequested)
-            scan.Cancel();
+            await scan.CancelAsync();
 
         lock (found)
         {
@@ -66,14 +57,13 @@ public sealed class WindowsLegoService : ILegoService
                 return;
         }
 
-        // WinRT identifies devices by numeric address, so connect from the MAC id.
-        var deviceInfo = await _adapter.CreateDeviceInfoByKnownStateAsync(LwpAddressing.ParseMacAddress(hubId))
-            ?? throw new InvalidOperationException("Ungültige Hub-Adresse.");
-        var protocol = _host.CreateProtocol(deviceInfo);
+        var deviceInfo = await adapter.CreateDeviceInfoByKnownStateAsync(LwpAddressing.ParseMacAddress(hubId))
+            ?? throw new InvalidOperationException("Invalid hub address.");
+        var protocol = host.CreateProtocol(deviceInfo);
 
         try
         {
-            await LwpProtocol.ConnectWithRetryAsync(protocol, ct);
+            await LwpCommands.ConnectWithRetryAsync(protocol, ct);
         }
         catch
         {
@@ -103,22 +93,22 @@ public sealed class WindowsLegoService : ILegoService
     }
 
     public Task SetSpeedAsync(string hubId, byte port, sbyte power, CancellationToken ct = default)
-        => LwpProtocol.StartPowerAsync(RequireHub(hubId).Protocol, port, power);
+        => LwpCommands.StartPowerAsync(RequireHub(hubId).Protocol, port, power);
 
     public Task SetLedAsync(string hubId, byte red, byte green, byte blue, CancellationToken ct = default)
     {
         var entry = RequireHub(hubId);
         if (entry.RgbPort is not byte rgbPort)
-            throw new InvalidOperationException("Dieser Hub hat keine RGB-LED.");
+            throw new InvalidOperationException("This hub has no RGB LED.");
 
-        return LwpProtocol.SetRgbColorAsync(entry.Protocol, rgbPort, red, green, blue);
+        return LwpCommands.SetRgbColorAsync(entry.Protocol, rgbPort, red, green, blue);
     }
 
-    private static DiscoveredHub ToDiscoveredHub(PoweredUpBluetoothDeviceInfoWithMacAddress info) => new(
+    private static DiscoveredHub ToDiscoveredHub(BlueZDeviceInfo info) => new(
         LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64),
         string.IsNullOrWhiteSpace(info.Name) ? null : info.Name,
         LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64),
-        LwpProtocol.MapHubType(info.ManufacturerData));
+        LwpCommands.MapHubType(info.ManufacturerData));
 
     private ConnectedHub RequireHub(string hubId)
     {
@@ -126,10 +116,9 @@ public sealed class WindowsLegoService : ILegoService
         {
             return _connectedHubs.TryGetValue(hubId, out var hub)
                 ? hub
-                : throw new InvalidOperationException("Hub ist nicht verbunden.");
+                : throw new InvalidOperationException("Hub is not connected.");
         }
     }
 
     private sealed record ConnectedHub(ILegoWirelessProtocol Protocol, byte? RgbPort);
 }
-#endif

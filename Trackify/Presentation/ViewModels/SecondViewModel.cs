@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Trackify.Models.Trains;
-using Trackify.Models.Trains.Enums;
 using TrackSegment = Trackify.Models.Trains.TrackSegment;
 
 namespace Trackify.Presentation.ViewModels;

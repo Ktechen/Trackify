@@ -5,7 +5,7 @@ using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Bluetooth;
 using SharpBrick.PoweredUp.Mobile;
 using SharpBrick.PoweredUp.Protocol;
-using HubType = Trackify.Models.Trains.Enums.HubType;
+using HubType = Trackify.Domain.Enums.HubType;
 
 namespace Trackify.Services;
 
@@ -94,7 +94,7 @@ public sealed class DirectLegoService : ILegoService
 
         lock (_gate)
         {
-            _connectedHubs[hubId] = new ConnectedHub(protocol, LwpProtocol.RgbLedPortFor(hubType));
+            _connectedHubs[hubId] = new ConnectedHub(protocol, LwpAddressing.RgbLedPortFor(hubType));
         }
     }
 
@@ -128,7 +128,7 @@ public sealed class DirectLegoService : ILegoService
     private static DiscoveredHub ToDiscoveredHub(XamarinBluetoothDeviceInfo info) => new(
         info.DeviceIdentifier,
         string.IsNullOrWhiteSpace(info.Name) ? null : info.Name,
-        info.MacAddressAsUInt64 == 0 ? null : LwpProtocol.FormatMacAddress(info.MacAddressAsUInt64),
+        info.MacAddressAsUInt64 == 0 ? null : LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64),
         LwpProtocol.MapHubType(info.ManufacturerData));
 
     // Ensures the app may use the radio AND that the radio is actually on before we touch it.

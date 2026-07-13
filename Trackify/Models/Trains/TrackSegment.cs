@@ -1,4 +1,3 @@
-using Trackify.Models.Trains.Enums;
 
 namespace Trackify.Models.Trains;
 
@@ -76,8 +75,8 @@ public partial class TrackSegment : ObservableObject
 
     public SpeedProfileGraph Graph => SpeedCurve.BuildGraph(
         MaxSpeed / 100.0,
-        x => SpeedCurve.Evaluate(AccelFn, x),
-        x => SpeedCurve.Evaluate(BrakeFn, x));
+        x => SpeedFunction.Evaluate(AccelFn, x),
+        x => SpeedFunction.Evaluate(BrakeFn, x));
 
     partial void OnMaxSpeedChanged(int value)
     {

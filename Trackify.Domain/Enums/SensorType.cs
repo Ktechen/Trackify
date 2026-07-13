@@ -1,4 +1,4 @@
-namespace Trackify.Models.Trains.Enums;
+namespace Trackify.Domain.Enums;
 
 public enum SensorType
 {

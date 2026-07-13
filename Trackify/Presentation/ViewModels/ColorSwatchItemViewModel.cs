@@ -1,5 +1,4 @@
 using Trackify.Models.Trains;
-using Trackify.Models.Trains.Enums;
 
 namespace Trackify.Presentation.ViewModels;
 

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Trackify command-line front-end: deploy on a Linux server / Raspberry Pi to drive hubs over
+       onboard Bluetooth. Shares Domain/Application/Infrastructure with the Uno app. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Trackify.Cli</RootNamespace>
+    <AssemblyName>trackify</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Trackify.Domain\Trackify.Domain.csproj" />
+    <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
+    <ProjectReference Include="..\Trackify.Infrastructure\Trackify.Infrastructure.csproj" />
+    <ProjectReference Include="..\Trackify.Infrastructure.Ble.Linux\Trackify.Infrastructure.Ble.Linux.csproj" />
+  </ItemGroup>
+
+</Project>

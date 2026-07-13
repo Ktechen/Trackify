@@ -1,4 +1,4 @@
-namespace Trackify.Services;
+namespace Trackify.Application.Lego;
 
 /// <summary>
 /// Requests the OS Bluetooth permissions a scan/connect needs, on demand. The BLE service awaits

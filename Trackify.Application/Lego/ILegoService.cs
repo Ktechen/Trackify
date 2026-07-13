@@ -1,6 +1,6 @@
-using Trackify.Models.Trains.Enums;
+using Trackify.Domain.Enums;
 
-namespace Trackify.Services;
+namespace Trackify.Application.Lego;
 
 /// <summary>
 /// A LEGO hub found during a Bluetooth scan. <see cref="Id"/> is the platform's stable device
