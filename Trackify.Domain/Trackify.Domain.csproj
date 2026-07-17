@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <!-- Clean Architecture core: pure entities, enums and speed-function math. No external dependencies. -->
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-  </PropertyGroup>
-
-</Project>

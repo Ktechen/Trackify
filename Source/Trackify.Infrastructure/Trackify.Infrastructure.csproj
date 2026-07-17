@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Implements Application ports: JSON train store (shared) + the BlueZ onboard-radio hub transport
+       under Ble/. The BlueZ code always compiles; only the DI registration is Linux-gated (see below). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Linux.Bluetooth transitively pins Tmds.DBus 0.15.0 (advisory GHSA-xrw6-gwf8-vvr9); accepted here
+         because BlueZ is only ever exercised on a trusted local Raspberry Pi. -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    There is no built-in 'LINUX' preprocessor symbol for a plain net10.0 target (OS symbols only exist
+    for OS-specific TFMs like -android). We define our own so AddLinuxLego can pick the real BlueZ
+    service vs a no-op fallback: TrackifyLinux defaults to true when building on a Linux host (the
+    Raspberry Pi / Ubuntu) and can be forced with -p:TrackifyLinux=true. The #if LINUX lives ONLY in
+    the DI extension; the BlueZ implementation files compile unconditionally.
+  -->
+  <PropertyGroup>
+    <TrackifyLinux Condition="'$(TrackifyLinux)' == '' and $([MSBuild]::IsOSPlatform('Linux'))">true</TrackifyLinux>
+    <DefineConstants Condition="'$(TrackifyLinux)' == 'true'">$(DefineConstants);LINUX</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpBrick.PoweredUp" />
+    <PackageReference Include="Linux.Bluetooth" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
+  </ItemGroup>
+
+</Project>

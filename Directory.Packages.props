@@ -20,7 +20,14 @@
     <PackageVersion Include="Spectre.Console.Cli" Version="0.51.1" />
     <PackageVersion Include="Linux.Bluetooth" Version="5.66.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+
+    <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
+    <PackageVersion Include="Serilog" Version="4.2.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
 
     <!-- Test project. -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

@@ -1,0 +1,70 @@
+<Project Sdk="Uno.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-browserwasm;net10.0-desktop;net10.0-windows10.0.19041.0</TargetFrameworks>
+
+        <OutputType>Exe</OutputType>
+        <UnoSingleProject>true</UnoSingleProject>
+
+        <!-- Display name -->
+        <ApplicationTitle>Trackify</ApplicationTitle>
+        <!-- App Identifier -->
+        <ApplicationId>com.ktechen.trackify</ApplicationId>
+        <!-- Versions -->
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+        <!-- Package Publisher -->
+        <ApplicationPublisher>Trackify</ApplicationPublisher>
+        <!-- Package Description -->
+        <Description>Trackify powered by Uno Platform.</Description>
+
+        <!--
+          UnoFeatures are used to quickly add and manage features enabled for your app.
+          https://aka.platform.uno/singleproject-features
+        -->
+        <UnoFeatures>
+            Material;
+            Toolkit;
+            Hosting;
+            Mvvm;
+            Configuration;
+            Localization;
+            Navigation;
+            ThemeService;
+            SkiaRenderer;
+        </UnoFeatures>
+    </PropertyGroup>
+
+    <!--
+      On-device Bluetooth LE control of LEGO Powered Up hubs, per head:
+        - android/ios: native BLE via Plugin.BLE (SharpBrick.PoweredUp.Mobile)
+        - windows:     WinRT Bluetooth (SharpBrick.PoweredUp.WinRT)
+        - desktop/wasm: no BLE stack -> UnsupportedLegoService
+    -->
+    <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-windows'))">
+        <PackageReference Include="SharpBrick.PoweredUp" />
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios'))">
+        <PackageReference Include="SharpBrick.PoweredUp.Mobile" />
+        <PackageReference Include="Plugin.BLE" />
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+        <PackageReference Include="SharpBrick.PoweredUp.WinRT" />
+    </ItemGroup>
+
+    <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
+    <ItemGroup>
+        <PackageReference Include="Serilog" />
+        <PackageReference Include="Serilog.Extensions.Logging" />
+        <PackageReference Include="Serilog.Sinks.Console" />
+    </ItemGroup>
+
+    <!-- Clean Architecture shared core. NB: the app references Domain + Application only. It must NOT
+         reference Trackify.Infrastructure, which now carries the Linux/BlueZ stack (Linux.Bluetooth /
+         Tmds.DBus) that has no business in the Android/iOS/wasm/Windows heads. App-side persistence
+         (Phase 4) implements the Application ITrainStore port directly. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Trackify.Domain\Trackify.Domain.csproj" />
+        <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
+    </ItemGroup>
+
+</Project>

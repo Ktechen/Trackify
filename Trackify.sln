@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32210.308
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{5E2D1DCC-56E5-4A39-9184-A098F84D6053}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Trackify", "Trackify\Trackify.csproj", "{AF9289B4-C3A4-4BF7-8717-B17011AFDDE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Trackify", "Source/Trackify\Trackify.csproj", "{AF9289B4-C3A4-4BF7-8717-B17011AFDDE8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BADA71DC-7FFD-4EDC-9F28-FB74AEADC713}"
 	ProjectSection(SolutionItems) = preProject
@@ -18,15 +18,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Domain", "Trackify.Domain\Trackify.Domain.csproj", "{810E760E-83D8-472C-9720-68BE744452A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Domain", "Source/Trackify.Domain\Trackify.Domain.csproj", "{810E760E-83D8-472C-9720-68BE744452A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Application", "Trackify.Application\Trackify.Application.csproj", "{6C35DB36-A45D-4D4B-A8B8-15C3C202A60D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Application", "Source/Trackify.Application\Trackify.Application.csproj", "{6C35DB36-A45D-4D4B-A8B8-15C3C202A60D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Infrastructure", "Trackify.Infrastructure\Trackify.Infrastructure.csproj", "{28DE4D0B-E3DB-4F71-90C8-A75F8C6EF2AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Infrastructure", "Source/Trackify.Infrastructure\Trackify.Infrastructure.csproj", "{28DE4D0B-E3DB-4F71-90C8-A75F8C6EF2AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Tests", "Trackify.Tests\Trackify.Tests.csproj", "{672E2757-E600-4F26-AF53-3CA4759DF409}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Tests", "Source/Trackify.Tests\Trackify.Tests.csproj", "{672E2757-E600-4F26-AF53-3CA4759DF409}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FDF7926B-59CC-4EA5-8773-22834C2782A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trackify.Cli", "Source\Trackify.Cli\Trackify.Cli.csproj", "{B74FB231-4247-49F7-B093-4353689ED61C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -200,16 +202,45 @@ Global
 		{672E2757-E600-4F26-AF53-3CA4759DF409}.Release|x64.Build.0 = Release|Any CPU
 		{672E2757-E600-4F26-AF53-3CA4759DF409}.Release|x86.ActiveCfg = Release|Any CPU
 		{672E2757-E600-4F26-AF53-3CA4759DF409}.Release|x86.Build.0 = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|x64.Build.0 = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Debug|x86.Build.0 = Debug|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|ARM.Build.0 = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|ARM64.Build.0 = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|iPhone.Build.0 = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|x64.ActiveCfg = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|x64.Build.0 = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|x86.ActiveCfg = Release|Any CPU
+		{B74FB231-4247-49F7-B093-4353689ED61C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AF9289B4-C3A4-4BF7-8717-B17011AFDDE8} = {5E2D1DCC-56E5-4A39-9184-A098F84D6053}
-		{6C35DB36-A45D-4D4B-A8B8-15C3C202A60D} = {5E2D1DCC-56E5-4A39-9184-A098F84D6053}
 		{810E760E-83D8-472C-9720-68BE744452A2} = {5E2D1DCC-56E5-4A39-9184-A098F84D6053}
+		{6C35DB36-A45D-4D4B-A8B8-15C3C202A60D} = {5E2D1DCC-56E5-4A39-9184-A098F84D6053}
 		{28DE4D0B-E3DB-4F71-90C8-A75F8C6EF2AB} = {5E2D1DCC-56E5-4A39-9184-A098F84D6053}
 		{672E2757-E600-4F26-AF53-3CA4759DF409} = {FDF7926B-59CC-4EA5-8773-22834C2782A6}
+		{B74FB231-4247-49F7-B093-4353689ED61C} = {5E2D1DCC-56E5-4A39-9184-A098F84D6053}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8CD7E351-583E-4BFF-A427-4A6E2E09CD1A}
