@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Bluetooth;
 using SharpBrick.PoweredUp.Protocol;
@@ -13,11 +12,11 @@ namespace Trackify.Infrastructure.Ble;
 /// the Windows service — discover, open a SharpBrick protocol, keep it keyed by MAC — but the transport
 /// is <see cref="BlueZPoweredUpBluetoothAdapter"/>. Command building lives in <see cref="LwpCommands"/>.
 /// </summary>
-public sealed class BlueZLegoService(PoweredUpHost host, IPoweredUpBluetoothAdapter adapter, ILogger<BlueZLegoService>? logger = null) : ILegoService
+public sealed class BlueZLegoService(PoweredUpHost host, IPoweredUpBluetoothAdapter adapter, ILogger<BlueZLegoService> logger) : ILegoService
 {
     private readonly Lock _gate = new();
     private readonly Dictionary<string, ConnectedHub> _connectedHubs = new();
-    private readonly ILogger _log = logger ?? NullLogger<BlueZLegoService>.Instance;
+    private readonly ILogger _log = logger;
 
     public bool IsSupported => true;
 

@@ -17,7 +17,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<ITrainStore>(sp =>
         {
-            var log = sp.GetService<ILogger<JsonTrainStore>>();
+            var log = sp.GetRequiredService<ILogger<JsonTrainStore>>();
             return string.IsNullOrWhiteSpace(storePath) ? new JsonTrainStore(log) : new JsonTrainStore(storePath, log);
         });
         services.AddLinuxLego();

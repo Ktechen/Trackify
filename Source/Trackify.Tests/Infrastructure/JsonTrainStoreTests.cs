@@ -7,7 +7,9 @@ public class JsonTrainStoreTests
     [Fact]
     public async Task Load_returns_empty_when_file_is_missing()
     {
-        var store = new JsonTrainStore(Path.Combine(Path.GetTempPath(), $"trackify-missing-{Guid.NewGuid():N}.json"));
+        var store = new JsonTrainStore(
+            Path.Combine(Path.GetTempPath(), $"trackify-missing-{Guid.NewGuid():N}.json"),
+            NullLogger<JsonTrainStore>.Instance);
         Assert.Empty(await store.LoadAsync());
     }
 
@@ -17,7 +19,7 @@ public class JsonTrainStoreTests
         var path = Path.Combine(Path.GetTempPath(), $"trackify-store-{Guid.NewGuid():N}.json");
         try
         {
-            var store = new JsonTrainStore(path);
+            var store = new JsonTrainStore(path, NullLogger<JsonTrainStore>.Instance);
             var original = new TrainConfig
             {
                 Id = "trn-1",

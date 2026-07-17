@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Trackify.Application.Catalog;
 using Trackify.Application.Logging;
 
@@ -13,7 +12,7 @@ namespace Trackify.Application.Trains;
 /// both the Uno app and the CLI reuse it without duplicating control logic. UI-neutral: failures
 /// surface as exceptions/no-ops, never as localized status text.
 /// </summary>
-public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlService>? logger = null)
+public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlService> logger)
 {
     /// <summary>Port A — the motor driven by the speed slider / speed command.</summary>
     public const byte MotorPort = 0;
@@ -22,7 +21,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
 
     // Per-hub debounce so a rapidly-changing slider only sends its final value; keyed by hub key.
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _speedDebounce = new();
-    private readonly ILogger _log = logger ?? NullLogger<TrainControlService>.Instance;
+    private readonly ILogger _log = logger;
 
     /// <summary>Whether hub control is available on the current platform at all.</summary>
     public bool IsSupported => lego.IsSupported;

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Trackify.Infrastructure.Logging;
 
 namespace Trackify.Infrastructure.Persistence;
@@ -16,13 +15,13 @@ public sealed class JsonTrainStore : ITrainStore
     private readonly ILogger _log;
 
     /// <summary>Uses the default per-user location (<see cref="DefaultPath"/>).</summary>
-    public JsonTrainStore(ILogger<JsonTrainStore>? logger = null) : this(DefaultPath(), logger) { }
+    public JsonTrainStore(ILogger<JsonTrainStore> logger) : this(DefaultPath(), logger) { }
 
     /// <summary>Uses an explicit file path (used by tests and by the CLI's TRACKIFY_STORE override).</summary>
-    public JsonTrainStore(string filePath, ILogger<JsonTrainStore>? logger = null)
+    public JsonTrainStore(string filePath, ILogger<JsonTrainStore> logger)
     {
         _path = filePath;
-        _log = logger ?? NullLogger<JsonTrainStore>.Instance;
+        _log = logger;
     }
 
     /// <summary>Per-user store location: <c>&lt;ApplicationData&gt;/Trackify/trains.json</c> (on Linux: <c>~/.config</c>).</summary>

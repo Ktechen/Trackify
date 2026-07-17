@@ -26,7 +26,7 @@ public class TrainControlServiceTests
     public async Task SetSpeedAsync_clamps_and_targets_the_motor_port()
     {
         var fake = new FakeLegoService();
-        var service = new TrainControlService(fake);
+        var service = new TrainControlService(fake, NullLogger<TrainControlService>.Instance);
 
         await service.SetSpeedAsync(new TrainConfig { HubId = "dev-1" }, 150);
 
@@ -38,5 +38,6 @@ public class TrainControlServiceTests
     [Fact]
     public async Task ConnectAsync_throws_when_train_has_no_hub()
         => await Assert.ThrowsAsync<InvalidOperationException>(
-            () => new TrainControlService(new FakeLegoService()).ConnectAsync(new TrainConfig()));
+            () => new TrainControlService(new FakeLegoService(), NullLogger<TrainControlService>.Instance)
+                .ConnectAsync(new TrainConfig()));
 }

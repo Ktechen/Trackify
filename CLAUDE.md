@@ -9,9 +9,9 @@ Guidance for Claude Code when working in this repository.
 It's a **Clean Architecture** solution with two front-ends over one shared core. All projects live under `Source/` (the "Source" solution folder):
 
 - `Trackify.Domain` — pure entities (`TrainConfig`, `TrackSegmentConfig`), enums, `SpeedFunction` math. Only dependency is the DI abstractions (contract-only), for its `AddTrackifyDomain()` entry point.
-- `Trackify.Application` — ports (`ILegoService`, `IBluetoothPermissionService`, `ITrainStore`) + `DiscoveredHub`, `LegoinoCatalog`, `TrainControlService`, `LwpAddressing`. Depends only on Domain; UI/transport-agnostic.
+- `Trackify.Application` — ports (`ILegoService`, `IBluetoothPermissionService`, `ITrainStore`) + `DiscoveredHub`, `LegoinoCatalog`, `TrainControlService`, `TrainResolver`, `LwpAddressing`, **and the platform `ILegoService` implementations under `Services/`** (`DirectLegoService` mobile, `WindowsLegoService`, `UnsupportedLegoService`). **Multi-targeted** (`net10.0;net10.0-android;net10.0-windows10.0.19041.0`, + `net10.0-ios` only on macOS — the iOS toolchain needs a Mac) so the per-platform `#if` branches and BLE packages exist per head; the plain `net10.0` flavor is transport-free.
 - `Trackify.Infrastructure` — `JsonTrainStore` (shared JSON persistence) **plus** the BlueZ onboard-radio `ILegoService` under `Ble/` (`Linux.Bluetooth` + SharpBrick). Referenced **only by the CLI** — it carries the Linux BLE stack, so the Uno app must not reference it.
-- `Trackify` — the [Uno Platform](https://platform.uno) app (single project, multi-head = App / HMI / **Web = WASM head**). References **Domain + Application only**; hosts its own mobile/WinRT `ILegoService` impls in-project.
+- `Trackify` — the [Uno Platform](https://platform.uno) app (single project, multi-head = App / HMI / **Web = WASM head**). References **Domain + Application only**; the BLE stacks flow transitively from Application per TFM. The app's own `Services/` holds only `AndroidBluetoothPermissionService` (needs the `Activity`).
 - `Trackify.Cli` — a **Spectre.Console.Cli** console app to deploy on a Linux server / Raspberry Pi.
 - `Trackify.Tests` — xUnit (pure-logic + store round-trip).
 
@@ -38,19 +38,21 @@ dotnet test  Source/Trackify.Tests/Trackify.Tests.csproj
 dotnet run --project Source/Trackify.Cli -- --help        # trackify discover | list | connect | drive | stop | color
 ```
 
+CLI deployment (Pi publish incl. the `-p:TrackifyLinux=true` cross-publish gotcha, `trains.json` schema, systemd autostart unit) is documented in `Source/Trackify.Cli/ReadMe.md`.
+
 **The Uno Skia-rendered UI cannot be screenshotted in this environment** (GPU surface comes back blank; the WASM canvas render-loop times out the browser tool). So UI work cannot be pixel-verified here. Likewise **BlueZ BLE cannot run here** — the Linux transport compiles on Windows but only works on a Raspberry Pi. Verification is: **build green on all four buildable heads + `dotnet test` + desktop launch smoke test + CLI `--help`/`list`**; the user confirms visuals on a real device and BLE on a Pi.
 
 ## Architecture
 
-**Per-layer DI.** Each core layer owns its registration via a `DependencyInjection.cs` extension: `AddTrackifyDomain()` (no-op — Domain is pure), `AddTrackifyApplication()` (registers `TrainControlService`), `AddTrackifyInfrastructure(storePath?)` (registers `ITrainStore`→`JsonTrainStore` + `AddLinuxLego()`). A composition root just chains them: the **CLI** calls all three; the **Uno app** calls Domain + Application (it doesn't reference Infrastructure) and adds its own platform `ILegoService` in `RegisterLegoService`.
+**Per-layer DI.** Each core layer owns its registration via a `DependencyInjection.cs` extension: `AddTrackifyDomain()` (no-op — Domain is pure), `AddTrackifyApplication()` (registers `TrainControlService` + `TrainResolver` **and, filtered per platform via `#if __ANDROID__`/`WINDOWS` in DI, the matching `ILegoService` transport**), `AddTrackifyInfrastructure(storePath?)` (registers `ITrainStore`→`JsonTrainStore` + `AddLinuxLego()`). A composition root just chains them: the **CLI** calls all three; the **Uno app** calls Domain + Application and only adds what genuinely belongs to it in `RegisterLegoService` (Android permission service; `UnsupportedLegoService` on desktop/wasm).
 
-**`ILegoService`** (in `Trackify.Application`) is the BLE seam every front-end shares. `TrainControlService` (Application) is the shared control logic (discover/connect/speed-debounce/LED) over a pure `TrainConfig`. Per-transport `ILegoService` implementations are chosen at DI time:
-- Android/iOS → `DirectLegoService` (SharpBrick `.Mobile` / Plugin.BLE) — **in the Uno project**, `App.xaml.cs` → `RegisterLegoService`.
-- Windows → `WindowsLegoService` (SharpBrick `.WinRT`) — in the Uno project.
-- desktop/wasm → `UnsupportedLegoService` (no BLE stack) — in the Uno project.
+**`ILegoService`** (in `Trackify.Application`) is the BLE seam every front-end shares. `TrainControlService` (Application) is the shared control logic (discover/connect/speed-debounce/LED) over a pure `TrainConfig`. Per-transport `ILegoService` implementations, all selected inside `AddTrackifyApplication` / `AddLinuxLego` at DI time:
+- Android/iOS → `DirectLegoService` (SharpBrick `.Mobile` / Plugin.BLE) — `Trackify.Application/Services/`.
+- Windows → `WindowsLegoService` (SharpBrick `.WinRT`) — `Trackify.Application/Services/`.
+- desktop/wasm → `UnsupportedLegoService` — `Trackify.Application/Services/`, registered by the app's `RegisterLegoService` (the plain net10.0 Application flavor registers no transport).
 - Linux/Pi → `BlueZLegoService` (SharpBrick + `Linux.Bluetooth`, onboard radio) — in `Trackify.Infrastructure/Ble/`, wired by the CLI via `LinuxLegoServiceExtensions.AddLinuxLego()`.
 
-The Uno mobile/WinRT services stay in the Uno project on purpose: they need Uno.Sdk multi-targeting + the Android permission `Activity`. The app is a composition root, so it legitimately provides its own platform infrastructure. The BlueZ transport lives in `Trackify.Infrastructure/Ble/` (a folder, not a separate project) and is used only by the CLI — the Uno app deliberately does **not** reference `Trackify.Infrastructure`, so `Linux.Bluetooth`/`Tmds.DBus` never reach the Android/iOS/wasm/Windows heads.
+The one platform piece left in the Uno app is `AndroidBluetoothPermissionService` — it needs the Android `Activity` (`MainActivity.EnsureBluetoothPermissionsAsync`), so the app registers it as the `IBluetoothPermissionService` port implementation. The BlueZ transport lives in `Trackify.Infrastructure/Ble/` (a folder, not a separate project) and is used only by the CLI — the Uno app deliberately does **not** reference `Trackify.Infrastructure`, so `Linux.Bluetooth`/`Tmds.DBus` never reach the Android/iOS/wasm/Windows heads.
 
 - **`#if LINUX` guard is DI-only.** The BlueZ implementation files (`Ble/BlueZ*.cs`, `LwpCommands`, `ConnectedHub`) compile unconditionally — the BLE packages (`SharpBrick.PoweredUp`, `Linux.Bluetooth`) are always referenced by `Trackify.Infrastructure`. The single `#if LINUX` lives in `LinuxLegoServiceExtensions.AddLinuxLego`, which registers the real `BlueZLegoService` when `LINUX` is defined and a no-op `UnsupportedLegoService` otherwise. There is no built-in Linux compile symbol for `net10.0`, so `LINUX` is defined via the MSBuild property `TrackifyLinux` — auto-set when building on a Linux host, or forced with `-p:TrackifyLinux=true`.
 
@@ -70,7 +72,8 @@ The Uno mobile/WinRT services stay in the Uno project on purpose: they need Uno.
 - Converters are registered **once** globally in `Styles/Converters.xaml` (merged in `App.xaml`); don't re-declare per page. Design tokens/styles live in `Styles/DesignTokens.xaml`.
 - Classic `{Binding}` views carry a design-time `d:DataContext="{d:DesignInstance ...}"` (with `mc:Ignorable="d"`) so binding paths resolve in the IDE. This is design-time only. Add one when creating a new view/data-template.
 - **One top-level type per file**, named after the type (records, interfaces, enums and small helpers each get their own file — e.g. each `*Option` DTO, each converter, each BlueZ wrapper). Private nested implementation detail is fine only when it can't be top-level.
-- **Logging** is high-performance source-generated `[LoggerMessage]`: each project that logs has an internal static partial `Log` class (`Logging/Log.cs`) with event-id'd messages, called with an injected `ILogger`. The backend is **Serilog** (`AddSerilog` — console in the app + CLI). Services take an optional `ILogger<T>` defaulting to `NullLogger` so tests/manual construction need no logger. **Domain stays dependency-free — no logging there.**
+- **Every project has a `GlobalUsings.cs`** carrying its genuinely-common namespaces (e.g. Application: `Trackify.Application.Lego` + Domain namespaces; CLI: Spectre + `Trackify.Application.Trains`; Tests: `Xunit`). Don't re-import those per file.
+- **Logging** is high-performance source-generated `[LoggerMessage]`: each project that logs has an internal static partial `Log` class (`Logging/Log.cs`) with event-id'd messages, called with an injected `ILogger`. The backend is **Serilog** (`AddSerilog` — console in the app + CLI). `ILogger<T>` is a **required** ctor dependency (every composition root registers logging; DI factories use `GetRequiredService`); tests pass `NullLogger<T>.Instance` explicitly. **Domain stays dependency-free — no logging there.**
 - **Tests** (`Trackify.Tests`) are foldered by layer — `Domain/`, `Application/`, `Infrastructure/`, `Cli/` — with reusable test doubles under `Fakes/`. Internal CLI helpers are reachable via `InternalsVisibleTo`.
 - UI language / labels are **German** (app). CLI output is English.
 
