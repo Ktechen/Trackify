@@ -68,6 +68,29 @@ Voraussetzungen auf dem Pi: BlueZ läuft (`systemctl status bluetooth`), und der
 in der `bluetooth`-Gruppe (`sudo usermod -aG bluetooth pi`). Vor dem ersten `connect` einmal
 `trackify discover` laufen lassen, damit BlueZ das Gerät kennt.
 
+## Alternative: Docker
+
+Aus dem Repo-Root (Compose-Datei liegt dort):
+
+```bash
+docker compose up -d                       # bauen + dauerhaft starten (Autostart nach Reboot)
+docker compose logs -f                     # Serilog-Ausgabe live
+docker compose run --rm trackify discover  # Einmal-Befehle: discover, list, stop, color …
+docker compose down                        # stoppt den Zug sauber (SIGINT)
+```
+
+Was das Compose-Setup regelt (siehe `docker-compose.yml`):
+- **`network_mode: host` + `/var/run/dbus`-Mount** — BLE läuft über den `bluetoothd` des **Hosts**;
+  der Container spricht nur dessen D-Bus. BlueZ muss also auf dem Pi selbst laufen.
+- **`stop_signal: SIGINT`** — `docker compose down` wirkt wie Ctrl+C: Motor stoppen + sauber trennen.
+- **`./data:/data`** — dort liegt die `trains.json` (`TRACKIFY_STORE=/data/trains.json`).
+- **`restart: unless-stopped`** — Neustart bei Absturz und nach dem Booten.
+- Der Fahr-Befehl (Zugname/Speed) steht unter `command:` und wird dort angepasst.
+
+Da das Image **im Linux-Container gebaut** wird, ist das `LINUX`-Flag automatisch an — der echte
+BlueZ-Transport ist einkompiliert, ganz ohne `-p:TrackifyLinux=true`. Das Basis-Image ist
+multi-arch; auf dem Pi zieht Docker automatisch die arm64-Variante.
+
 ## Dauerbetrieb: automatisch beim Booten starten (systemd)
 
 `trackify drive` läuft bereits dauerhaft (bis Ctrl+C, dann Motor-Stopp + sauberes Trennen).

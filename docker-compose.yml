@@ -1,0 +1,25 @@
+# Trackify CLI on a Raspberry Pi / Linux host with onboard Bluetooth.
+#
+#   docker compose up -d          # build + start (auto-restarts, survives reboots)
+#   docker compose logs -f        # Serilog output
+#   docker compose down           # stops the train cleanly (SIGINT -> motor stop + disconnect)
+#
+# One-shot commands (scan, list, ...):
+#   docker compose run --rm trackify discover
+#   docker compose run --rm trackify list
+
+services:
+  trackify:
+    build:
+      context: .
+      dockerfile: Source/Trackify.Cli/Dockerfile
+    image: trackify-cli
+    # BLE goes through the HOST's bluetoothd: share the host network and its system D-Bus socket.
+    network_mode: host
+    volumes:
+      - /var/run/dbus:/var/run/dbus
+      - ./data:/data # trains.json lives here (TRACKIFY_STORE=/data/trains.json)
+    # SIGINT = Ctrl+C: triggers the CLI's clean shutdown (stop motor + disconnect).
+    stop_signal: SIGINT
+    restart: unless-stopped
+    command: ["drive", "Blauer Zug", "--speed", "40"]

@@ -1,0 +1,9 @@
+# Keep the Docker build context small: only sources + build props are needed.
+**/bin/
+**/obj/
+**/publish/
+.git/
+.idea/
+.claude/
+*.user
+docker-compose.yml
