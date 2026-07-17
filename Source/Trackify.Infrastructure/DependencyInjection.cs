@@ -15,11 +15,17 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddTrackifyInfrastructure(this IServiceCollection services, string? storePath = null)
     {
-        services.AddSingleton<ITrainStore>(sp =>
+        if (string.IsNullOrWhiteSpace(storePath))
         {
-            var log = sp.GetRequiredService<ILogger<JsonTrainStore>>();
-            return string.IsNullOrWhiteSpace(storePath) ? new JsonTrainStore(log) : new JsonTrainStore(storePath, log);
-        });
+            services.AddSingleton<ITrainStore, JsonTrainStore>();
+        }
+        else
+        {
+            // Custom store location (e.g. TRACKIFY_STORE) needs the string ctor → factory.
+            services.AddSingleton<ITrainStore>(sp =>
+                new JsonTrainStore(storePath, sp.GetRequiredService<ILogger<JsonTrainStore>>()));
+        }
+
         services.AddLinuxLego();
         return services;
     }

@@ -4,6 +4,11 @@ Steuert LEGO Powered Up Hubs über das **Onboard-Bluetooth (BlueZ)** eines Linux
 gedacht für einen Raspberry Pi / Linux-Server. Teilt sich Domain/Application/Infrastructure
 (und die `trains.json`) mit der Trackify-App.
 
+**Auf Windows (Entwickeln/Testen):** Der Windows-Build der CLI (`net10.0-windows…`-TFM, z. B. via
+Rider-Run-Config oder `dotnet run -f net10.0-windows10.0.19041.0`) nutzt **WinRT-Bluetooth** —
+`discover`/`drive` funktionieren also auch direkt am Dev-Rechner. Der plain `net10.0`-Build hat
+bewusst keinen Windows-Transport und meldet „Bluetooth is not available".
+
 ## Befehle
 
 ```bash

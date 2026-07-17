@@ -6,9 +6,9 @@ namespace Trackify.Cli.Commands;
 /// <summary>Sets a train's hub LED colour (persists on the hub after disconnect).</summary>
 public sealed class ColorCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<ColorSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, ColorSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, ColorSettings settings, CancellationToken cancellationToken)
     {
-        var train = await resolver.FindAsync(settings.Train);
+        var train = await resolver.FindAsync(settings.Train, cancellationToken);
         if (train is null)
         {
             AnsiConsole.MarkupLineInterpolated($"[red]No train '{settings.Train}' found.[/] Run [springgreen2]trackify list[/].");
@@ -24,9 +24,9 @@ public sealed class ColorCommand(TrainControlService control, TrainResolver reso
         train.Color = color;
         try
         {
-            await control.ConnectAsync(train);
-            await control.SetLedAsync(train);
-            await control.DisconnectAsync(train);
+            await control.ConnectAsync(train, cancellationToken);
+            await control.SetLedAsync(train, cancellationToken);
+            await control.DisconnectAsync(train, cancellationToken);
             AnsiConsole.MarkupLineInterpolated($"[springgreen2]✓ {train.Name} LED set to {color}.[/]");
             return 0;
         }

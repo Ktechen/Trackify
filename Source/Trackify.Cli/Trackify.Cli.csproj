@@ -4,7 +4,13 @@
        onboard Bluetooth. Shares Domain/Application/Infrastructure with the Uno app. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <!--
+      Linux (Pi/Docker): plain net10.0 → AddLinuxLego wires the BlueZ transport.
+      Windows dev box: additionally net10.0-windows → Application's windows flavor brings the
+      WinRT Bluetooth transport, so `trackify discover/drive` works on Windows too (dev/test).
+    -->
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
     <RootNamespace>Trackify.Cli</RootNamespace>
     <AssemblyName>trackify</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>
@@ -15,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="Spectre.Console.Cli.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Serilog" />

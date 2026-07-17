@@ -16,13 +16,16 @@
          MissingMethodException on connect. Its net7.0-android33.0 asset is consumable by net10.0-android. -->
     <PackageVersion Include="Plugin.BLE" Version="3.0.0" />
 
-    <!-- CLI (Spectre) + Linux onboard-BLE transport (BlueZ over D-Bus) for the Raspberry Pi head. -->
-    <PackageVersion Include="Spectre.Console.Cli" Version="0.51.1" />
+    <!-- CLI (Spectre) + Linux onboard-BLE transport (BlueZ over D-Bus) for the Raspberry Pi head.
+         The .Extensions.DependencyInjection package bridges Spectre's ITypeRegistrar onto
+         Microsoft.Extensions.DependencyInjection, so we need no hand-written adapter. -->
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
+    <PackageVersion Include="Spectre.Console.Cli.Extensions.DependencyInjection" Version="0.26.0" />
     <PackageVersion Include="Linux.Bluetooth" Version="5.66.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
 
     <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
     <PackageVersion Include="Serilog" Version="4.2.0" />

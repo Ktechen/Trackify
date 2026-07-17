@@ -5,9 +5,9 @@ namespace Trackify.Cli.Commands;
 /// <summary>Connects a train, stops its motor, and disconnects.</summary>
 public sealed class StopCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<TrainSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, TrainSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, TrainSettings settings, CancellationToken cancellationToken)
     {
-        var train = await resolver.FindAsync(settings.Train);
+        var train = await resolver.FindAsync(settings.Train, cancellationToken);
         if (train is null)
         {
             AnsiConsole.MarkupLineInterpolated($"[red]No train '{settings.Train}' found.[/] Run [springgreen2]trackify list[/].");
@@ -16,9 +16,9 @@ public sealed class StopCommand(TrainControlService control, TrainResolver resol
 
         try
         {
-            await control.ConnectAsync(train);
-            await control.SetSpeedAsync(train, 0);
-            await control.DisconnectAsync(train);
+            await control.ConnectAsync(train, cancellationToken);
+            await control.SetSpeedAsync(train, 0, cancellationToken);
+            await control.DisconnectAsync(train, cancellationToken);
             AnsiConsole.MarkupLineInterpolated($"[springgreen2]■ {train.Name} stopped.[/]");
             return 0;
         }

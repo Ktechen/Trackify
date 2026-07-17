@@ -4,7 +4,8 @@ using Serilog;
 using Serilog.Extensions.Logging;
 using Trackify.Application;
 using Trackify.Cli.Commands;
-using Trackify.Cli.Infrastructure;
+using Spectre.Console.Cli.Extensions.DependencyInjection;
+using Trackify.Cli.Extensions;
 using Trackify.Domain;
 using Trackify.Infrastructure;
 using Trackify.Infrastructure.Persistence;
@@ -29,7 +30,9 @@ Trackify.Cli.Logging.Log.Started(
     storePath ?? JsonTrainStore.DefaultPath());
 
 // No command → the dashboard (banner + saved trains + cheat-sheet).
-var app = new CommandApp<DashboardCommand>(new TypeRegistrar(services));
+// DependencyInjectionRegistrar (NuGet) bridges Spectre onto Microsoft.Extensions.DependencyInjection.
+using var registrar = new DependencyInjectionRegistrar(services);
+var app = new CommandApp<DashboardCommand>(registrar);
 app.Configure(config =>
 {
     config.SetApplicationName("trackify");
@@ -41,4 +44,6 @@ app.Configure(config =>
     config.AddCommand<ColorCommand>("color").WithDescription("Set a train's hub LED colour.").WithExample("color", "\"Blauer Zug\"", "Blue");
 });
 
-return await app.RunAsync(args);
+// Ctrl+C (also systemd/docker SIGINT) cancels this token; commands react and shut down cleanly.
+using var cancellation = ConsoleCancellation.CreateTokenSource();
+return await app.RunAsync(args, cancellation.Token);

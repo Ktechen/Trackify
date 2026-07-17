@@ -1,12 +1,11 @@
 using Trackify.Cli.Commands.Settings;
-using Trackify.Cli.Infrastructure;
 
 namespace Trackify.Cli.Commands;
 
-/// <summary>Scans for nearby hubs over onboard Bluetooth and prints what turns up.</summary>
+/// <summary>Scans for nearby hubs over Bluetooth and prints what turns up.</summary>
 public sealed class DiscoverCommand(TrainControlService control) : AsyncCommand<DiscoverSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, DiscoverSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, DiscoverSettings settings, CancellationToken cancellationToken)
     {
         if (!control.IsSupported)
         {
@@ -14,13 +13,14 @@ public sealed class DiscoverCommand(TrainControlService control) : AsyncCommand<
             return 1;
         }
 
-        using var cts = ConsoleCancellation.CreateTokenSource();
-        cts.CancelAfter(TimeSpan.FromSeconds(settings.TimeoutSeconds));
+        // Ctrl+C (outer token) or the --timeout, whichever comes first, ends the scan.
+        using var scan = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        scan.CancelAfter(TimeSpan.FromSeconds(settings.TimeoutSeconds));
 
         var hubs = await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
             .SpinnerStyle(Style.Parse("springgreen2"))
-            .StartAsync("Scanning for hubs… (Ctrl+C to stop)", async _ => await control.DiscoverAsync(cts.Token));
+            .StartAsync("Scanning for hubs… (Ctrl+C to stop)", async _ => await control.DiscoverAsync(scan.Token));
 
         if (hubs.Count == 0)
         {

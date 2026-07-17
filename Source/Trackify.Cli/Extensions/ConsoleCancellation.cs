@@ -1,4 +1,4 @@
-namespace Trackify.Cli.Infrastructure;
+namespace Trackify.Cli.Extensions;
 
 /// <summary>Ctrl+C handling for long-running commands: cancels a token instead of killing the process.</summary>
 internal static class ConsoleCancellation
