@@ -5,7 +5,7 @@ namespace Trackify.Cli.Commands;
 /// <summary>Connects a train's hub and disconnects again — a quick reachability check.</summary>
 public sealed class ConnectCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<TrainSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, TrainSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(CommandContext context, TrainSettings settings, CancellationToken cancellationToken)
     {
         var train = await resolver.FindAsync(settings.Train, cancellationToken);
         if (train is null)

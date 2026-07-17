@@ -5,7 +5,7 @@ namespace Trackify.Cli.Commands;
 /// <summary>Scans for nearby hubs over Bluetooth and prints what turns up.</summary>
 public sealed class DiscoverCommand(TrainControlService control) : AsyncCommand<DiscoverSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, DiscoverSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(CommandContext context, DiscoverSettings settings, CancellationToken cancellationToken)
     {
         if (!control.IsSupported)
         {

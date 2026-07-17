@@ -4,7 +4,7 @@ namespace Trackify.Cli.Commands;
 /// <summary>Default view (no command given): the banner, saved trains, and a command cheat-sheet.</summary>
 public sealed class DashboardCommand(ITrainStore store) : AsyncCommand
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
         Ui.Banner();
 

@@ -4,7 +4,7 @@ namespace Trackify.Cli.Commands;
 /// <summary>Lists the trains saved in the shared store.</summary>
 public sealed class ListCommand(ITrainStore store) : AsyncCommand
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
         var trains = await store.LoadAsync(cancellationToken);
         if (trains.Count == 0)

@@ -6,7 +6,7 @@ namespace Trackify.Cli.Commands;
 /// <summary>Connects a train, applies colour/speed, and keeps it running until Ctrl+C (then stops + disconnects).</summary>
 public sealed class DriveCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<DriveSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, DriveSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(CommandContext context, DriveSettings settings, CancellationToken cancellationToken)
     {
         var train = await resolver.FindAsync(settings.Train, cancellationToken);
         if (train is null)
