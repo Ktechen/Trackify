@@ -1,17 +1,18 @@
 using Trackify.Cli.Commands.Settings;
-using Spectre.Console;
-using Spectre.Console.Cli;
-using Trackify.Application.Trains;
 
 namespace Trackify.Cli.Commands;
 
 /// <summary>Connects a train, stops its motor, and disconnects.</summary>
-public sealed class StopCommand(TrainControlService control, ITrainStore store) : AsyncCommand<TrainSettings>
+public sealed class StopCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<TrainSettings>
 {
     public override async Task<int> ExecuteAsync(CommandContext context, TrainSettings settings)
     {
-        var train = await CliHelpers.ResolveTrainAsync(store, settings.Train);
-        if (train is null) return 1;
+        var train = await resolver.FindAsync(settings.Train);
+        if (train is null)
+        {
+            AnsiConsole.MarkupLineInterpolated($"[red]No train '{settings.Train}' found.[/] Run [springgreen2]trackify list[/].");
+            return 1;
+        }
 
         try
         {

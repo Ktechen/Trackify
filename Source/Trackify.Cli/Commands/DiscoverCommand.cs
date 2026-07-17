@@ -1,7 +1,5 @@
 using Trackify.Cli.Commands.Settings;
-using Spectre.Console;
-using Spectre.Console.Cli;
-using Trackify.Application.Trains;
+using Trackify.Cli.Infrastructure;
 
 namespace Trackify.Cli.Commands;
 
@@ -16,7 +14,7 @@ public sealed class DiscoverCommand(TrainControlService control) : AsyncCommand<
             return 1;
         }
 
-        using var cts = CliHelpers.CancelOnCtrlC();
+        using var cts = ConsoleCancellation.CreateTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(settings.TimeoutSeconds));
 
         var hubs = await AnsiConsole.Status()

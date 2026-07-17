@@ -5,7 +5,7 @@ using SharpBrick.PoweredUp.Protocol;
 using SharpBrick.PoweredUp.Protocol.Messages;
 using HubType = Trackify.Domain.Enums.HubType;
 
-namespace Trackify.Services;
+namespace Trackify.Application.Services;
 
 /// <summary>
 /// LEGO Wireless Protocol details shared by the platform hub services, kept in one place.

@@ -1,8 +1,6 @@
 using Trackify.Application.Lego;
 using Trackify.Application.Trains;
-using Trackify.Domain.Trains;
 using Trackify.Tests.Fakes;
-using Xunit;
 
 namespace Trackify.Tests.Application;
 

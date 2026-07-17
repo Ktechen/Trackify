@@ -11,6 +11,7 @@ global using Trackify.Domain.Enums;
 global using Trackify.Domain.Trains;
 global using Trackify.Application.Lego;
 global using Trackify.Application.Catalog;
+global using Trackify.Application.Services;
 global using Trackify.Application.Trains;
 global using Trackify.Presentation.Pages;
 global using Trackify.Presentation.ViewModels;

@@ -18,7 +18,6 @@
     <ProjectReference Include="..\Trackify.Domain\Trackify.Domain.csproj" />
     <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
     <ProjectReference Include="..\Trackify.Infrastructure\Trackify.Infrastructure.csproj" />
-    <ProjectReference Include="..\Trackify.Cli\Trackify.Cli.csproj" />
   </ItemGroup>
 
 </Project>

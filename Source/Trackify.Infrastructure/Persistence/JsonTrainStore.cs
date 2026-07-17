@@ -1,8 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Trackify.Application.Trains;
-using Trackify.Domain.Trains;
 using Trackify.Infrastructure.Logging;
 
 namespace Trackify.Infrastructure.Persistence;

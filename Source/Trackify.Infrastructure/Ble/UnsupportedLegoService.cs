@@ -1,4 +1,3 @@
-using Trackify.Application.Lego;
 using Trackify.Domain.Enums;
 
 namespace Trackify.Infrastructure.Ble;

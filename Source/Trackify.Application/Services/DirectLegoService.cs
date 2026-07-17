@@ -7,7 +7,7 @@ using SharpBrick.PoweredUp.Mobile;
 using SharpBrick.PoweredUp.Protocol;
 using HubType = Trackify.Domain.Enums.HubType;
 
-namespace Trackify.Services;
+namespace Trackify.Application.Services;
 
 /// <summary>
 /// Controls LEGO Powered Up hubs over Bluetooth LE on Android/iOS (SharpBrick.PoweredUp on

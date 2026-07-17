@@ -4,7 +4,7 @@ using SharpBrick.PoweredUp.Bluetooth;
 using SharpBrick.PoweredUp.Protocol;
 using HubType = Trackify.Domain.Enums.HubType;
 
-namespace Trackify.Services;
+namespace Trackify.Application.Services;
 
 /// <summary>
 /// Controls LEGO Powered Up hubs over Windows (WinRT) Bluetooth (SharpBrick.PoweredUp.WinRT).

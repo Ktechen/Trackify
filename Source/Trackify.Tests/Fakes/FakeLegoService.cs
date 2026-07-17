@@ -1,5 +1,4 @@
 using Trackify.Application.Lego;
-using Trackify.Domain.Enums;
 
 namespace Trackify.Tests.Fakes;
 

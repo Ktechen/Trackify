@@ -1,7 +1,6 @@
 using Linux.Bluetooth;
 using Linux.Bluetooth.Extensions;
 using SharpBrick.PoweredUp.Bluetooth;
-using Trackify.Application.Lego;
 
 namespace Trackify.Infrastructure.Ble;
 

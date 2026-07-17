@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Spectre.Console.Cli;
 
 namespace Trackify.Cli.Commands.Settings;
 

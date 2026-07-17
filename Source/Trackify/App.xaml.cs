@@ -1,12 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Serilog;
 using Trackify.Application;
+#if __ANDROID__
 using Trackify.Services;
-#if __ANDROID__ || __IOS__
-using SharpBrick.PoweredUp;
-using SharpBrick.PoweredUp.Mobile;
-#elif WINDOWS
-using SharpBrick.PoweredUp;
 #endif
 
 namespace Trackify;
@@ -69,22 +65,14 @@ public partial class App : Microsoft.UI.Xaml.Application
             .WriteTo.Console()
             .CreateLogger();
 
-    // Picks the LEGO transport for the current platform: native BLE on mobile, WinRT Bluetooth on
-    // Windows; other desktop/wasm heads have no BLE stack and get a clear "unsupported" implementation.
+    // The platform ILegoService transports live in Trackify.Application (AddTrackifyApplication
+    // filters them per platform in DI). The app only contributes what genuinely belongs to it:
+    // the Android permission flow (it needs the Activity) and the no-BLE fallback for desktop/wasm.
     private static void RegisterLegoService(IServiceCollection services)
     {
-#if __ANDROID__ || __IOS__
-        services
-            .AddPoweredUp()
-            .AddXamarinBluetooth(NativeBluetooth.CreateDeviceInfoProvider());
-        services.AddSingleton(NativeBluetooth.CreatePermissionService());
-        services.AddSingleton<ILegoService, DirectLegoService>();
-#elif WINDOWS
-        services
-            .AddPoweredUp()
-            .AddWinRTBluetooth();
-        services.AddSingleton<ILegoService, WindowsLegoService>();
-#else
+#if __ANDROID__
+        services.AddSingleton<IBluetoothPermissionService, AndroidBluetoothPermissionService>();
+#elif !__IOS__ && !WINDOWS
         services.AddSingleton<ILegoService, UnsupportedLegoService>();
 #endif
     }

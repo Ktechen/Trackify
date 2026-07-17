@@ -1,4 +1,3 @@
-using Spectre.Console;
 using Trackify.Application.Lego;
 using Trackify.Domain.Trains;
 

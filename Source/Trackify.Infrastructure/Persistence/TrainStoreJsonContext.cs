@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Trackify.Domain.Trains;
 
 namespace Trackify.Infrastructure.Persistence;
 

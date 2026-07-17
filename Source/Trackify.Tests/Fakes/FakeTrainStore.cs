@@ -1,5 +1,4 @@
 using Trackify.Application.Trains;
-using Trackify.Domain.Trains;
 
 namespace Trackify.Tests.Fakes;
 

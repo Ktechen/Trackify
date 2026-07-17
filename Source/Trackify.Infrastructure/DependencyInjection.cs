@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Trackify.Application.Trains;
 using Trackify.Infrastructure.Ble;
 using Trackify.Infrastructure.Persistence;
 

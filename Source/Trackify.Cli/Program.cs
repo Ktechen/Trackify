@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
-using Spectre.Console.Cli;
 using Trackify.Application;
 using Trackify.Cli.Commands;
 using Trackify.Cli.Infrastructure;

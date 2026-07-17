@@ -40,16 +40,8 @@
         - windows:     WinRT Bluetooth (SharpBrick.PoweredUp.WinRT)
         - desktop/wasm: no BLE stack -> UnsupportedLegoService
     -->
-    <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-windows'))">
-        <PackageReference Include="SharpBrick.PoweredUp" />
-    </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios'))">
-        <PackageReference Include="SharpBrick.PoweredUp.Mobile" />
-        <PackageReference Include="Plugin.BLE" />
-    </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-        <PackageReference Include="SharpBrick.PoweredUp.WinRT" />
-    </ItemGroup>
+    <!-- The BLE stacks (SharpBrick .Mobile/.WinRT, Plugin.BLE) flow transitively from
+         Trackify.Application, which owns the platform ILegoService implementations per TFM. -->
 
     <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
     <ItemGroup>

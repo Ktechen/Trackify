@@ -1,18 +1,20 @@
 using Trackify.Cli.Commands.Settings;
-using Spectre.Console;
-using Spectre.Console.Cli;
-using Trackify.Application.Trains;
+using Trackify.Cli.Infrastructure;
 using Trackify.Domain.Enums;
 
 namespace Trackify.Cli.Commands;
 
 /// <summary>Connects a train, applies colour/speed, and keeps it running until Ctrl+C (then stops + disconnects).</summary>
-public sealed class DriveCommand(TrainControlService control, ITrainStore store) : AsyncCommand<DriveSettings>
+public sealed class DriveCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<DriveSettings>
 {
     public override async Task<int> ExecuteAsync(CommandContext context, DriveSettings settings)
     {
-        var train = await CliHelpers.ResolveTrainAsync(store, settings.Train);
-        if (train is null) return 1;
+        var train = await resolver.FindAsync(settings.Train);
+        if (train is null)
+        {
+            AnsiConsole.MarkupLineInterpolated($"[red]No train '{settings.Train}' found.[/] Run [springgreen2]trackify list[/].");
+            return 1;
+        }
 
         if (settings.Color is { } colorName)
         {
@@ -33,7 +35,7 @@ public sealed class DriveCommand(TrainControlService control, ITrainStore store)
             AnsiConsole.Write(new Rule($"[springgreen2]▶ {Markup.Escape(train.Name)}[/] [grey]running at {settings.Speed}%[/]").LeftJustified());
             AnsiConsole.MarkupLine("[grey]Press[/] [springgreen2]Ctrl+C[/] [grey]to stop.[/]");
 
-            using var cts = CliHelpers.CancelOnCtrlC();
+            using var cts = ConsoleCancellation.CreateTokenSource();
             try { await Task.Delay(Timeout.Infinite, cts.Token); }
             catch (OperationCanceledException) { /* Ctrl+C */ }
         }

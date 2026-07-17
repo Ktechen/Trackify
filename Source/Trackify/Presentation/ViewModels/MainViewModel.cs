@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Trackify.Models.Trains;
-using Trackify.Services;
 using Train = Trackify.Models.Trains.Train;
 
 namespace Trackify.Presentation.ViewModels;

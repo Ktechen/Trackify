@@ -1,7 +1,7 @@
 #if __ANDROID__
 using SharpBrick.PoweredUp.Mobile;
 
-namespace Trackify.Services;
+namespace Trackify.Application.Services;
 
 /// <summary>Supplies the Android BLE device id (its MAC address) to Plugin.BLE / SharpBrick.</summary>
 internal sealed class AndroidDeviceInfoProvider : INativeDeviceInfoProvider

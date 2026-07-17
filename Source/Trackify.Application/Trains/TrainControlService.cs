@@ -3,9 +3,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Trackify.Application.Catalog;
-using Trackify.Application.Lego;
 using Trackify.Application.Logging;
-using Trackify.Domain.Trains;
 
 namespace Trackify.Application.Trains;
 

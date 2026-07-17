@@ -1,5 +1,5 @@
 #if __IOS__
-namespace Trackify.Services;
+namespace Trackify.Application.Services;
 
 /// <summary>
 /// iOS shows its own system prompt (backed by NSBluetoothAlwaysUsageDescription) the first time the

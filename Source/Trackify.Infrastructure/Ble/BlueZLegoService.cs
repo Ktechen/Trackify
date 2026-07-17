@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Bluetooth;
 using SharpBrick.PoweredUp.Protocol;
-using Trackify.Application.Lego;
 using Trackify.Infrastructure.Logging;
 using HubType = Trackify.Domain.Enums.HubType;
 

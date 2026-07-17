@@ -1,4 +1,3 @@
-using Trackify.Domain.Enums;
 
 namespace Trackify.Domain.Trains;
 

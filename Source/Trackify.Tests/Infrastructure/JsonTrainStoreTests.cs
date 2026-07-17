@@ -1,7 +1,4 @@
-using Trackify.Domain.Enums;
-using Trackify.Domain.Trains;
 using Trackify.Infrastructure.Persistence;
-using Xunit;
 
 namespace Trackify.Tests.Infrastructure;
 

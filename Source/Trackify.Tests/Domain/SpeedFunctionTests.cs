@@ -1,6 +1,4 @@
 using Trackify.Domain;
-using Trackify.Domain.Enums;
-using Xunit;
 
 namespace Trackify.Tests.Domain;
 

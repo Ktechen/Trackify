@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Trackify.Application.Lego;
 #if LINUX
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Bluetooth;

@@ -1,5 +1,5 @@
 
-namespace Trackify.Services;
+namespace Trackify.Application.Services;
 
 /// <summary>
 /// Used on platforms without a usable Bluetooth LE stack (desktop, WebAssembly). Discovery yields
