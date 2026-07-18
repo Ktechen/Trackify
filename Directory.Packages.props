@@ -27,6 +27,10 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
 
+    <!-- Persistence: EF Core + SQLite train store. EF Core 9.x targets net8/net9 and is consumable
+         from net10, so it works across the whole net8–net10 range the libs multi-target. -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+
     <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
     <PackageVersion Include="Serilog" Version="4.2.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.0" />

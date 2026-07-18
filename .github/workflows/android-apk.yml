@@ -1,0 +1,47 @@
+name: Android APK
+
+# APK builds are heavier, so run them on demand or when tagging a release — not on every PR.
+on:
+  workflow_dispatch:
+  push:
+    tags: [ 'v*' ]
+
+jobs:
+  apk:
+    name: Build Android APK
+    # Windows runner: Trackify.Application already includes its net10.0-android flavor here (its TFMs
+    # are host-conditioned), so the app's Android head resolves the mobile ILegoService transport.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup .NET (9, 10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            10.0.x
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      # -f (single TargetFramework) scopes restore+build to the Android head, so the ios/wasm/windows
+      # flavors are never touched. Produces the (debug-keystore-signed) APK; a store build needs your
+      # own keystore.
+      - name: Publish Android APK
+        run: dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-android
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: trackify-apk
+          path: |
+            Source/Trackify/bin/Release/net10.0-android/**/*.apk
+            Source/Trackify/bin/Release/net10.0-android/**/*.aab
+          if-no-files-found: error

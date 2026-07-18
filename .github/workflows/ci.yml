@@ -1,0 +1,53 @@
+name: CI
+
+# Pre-merge gate: build + tests must pass before a PR can merge.
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+jobs:
+  core:
+    name: Build core + CLI + tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # "8 bis 10": provision all three SDKs; global.json pins 9.0.100 and rolls forward to the newest.
+      - name: Setup .NET (8, 9, 10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      # On a Linux host the shared libs build as plain net10.0 (no Android/Windows flavors), and the
+      # CLI compiles its real BlueZ transport (LINUX auto-defined) — no mobile workload needed.
+      - name: Build CLI
+        run: dotnet build Source/Trackify.Cli/Trackify.Cli.csproj -c Release
+
+      - name: Test
+        run: dotnet test Test/Trackify.Tests/Trackify.Tests.csproj -c Release
+
+  app:
+    name: Build Uno app (desktop head)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET (8, 9, 10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      # -f (single TargetFramework) scopes restore+build to just the desktop head, so the
+      # android/ios/windows flavors (which need extra workloads / a Mac) are never touched. Debug
+      # keeps it a pure "does the app compile?" gate (Release would pull a self-contained runtime
+      # pack it doesn't need). The Android head is covered by android-apk.yml.
+      - name: Build desktop head
+        run: dotnet build Source/Trackify/Trackify.csproj -f net10.0-desktop

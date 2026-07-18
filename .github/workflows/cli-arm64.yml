@@ -1,0 +1,37 @@
+name: CLI linux-arm64
+
+# Self-contained arm64 build of the CLI for a Raspberry Pi. Built on a Linux runner, so the LINUX
+# flag auto-enables and the real BlueZ transport is compiled in — no -p:TrackifyLinux needed.
+on:
+  workflow_dispatch:
+  push:
+    tags: [ 'v*' ]
+
+jobs:
+  publish:
+    name: Publish self-contained arm64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET (8, 9, 10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      # Self-contained → the Pi needs no .NET runtime installed; just unzip and run ./trackify.
+      - name: Publish linux-arm64
+        run: >
+          dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj
+          -c Release -r linux-arm64 --self-contained
+          -o publish/linux-arm64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trackify-cli-linux-arm64
+          path: publish/linux-arm64/
+          if-no-files-found: error

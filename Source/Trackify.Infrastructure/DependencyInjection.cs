@@ -1,5 +1,5 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Trackify.Infrastructure.Ble;
 using Trackify.Infrastructure.Persistence;
 
@@ -9,22 +9,21 @@ namespace Trackify.Infrastructure;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registers the Infrastructure implementations: the JSON train store and the Linux/BlueZ hub
-    /// transport (a no-op stand-in off-Linux). Pass <paramref name="storePath"/> to override the
-    /// default store location (e.g. from the CLI's TRACKIFY_STORE).
+    /// Registers the Infrastructure implementations: the EF Core + SQLite train store and the
+    /// Linux/BlueZ hub transport (a no-op stand-in off-Linux). Pass <paramref name="storePath"/> to
+    /// override the default SQLite database location (e.g. from the CLI's TRACKIFY_STORE).
     /// </summary>
     public static IServiceCollection AddTrackifyInfrastructure(this IServiceCollection services, string? storePath = null)
     {
-        if (string.IsNullOrWhiteSpace(storePath))
+        var databasePath = string.IsNullOrWhiteSpace(storePath) ? EfTrainStore.DefaultDbPath() : storePath;
+        var directory = Path.GetDirectoryName(databasePath);
+        if (!string.IsNullOrEmpty(directory))
         {
-            services.AddSingleton<ITrainStore, JsonTrainStore>();
+            Directory.CreateDirectory(directory);
         }
-        else
-        {
-            // Custom store location (e.g. TRACKIFY_STORE) needs the string ctor → factory.
-            services.AddSingleton<ITrainStore>(sp =>
-                new JsonTrainStore(storePath, sp.GetRequiredService<ILogger<JsonTrainStore>>()));
-        }
+
+        services.AddDbContextFactory<TrackifyDbContext>(options => options.UseSqlite($"Data Source={databasePath}"));
+        services.AddSingleton<ITrainStore, EfTrainStore>();
 
         services.AddLinuxLego();
         return services;

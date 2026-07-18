@@ -26,7 +26,7 @@
       <Deploy />
     </Project>
   </Folder>
-  <Folder Name="/Tests/">
-    <Project Path="Source/Trackify.Tests/Trackify.Tests.csproj" />
+  <Folder Name="/Test/">
+    <Project Path="Test/Trackify.Tests/Trackify.Tests.csproj" />
   </Folder>
 </Solution>

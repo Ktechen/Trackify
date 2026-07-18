@@ -9,14 +9,18 @@
       Windows dev box: additionally net10.0-windows → Application's windows flavor brings the
       WinRT Bluetooth transport, so `trackify discover/drive` works on Windows too (dev/test).
     -->
-    <TargetFrameworks>net10.0</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <RootNamespace>Trackify.Cli</RootNamespace>
     <AssemblyName>trackify</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- Transitive via Trackify.Infrastructure → Linux.Bluetooth → Tmds.DBus (GHSA-xrw6-gwf8-vvr9);
          BlueZ is only exercised on a trusted local Raspberry Pi. -->
     <NoWarn>$(NoWarn);NU1903</NoWarn>
+    <Title>Lego Powerup Uno App</Title>
+    <Authors>ktechen</Authors>
+    <PackageProjectUrl>https://github.com/Ktechen/Trackify/tree/master</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Ktechen/Trackify/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/Ktechen/Trackify</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

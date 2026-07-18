@@ -27,7 +27,7 @@ services.AddTrackifyInfrastructure(storePath);
 
 Trackify.Cli.Logging.Log.Started(
     new SerilogLoggerFactory(serilog).CreateLogger("trackify"),
-    storePath ?? JsonTrainStore.DefaultPath());
+    storePath ?? EfTrainStore.DefaultDbPath());
 
 // No command → the dashboard (banner + saved trains + cheat-sheet).
 // DependencyInjectionRegistrar (NuGet) bridges Spectre onto Microsoft.Extensions.DependencyInjection.

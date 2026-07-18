@@ -10,14 +10,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Trackify.Domain\Trackify.Domain.csproj" />
-    <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
-    <ProjectReference Include="..\Trackify.Infrastructure\Trackify.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Source\Trackify.Domain\Trackify.Domain.csproj" />
+    <ProjectReference Include="..\..\Source\Trackify.Application\Trackify.Application.csproj" />
+    <ProjectReference Include="..\..\Source\Trackify.Infrastructure\Trackify.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

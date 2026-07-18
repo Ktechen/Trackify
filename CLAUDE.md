@@ -2,6 +2,20 @@
 
 Guidance for Claude Code when working in this repository.
 
+## Planned — MCP server ([issue #1](https://github.com/Ktechen/Trackify/issues/1), NOT yet implemented)
+
+Agreed shape (plan only so far): expose train control over **MCP (Model Context Protocol)** so an AI
+client can drive trains, using **HTTP/SSE** transport, with the MCP pieces living **in
+`Trackify.Infrastructure`** (per the issue's "Add MCP to Infrastructure").
+- Packages: official `ModelContextProtocol` C# SDK + `ModelContextProtocol.AspNetCore` (HTTP/SSE host).
+- `Trackify.Infrastructure/Mcp/`: MCP tool classes wrapping `TrainControlService` + `ITrainStore`
+  (`list_trains`, `discover_hubs`, `drive_train`, `stop_train`, `set_color`) + an `AddTrackifyMcp()` DI extension.
+- Host: a thin server front-end (a `trackify serve` command or a small ASP.NET host) that chains
+  `AddTrackifyDomain/Application/Infrastructure` + `AddTrackifyMcp()` and maps the MCP SSE endpoint —
+  "server-based logic like the CLI" (same use-cases, over the network instead of argv).
+- Layer note: an inbound MCP server is normally a front-end; per the issue it sits in Infrastructure,
+  with the network host as the composition root. Runtime verification needs an MCP client + a Pi (BlueZ).
+
 ## What this is
 
 **Trackify** configures and controls **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — there is **no server/backend**. BLE talks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/) via [SharpBrick.PoweredUp](https://github.com/sharpbrick/powered-up).
@@ -10,12 +24,13 @@ It's a **Clean Architecture** solution with two front-ends over one shared core.
 
 - `Trackify.Domain` — pure entities (`TrainConfig`, `TrackSegmentConfig`), enums, `SpeedFunction` math. Only dependency is the DI abstractions (contract-only), for its `AddTrackifyDomain()` entry point.
 - `Trackify.Application` — ports (`ILegoService`, `IBluetoothPermissionService`, `ITrainStore`) + `DiscoveredHub`, `LegoinoCatalog`, `TrainControlService`, `TrainResolver`, `LwpAddressing`, **and the platform `ILegoService` implementations under `Services/`** (`DirectLegoService` mobile, `WindowsLegoService`, `UnsupportedLegoService`). **Multi-targeted per BUILD host** (Windows: `net10.0;net10.0-android;net10.0-windows10.0.19041.0`; macOS: `net10.0;net10.0-android;net10.0-ios`; **Linux: plain `net10.0` only** — no Android workload on a Pi/in Docker, and the CLI needs no mobile flavor). The plain `net10.0` flavor is transport-free.
-- `Trackify.Infrastructure` — `JsonTrainStore` (shared JSON persistence) **plus** the BlueZ onboard-radio `ILegoService` under `Ble/` (`Linux.Bluetooth` + SharpBrick). Referenced **only by the CLI** — it carries the Linux BLE stack, so the Uno app must not reference it.
+- `Trackify.Infrastructure` — `EfTrainStore` (EF Core + **SQLite** persistence, `trackify.db`; enums stored as names) **plus** the BlueZ onboard-radio `ILegoService` under `Ble/` (`Linux.Bluetooth` + SharpBrick). Referenced **only by the CLI** — it carries the Linux BLE stack, so the Uno app must not reference it.
 - `Trackify` — the [Uno Platform](https://platform.uno) app (single project, multi-head = App / HMI / **Web = WASM head**). References **Domain + Application only**; the BLE stacks flow transitively from Application per TFM. The app's own `Services/` holds only `AndroidBluetoothPermissionService` (needs the `Activity`).
 - `Trackify.Cli` — a **Spectre.Console.Cli** console app to deploy on a Linux server / Raspberry Pi. On Windows builds it additionally targets `net10.0-windows10.0.19041.0`, which picks up Application's **WinRT Bluetooth** transport — so `discover`/`drive` also work on the dev box (run that TFM; the plain `net10.0` flavor has no Windows transport). `AddLinuxLego` uses `TryAddSingleton`, so a transport already registered by `AddTrackifyApplication` wins.
 - `Trackify.Tests` — xUnit (pure-logic + store round-trip).
 
-- .NET 10, Uno.Sdk `6.5.36` (pinned in `global.json` — update Uno there, not in package props).
+- .NET 10, Uno.Sdk `6.5.36` (pinned in `global.json`; SDK pinned to `9.0.100` + `rollForward: latestMajor` → uses the newest installed major, net10 heads require the .NET 10 SDK). Update Uno in `global.json`, not in package props.
+- **CI** (GitHub Actions, `.github/workflows/`): `ci.yml` is the pre-merge gate on PRs to `master` — an ubuntu job builds the CLI + runs the tests, plus an ubuntu job compiles the Uno desktop head (`-f net10.0-desktop`, Debug) as the "app still compiles" check. `android-apk.yml` builds the Android APK on windows-latest (JDK 17 + `android` workload, `-f net10.0-android`) on tag `v*` or manual dispatch; artifact `trackify-apk`. Both provision the .NET 8/9/10 SDKs.
 - Uno heads: `net10.0-android`, `net10.0-ios`, `net10.0-browserwasm`, `net10.0-desktop`, `net10.0-windows10.0.19041.0`. The shared libs + CLI are plain `net10.0`.
 - Central Package Management (`Directory.Packages.props`) — add versions there, reference without a version in the csproj.
 - `TreatWarningsAsErrors=true` and `EnforceCodeStyleInBuild=true` are on (repo-wide via `Directory.Build.props`). **The build fails on warnings and on code-style violations.** (The test project opts out of both, since xUnit analyzers are strict.)
@@ -34,7 +49,7 @@ dotnet run --project Source/Trackify/Trackify.csproj -f net10.0-desktop
 
 # Shared core / CLI / tests
 dotnet build Source/Trackify.Cli/Trackify.Cli.csproj      # CLI compiles here; real BLE only on a Pi
-dotnet test  Source/Trackify.Tests/Trackify.Tests.csproj
+dotnet test  Test/Trackify.Tests/Trackify.Tests.csproj
 dotnet run --project Source/Trackify.Cli -- --help        # trackify discover | list | connect | drive | stop | color
 ```
 
@@ -44,7 +59,7 @@ CLI deployment (Pi publish incl. the `-p:TrackifyLinux=true` cross-publish gotch
 
 ## Architecture
 
-**Per-layer DI.** Each core layer owns its registration via a `DependencyInjection.cs` extension: `AddTrackifyDomain()` (no-op — Domain is pure), `AddTrackifyApplication()` (registers `TrainControlService` + `TrainResolver` **and, filtered per platform via `#if __ANDROID__`/`WINDOWS` in DI, the matching `ILegoService` transport**), `AddTrackifyInfrastructure(storePath?)` (registers `ITrainStore`→`JsonTrainStore` + `AddLinuxLego()`). A composition root just chains them: the **CLI** calls all three; the **Uno app** calls Domain + Application and only adds what genuinely belongs to it in `RegisterLegoService` (Android permission service; `UnsupportedLegoService` on desktop/wasm).
+**Per-layer DI.** Each core layer owns its registration via a `DependencyInjection.cs` extension: `AddTrackifyDomain()` (no-op — Domain is pure), `AddTrackifyApplication()` (registers `TrainControlService` + `TrainResolver` **and, filtered per platform via `#if __ANDROID__`/`WINDOWS` in DI, the matching `ILegoService` transport**), `AddTrackifyInfrastructure(storePath?)` (registers `ITrainStore`→`EfTrainStore` over a SQLite `DbContextFactory` + `AddLinuxLego()`). A composition root just chains them: the **CLI** calls all three; the **Uno app** calls Domain + Application and only adds what genuinely belongs to it in `RegisterLegoService` (Android permission service; `UnsupportedLegoService` on desktop/wasm).
 
 **`ILegoService`** (in `Trackify.Application`) is the BLE seam every front-end shares. `TrainControlService` (Application) is the shared control logic (discover/connect/speed-debounce/LED) over a pure `TrainConfig`. Per-transport `ILegoService` implementations, all selected inside `AddTrackifyApplication` / `AddLinuxLego` at DI time:
 - Android/iOS → `DirectLegoService` (SharpBrick `.Mobile` / Plugin.BLE) — `Trackify.Application/Services/`.
@@ -59,7 +74,7 @@ The one platform piece left in the Uno app is `AndroidBluetoothPermissionService
 - **`SharpBrick` command building is NOT pure** — `LwpProtocol.cs` (Uno app) and `LwpCommands.cs` (Linux lib) build SharpBrick typed messages (StartPower, SetRgbColor, connect-with-retry). This deliberately duplicates a few tiny per-transport helpers rather than putting SharpBrick in the shared Application layer. The genuinely pure bits (RGB-LED port table, MAC format/parse) live once in `Application/Lego/LwpAddressing.cs`.
 - **Uno app** (`Source/Trackify/`): `Presentation/` (MVVM, folder-per-concern, no business logic in pages), `Services/` (the platform `ILegoService` impls + `NativeBluetooth` permission glue), `Helpers/SpeedCurve.cs` (builds the presentation-only `SpeedProfileGraph` path data), `Models/Trains/` (`Train`/`TrackSegment` — currently `ObservableObject`; **Phase 4 will make them thin wrappers over the Domain configs**).
 - **Navigation & DI** — Uno.Extensions Hosting/Navigation. Routes/ViewMaps in `App.xaml.cs` → `RegisterRoutes`.
-- **CLI** (`Source/Trackify.Cli/`): Spectre.Console.Cli; `Program.cs` builds the DI container (`AddLinuxLego` + `JsonTrainStore` + `TrainControlService`) bridged to Spectre via `TypeRegistrar`/`TypeResolver`. Commands under `Commands/`. Store path overridable with `TRACKIFY_STORE`.
+- **CLI** (`Source/Trackify.Cli/`): Spectre.Console.Cli; `Program.cs` composes the layers (`AddTrackifyDomain/Application/Infrastructure` + Serilog) bridged to Spectre via the `Spectre.Console.Cli.Extensions.DependencyInjection` package (`DependencyInjectionRegistrar` — no hand-written registrar). Commands under `Commands/`, settings under `Commands/Settings/`. Store (SQLite) path overridable with `TRACKIFY_STORE`. On Windows it also targets `net10.0-windows…` (WinRT BLE for dev/test).
 
 ## Conventions (enforced)
 
