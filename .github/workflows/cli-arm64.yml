@@ -26,7 +26,7 @@ jobs:
       - name: Publish linux-arm64
         run: >
           dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj
-          -c Release -r linux-arm64 --self-contained
+          -f net10.0 -c Release -r linux-arm64 --self-contained
           -o publish/linux-arm64
 
       - name: Upload artifact

@@ -31,23 +31,8 @@ jobs:
       - name: Test
         run: dotnet test Test/Trackify.Tests/Trackify.Tests.csproj -c Release
 
-  app:
-    name: Build Uno app (desktop head)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET (8, 9, 10)
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            8.0.x
-            9.0.x
-            10.0.x
-
-      # -f (single TargetFramework) scopes restore+build to just the desktop head, so the
-      # android/ios/windows flavors (which need extra workloads / a Mac) are never touched. Debug
-      # keeps it a pure "does the app compile?" gate (Release would pull a self-contained runtime
-      # pack it doesn't need). The Android head is covered by android-apk.yml.
-      - name: Build desktop head
-        run: dotnet build Source/Trackify/Trackify.csproj -f net10.0-desktop
+# NOTE: the Uno app (Source/Trackify) is intentionally NOT built here. Its project declares five heads
+# (android, ios, browserwasm, desktop, windows); restoring it on any single runner triggers workload
+# imports (android/wasm-tools) and OS-locked TFMs (ios needs macOS, windows needs Windows), even with
+# `-f <head>`. Gating one head reliably would need a per-OS + workload matrix. The Android head is
+# built by android-apk.yml; the other heads are verified by developers locally.
