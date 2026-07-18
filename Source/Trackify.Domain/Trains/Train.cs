@@ -6,9 +6,8 @@ namespace Trackify.Domain.Trains;
 /// front-end (Uno app + CLI); runtime connection state (connected? status text) is deliberately NOT
 /// here — that belongs to the presentation/control layer.
 /// </summary>
-public sealed record TrainConfig
+public sealed record Train : Common.BaseEntity
 {
-    public string Id { get; set; } = "";
     public string Name { get; set; } = "";
     public HubType Hub { get; set; } = HubType.PoweredUpHub;
 

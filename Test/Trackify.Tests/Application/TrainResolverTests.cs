@@ -5,22 +5,23 @@ namespace Trackify.Tests.Application;
 
 public class TrainResolverTests
 {
-    private static readonly TrainResolver Resolver = new(new FakeTrainStore(
-        new TrainConfig { Id = "trn-1", Name = "Blauer Zug" },
-        new TrainConfig { Id = "trn-2", Name = "Roter Zug" }));
+    private static readonly Guid BlueId = Guid.NewGuid();
+    private static readonly TrainResolver Resolver = new(new FakeTrainRepository(
+        new Train { Id = BlueId, Name = "Blauer Zug" },
+        new Train { Id = Guid.NewGuid(), Name = "Roter Zug" }));
 
     [Fact]
     public async Task Resolves_by_id()
     {
-        var train = await Resolver.FindAsync("trn-2");
-        Assert.Equal("Roter Zug", train?.Name);
+        var train = await Resolver.FindAsync(BlueId.ToString());
+        Assert.Equal("Blauer Zug", train?.Name);
     }
 
     [Fact]
     public async Task Resolves_by_name_case_insensitively()
     {
         var train = await Resolver.FindAsync("blauer zug");
-        Assert.Equal("trn-1", train?.Id);
+        Assert.Equal(BlueId, train?.Id);
     }
 
     [Fact]

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Trackify.Cli.Logging;
+namespace Trackify.Cli;
 
 /// <summary>Source-generated, allocation-free log messages for the CLI host.</summary>
 internal static partial class Log

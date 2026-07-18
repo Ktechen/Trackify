@@ -19,7 +19,7 @@ internal static class Ui
     }
 
     /// <summary>A styled table of saved trains.</summary>
-    public static Table TrainsTable(IReadOnlyList<TrainConfig> trains)
+    public static Table TrainsTable(IReadOnlyList<Train> trains)
     {
         var table = new Table()
             .Border(TableBorder.Rounded)
@@ -34,7 +34,7 @@ internal static class Ui
         foreach (var train in trains)
         {
             table.AddRow(
-                $"[grey]{Escape(train.Id)}[/]",
+                $"[grey]{Escape(train.Id.ToString())}[/]",
                 $"[white]{Escape(train.Name)}[/]",
                 Escape(train.Hub.ToString()),
                 $"[grey]{Escape(string.IsNullOrWhiteSpace(train.HubId) ? train.BleAddress : train.HubId)}[/]",

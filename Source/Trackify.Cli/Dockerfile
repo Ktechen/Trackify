@@ -20,7 +20,7 @@ COPY Source/Trackify.Domain/ Source/Trackify.Domain/
 COPY Source/Trackify.Application/ Source/Trackify.Application/
 COPY Source/Trackify.Infrastructure/ Source/Trackify.Infrastructure/
 COPY Source/Trackify.Cli/ Source/Trackify.Cli/
-RUN dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj -c Release -o /app --no-restore
+RUN dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj -f net10.0 -c Release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0
 WORKDIR /app

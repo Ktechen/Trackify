@@ -29,7 +29,7 @@ Domain  ←  Application  ←  Infrastructure  ←  Front-ends (HMI: CLI, Uno ap
 1. **Domain** (`Trackify.Domain`) — pure entities, enums, math. Depends on nothing (only the DI
    abstractions, contract-only). No UI, no logging, no EF, no BLE.
 2. **Application** (`Trackify.Application`) — use cases + **ports** (interfaces like `ILegoService`,
-   `ITrainStore`). Depends only on Domain. UI- and transport-agnostic.
+   `ITrainRepository`). Depends only on Domain. UI- and transport-agnostic.
 3. **Infrastructure** (`Trackify.Infrastructure`) — implements Application ports (EF Core + SQLite
    store, BlueZ hub transport). Depends on Application (+ Domain).
 4. **Front-ends** (`Trackify.Cli`, `Trackify` Uno app) — depend on Application; reference
@@ -43,7 +43,7 @@ Domain  ←  Application  ←  Infrastructure  ←  Front-ends (HMI: CLI, Uno ap
 
 | Project | Layer | Notes |
 |---|---|---|
-| `Source/Trackify.Domain` | Domain | Entities (`TrainConfig`, `TrackSegmentConfig`), enums, `SpeedFunction` |
+| `Source/Trackify.Domain` | Domain | Entities (`Train`, `TrackSegment`), enums, `SpeedFunction` |
 | `Source/Trackify.Application` | Application | Ports, `TrainControlService`, `LegoinoCatalog`; hosts the mobile/WinRT `ILegoService` impls (multi-targeted per build host) |
 | `Source/Trackify.Infrastructure` | Infrastructure | EF Core + SQLite store, BlueZ (Linux) transport |
 | `Source/Trackify` | Front-end | Uno app — heads: android, ios, browserwasm (**Web**), desktop, windows |
@@ -66,8 +66,8 @@ used (net10 heads require the .NET 10 SDK); CI provisions .NET 8, 9 and 10.
 
 ## The train store (`trackify.db`)
 
-Trains are persisted in a **SQLite** database via **EF Core** (`EfTrainStore`, repository-style
-`ITrainStore`; the schema is created automatically). Default location:
+Trains are persisted in a **SQLite** database via **EF Core** (`SqliteTrainRepository`, repository-style
+`ITrainRepository`; the schema is created automatically). Default location:
 `~/.config/Trackify/trackify.db` (Linux) / `%APPDATA%\Trackify\trackify.db` (Windows), overridable
 with the `TRACKIFY_STORE` environment variable. The Uno app and the CLI share the same schema.
 
@@ -89,7 +89,7 @@ Docker, systemd autostart).
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `ci.yml` | PR / push to `master` | Build CLI + run tests, compile the Uno desktop head (pre-merge gate) |
+| `ci.yml` | PR / push to `master` | Build the CLI + shared core and run tests (pre-merge gate) |
 | `android-apk.yml` | tag `v*` / manual | Build the Android APK |
 | `cli-arm64.yml` | tag `v*` / manual | Publish the self-contained `linux-arm64` CLI for the Pi |
 
@@ -117,7 +117,7 @@ Domain  ←  Application  ←  Infrastructure  ←  Front-Ends (HMI: CLI, Uno-Ap
 1. **Domain** (`Trackify.Domain`) — reine Entities, Enums, Mathematik. Hängt von nichts ab (nur den
    DI-Abstraktionen, reiner Vertrag). Kein UI, kein Logging, kein EF, kein BLE.
 2. **Application** (`Trackify.Application`) — Use Cases + **Ports** (Interfaces wie `ILegoService`,
-   `ITrainStore`). Hängt nur von Domain ab. UI- und transport-neutral.
+   `ITrainRepository`). Hängt nur von Domain ab. UI- und transport-neutral.
 3. **Infrastructure** (`Trackify.Infrastructure`) — implementiert die Application-Ports (EF-Core-+-
    SQLite-Store, BlueZ-Hub-Transport). Hängt von Application (+ Domain) ab.
 4. **Front-Ends** (`Trackify.Cli`, `Trackify`-Uno-App) — hängen von Application ab; referenzieren
@@ -131,7 +131,7 @@ Domain  ←  Application  ←  Infrastructure  ←  Front-Ends (HMI: CLI, Uno-Ap
 
 | Projekt | Schicht | Hinweise |
 |---|---|---|
-| `Source/Trackify.Domain` | Domain | Entities (`TrainConfig`, `TrackSegmentConfig`), Enums, `SpeedFunction` |
+| `Source/Trackify.Domain` | Domain | Entities (`Train`, `TrackSegment`), Enums, `SpeedFunction` |
 | `Source/Trackify.Application` | Application | Ports, `TrainControlService`, `LegoinoCatalog`; enthält die Mobile-/WinRT-`ILegoService`-Impls (multi-targeted je nach Build-Host) |
 | `Source/Trackify.Infrastructure` | Infrastructure | EF-Core-+-SQLite-Store, BlueZ-Transport (Linux) |
 | `Source/Trackify` | Front-End | Uno-App — Heads: android, ios, browserwasm (**Web**), desktop, windows |
@@ -154,8 +154,8 @@ wird genutzt (net10-Heads brauchen das .NET-10-SDK); die CI stellt .NET 8, 9 und
 
 ## Der Train-Store (`trackify.db`)
 
-Züge werden in einer **SQLite**-Datenbank über **EF Core** persistiert (`EfTrainStore`,
-Repository-artiges `ITrainStore`; das Schema wird automatisch angelegt). Standardpfad:
+Züge werden in einer **SQLite**-Datenbank über **EF Core** persistiert (`SqliteTrainRepository`,
+Repository-artiges `ITrainRepository`; das Schema wird automatisch angelegt). Standardpfad:
 `~/.config/Trackify/trackify.db` (Linux) / `%APPDATA%\Trackify\trackify.db` (Windows), überschreibbar
 per Umgebungsvariable `TRACKIFY_STORE`. Uno-App und CLI teilen dasselbe Schema.
 
@@ -176,6 +176,6 @@ Deployment (Raspberry Pi, Docker, systemd-Autostart) siehe [Source/Trackify.Cli/
 
 | Workflow | Auslöser | Zweck |
 |---|---|---|
-| `ci.yml` | PR / Push auf `master` | CLI bauen + Tests, Uno-Desktop-Head kompilieren (Pre-Merge-Gate) |
+| `ci.yml` | PR / Push auf `master` | CLI + gemeinsamen Kern bauen und Tests laufen lassen (Pre-Merge-Gate) |
 | `android-apk.yml` | Tag `v*` / manuell | Android-APK bauen |
 | `cli-arm64.yml` | Tag `v*` / manuell | Self-contained `linux-arm64`-CLI für den Pi veröffentlichen |

@@ -13,8 +13,8 @@
       - macOS: + android + ios (the iOS toolchain only exists on a Mac).
     -->
       <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
-      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net9.0;net9.0-android;net9.0-windows10.0.19041.0</TargetFrameworks>
-      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('macOS'))">net9.0;net9.0-android;net9.0-ios</TargetFrameworks>
+      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net9.0;net10.0-android;net10.0-windows10.0.19041.0</TargetFrameworks>
+      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('macOS'))">net10.0;net9.0;net10.0-android;net10.0-ios</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

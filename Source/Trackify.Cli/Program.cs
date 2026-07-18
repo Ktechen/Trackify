@@ -9,6 +9,7 @@ using Trackify.Cli.Extensions;
 using Trackify.Domain;
 using Trackify.Infrastructure;
 using Trackify.Infrastructure.Persistence;
+using Log = Trackify.Cli.Log;
 
 // High-performance logging with a Serilog backend (diagnostics go to the console at Information+).
 var serilog = new LoggerConfiguration()
@@ -25,9 +26,9 @@ services.AddTrackifyDomain();
 services.AddTrackifyApplication();
 services.AddTrackifyInfrastructure(storePath);
 
-Trackify.Cli.Logging.Log.Started(
+Log.Started(
     new SerilogLoggerFactory(serilog).CreateLogger("trackify"),
-    storePath ?? EfTrainStore.DefaultDbPath());
+    storePath ?? SqliteTrainRepository.DefaultDatabasePath());
 
 // No command → the dashboard (banner + saved trains + cheat-sheet).
 // DependencyInjectionRegistrar (NuGet) bridges Spectre onto Microsoft.Extensions.DependencyInjection.

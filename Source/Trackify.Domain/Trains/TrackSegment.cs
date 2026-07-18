@@ -6,7 +6,7 @@ namespace Trackify.Domain.Trains;
 /// Pure data: the canvas geometry/SVG and German labels that the planner renders live in the
 /// presentation layer, not here.
 /// </summary>
-public sealed record TrackSegmentConfig
+public sealed record TrackSegment
 {
     public string Id { get; set; } = "";
     public string Name { get; set; } = "";

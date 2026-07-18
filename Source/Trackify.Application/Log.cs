@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Trackify.Application.Logging;
+namespace Trackify.Application;
 
 /// <summary>
 /// Source-generated, allocation-free log messages for the Application layer (the
@@ -12,14 +12,14 @@ internal static partial class Log
     public static partial void Discovering(ILogger logger);
 
     [LoggerMessage(EventId = 1001, Level = LogLevel.Information, Message = "Connecting train {TrainId} via hub {HubKey}")]
-    public static partial void Connecting(ILogger logger, string trainId, string hubKey);
+    public static partial void Connecting(ILogger logger, Guid trainId, string hubKey);
 
     [LoggerMessage(EventId = 1002, Level = LogLevel.Information, Message = "Disconnecting train {TrainId}")]
-    public static partial void Disconnecting(ILogger logger, string trainId);
+    public static partial void Disconnecting(ILogger logger, Guid trainId);
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Debug, Message = "Train {TrainId} speed → {Speed}")]
-    public static partial void SettingSpeed(ILogger logger, string trainId, int speed);
+    public static partial void SettingSpeed(ILogger logger, Guid trainId, int speed);
 
     [LoggerMessage(EventId = 1004, Level = LogLevel.Debug, Message = "Train {TrainId} LED → {Color}")]
-    public static partial void SettingLed(ILogger logger, string trainId, string color);
+    public static partial void SettingLed(ILogger logger, Guid trainId, string color);
 }

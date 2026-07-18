@@ -26,7 +26,7 @@ A train is addressed by **name or id** (see `trackify list`).
 
 ## The train store (`trackify.db`)
 
-Trains live in a **SQLite** database managed by **EF Core** (`EfTrainStore`). Default path:
+Trains live in a **SQLite** database managed by **EF Core** (`SqliteTrainRepository`). Default path:
 `~/.config/Trackify/trackify.db` (Linux) / `%APPDATA%\Trackify\trackify.db` (Windows), overridable
 with the `TRACKIFY_STORE` environment variable. The schema is created automatically on first run;
 enums are stored as readable names. Same schema as the app — copy the `.db` to the Pi, or point both
@@ -123,7 +123,7 @@ Ein Zug wird per **Name oder Id** angesprochen (siehe `trackify list`).
 
 ## Der Train-Store (`trackify.db`)
 
-Züge liegen in einer **SQLite**-Datenbank, verwaltet von **EF Core** (`EfTrainStore`). Standardpfad:
+Züge liegen in einer **SQLite**-Datenbank, verwaltet von **EF Core** (`SqliteTrainRepository`). Standardpfad:
 `~/.config/Trackify/trackify.db` (Linux) / `%APPDATA%\Trackify\trackify.db` (Windows), überschreibbar
 per Umgebungsvariable `TRACKIFY_STORE`. Das Schema wird beim ersten Start automatisch angelegt; Enums
 werden als lesbare Namen gespeichert. Gleiches Schema wie die App — die `.db` auf den Pi kopieren oder

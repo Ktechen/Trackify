@@ -16,15 +16,16 @@
     <File Path="Directory.Build.targets" />
     <File Path="Directory.Packages.props" />
     <File Path="global.json" />
+    <File Path=".github\workflows\android-apk.yml" />
+    <File Path=".github\workflows\ci.yml" />
+    <File Path=".github\workflows\cli-arm64.yml" />
   </Folder>
   <Folder Name="/Source/">
     <Project Path="Source/Trackify.Application/Trackify.Application.csproj" />
     <Project Path="Source/Trackify.Cli/Trackify.Cli.csproj" />
     <Project Path="Source/Trackify.Domain/Trackify.Domain.csproj" />
     <Project Path="Source/Trackify.Infrastructure/Trackify.Infrastructure.csproj" />
-    <Project Path="Source/Trackify/Trackify.csproj">
-      <Deploy />
-    </Project>
+    <Project Path="Source/Trackify/Trackify.csproj" />
   </Folder>
   <Folder Name="/Test/">
     <Project Path="Test/Trackify.Tests/Trackify.Tests.csproj" />
