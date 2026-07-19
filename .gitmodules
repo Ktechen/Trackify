@@ -1,0 +1,3 @@
+[submodule "docs/lego-ble-wireless-protocol-docs"]
+	path = docs/lego-ble-wireless-protocol-docs
+	url = https://github.com/LEGO/lego-ble-wireless-protocol-docs
