@@ -26,9 +26,16 @@ public sealed class BlueZPoweredUpBluetoothAdapter : IPoweredUpBluetoothAdapter
             try
             {
                 var device = eventArgs.Device;
+
+                // Only surface genuine LEGO Powered Up hubs: they advertise manufacturer data under the
+                // LEGO company id (0x0397). Every other nearby BLE device (phones, headsets, …) is
+                // ignored so discovery never invents a hub.
+                var manufacturerData = await GetLegoManufacturerDataAsync(device);
+                if (manufacturerData.Length == 0)
+                    return;
+
                 var name = await device.GetNameAsync();
                 var address = await device.GetAddressAsync();
-                var manufacturerData = await GetLegoManufacturerDataAsync(device);
                 await handler(new BlueZDeviceInfo(LwpAddressing.ParseMacAddress(address), name, manufacturerData));
             }
             catch
