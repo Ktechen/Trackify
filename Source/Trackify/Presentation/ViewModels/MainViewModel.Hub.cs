@@ -81,33 +81,33 @@ public partial class MainViewModel
     }
 
     // Binds the hub to a matching train (or creates one) and selects it.
-    private void AdoptHubAsTrain(DiscoveredHub hub)
+    private void AdoptHubAsTrain(DiscoveredHub hubDto)
     {
-        var train = Trains.FirstOrDefault(t => IsSameDevice(t, hub));
+        var train = Trains.FirstOrDefault(t => IsSameDevice(t, hubDto));
         if (train is not null)
         {
-            train.HubId = hub.Id;
+            train.HubId = hubDto.Id;
         }
         else
         {
-            train = CreateTrainFor(hub);
+            train = CreateTrainFor(hubDto);
             Trains.Add(train);
         }
 
         SelectAfresh(train);
     }
 
-    private static bool IsSameDevice(Train train, DiscoveredHub hub)
-        => string.Equals(train.HubId, hub.Id, StringComparison.OrdinalIgnoreCase)
-        || (hub.MacAddress is not null && string.Equals(train.BleAddress, hub.MacAddress, StringComparison.OrdinalIgnoreCase));
+    private static bool IsSameDevice(Train train, DiscoveredHub hubDto)
+        => string.Equals(train.HubId, hubDto.Id, StringComparison.OrdinalIgnoreCase)
+        || (hubDto.MacAddress is not null && string.Equals(train.BleAddress, hubDto.MacAddress, StringComparison.OrdinalIgnoreCase));
 
-    private Train CreateTrainFor(DiscoveredHub hub) => new()
+    private Train CreateTrainFor(DiscoveredHub hubDto) => new()
     {
         Id = $"trn-{_sequence++}",
-        Name = string.IsNullOrWhiteSpace(hub.Name) ? "Entdeckter Hub" : hub.Name!,
-        Hub = hub.HubType ?? HubType.PoweredUpHub,
-        HubId = hub.Id,
-        BleAddress = hub.MacAddress ?? hub.Id,
+        Name = string.IsNullOrWhiteSpace(hubDto.Name) ? "Entdeckter Hub" : hubDto.Name!,
+        Hub = hubDto.HubType ?? HubType.PoweredUpHub,
+        HubId = hubDto.Id,
+        BleAddress = hubDto.MacAddress ?? hubDto.Id,
         Color = LedColorType.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = 0,
         AccelFn = SpeedFunctionType.EaseOut, BrakeFn = SpeedFunctionType.EaseIn, IsActive = true,
     };

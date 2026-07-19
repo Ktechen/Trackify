@@ -13,12 +13,16 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="NetArchTest.Rules" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Trackify.Domain\Trackify.Domain.csproj" />
     <ProjectReference Include="..\..\Source\Trackify.Application\Trackify.Application.csproj" />
     <ProjectReference Include="..\..\Source\Trackify.Infrastructure\Trackify.Infrastructure.csproj" />
+    <!-- The CLI is referenced only so the architecture tests can assert the front-end never
+         depends on the Domain entity namespace (the DTO boundary). -->
+    <ProjectReference Include="..\..\Source\Trackify.Cli\Trackify.Cli.csproj" />
   </ItemGroup>
 
 </Project>

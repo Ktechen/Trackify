@@ -100,9 +100,9 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     }
 
     /// <summary>Whether a discovered hub is the same physical device as this train (by id or MAC).</summary>
-    public static bool IsSameDevice(TrainDto train, DiscoveredHub hub)
-        => string.Equals(train.HubId, hub.Id, StringComparison.OrdinalIgnoreCase)
-        || (hub.MacAddress is not null && string.Equals(train.BleAddress, hub.MacAddress, StringComparison.OrdinalIgnoreCase));
+    public static bool IsSameDevice(TrainDto train, DiscoveredHub hubDto)
+        => string.Equals(train.HubId, hubDto.Id, StringComparison.OrdinalIgnoreCase)
+        || (hubDto.MacAddress is not null && string.Equals(train.BleAddress, hubDto.MacAddress, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// The key a hub is addressed by: the platform device id captured during discovery, or the typed
