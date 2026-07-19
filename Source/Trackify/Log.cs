@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Logging;
-
-namespace Trackify.Presentation.Logging;
+namespace Trackify;
 
 /// <summary>Source-generated, allocation-free log messages for the app's view models.</summary>
 internal static partial class Log
