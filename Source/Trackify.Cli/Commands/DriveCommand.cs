@@ -4,7 +4,7 @@ using Trackify.Domain.Enums;
 namespace Trackify.Cli.Commands;
 
 /// <summary>Connects a train, applies colour/speed, and keeps it running until Ctrl+C (then stops + disconnects).</summary>
-public sealed class DriveCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<DriveSettings>
+public sealed class DriveCommand(TrainControlService control, TrainService resolver) : AsyncCommand<DriveSettings>
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, DriveSettings settings, CancellationToken cancellationToken)
     {

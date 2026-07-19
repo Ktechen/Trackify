@@ -3,7 +3,7 @@ using Trackify.Cli.Commands.Settings;
 namespace Trackify.Cli.Commands;
 
 /// <summary>Connects a train, stops its motor, and disconnects.</summary>
-public sealed class StopCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<TrainSettings>
+public sealed class StopCommand(TrainControlService control, TrainService resolver) : AsyncCommand<TrainSettings>
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, TrainSettings settings, CancellationToken cancellationToken)
     {

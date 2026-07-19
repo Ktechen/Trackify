@@ -7,7 +7,7 @@ namespace Trackify.Application.Trains;
 
 /// <summary>
 /// The shared use-case layer for driving a train's hub: discover, connect/disconnect, live speed and
-/// LED. Operates on a pure <see cref="Train"/> and talks only to <see cref="ILegoService"/>, so
+/// LED. Operates on a pure <see cref="TrainDto"/> and talks only to <see cref="ILegoService"/>, so
 /// both the Uno app and the CLI reuse it without duplicating control logic. UI-neutral: failures
 /// surface as exceptions/no-ops, never as localized status text.
 /// </summary>
@@ -33,7 +33,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     }
 
     /// <summary>Connects the train's hub. Throws if the train has no hub id/address yet.</summary>
-    public Task ConnectAsync(Train train, CancellationToken ct = default)
+    public Task ConnectAsync(TrainDto train, CancellationToken ct = default)
     {
         var key = HubKey(train);
         if (string.IsNullOrWhiteSpace(key))
@@ -43,7 +43,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     }
 
     /// <summary>Disconnects the train's hub; a no-op if it has no key.</summary>
-    public Task DisconnectAsync(Train train, CancellationToken ct = default)
+    public Task DisconnectAsync(TrainDto train, CancellationToken ct = default)
     {
         var key = HubKey(train);
         if (string.IsNullOrWhiteSpace(key)) return Task.CompletedTask;
@@ -52,7 +52,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     }
 
     /// <summary>Sends the motor speed immediately (percentage: 1..100 fwd, -1..-100 rev, 0 stop).</summary>
-    public Task SetSpeedAsync(Train train, int speed, CancellationToken ct = default)
+    public Task SetSpeedAsync(TrainDto train, int speed, CancellationToken ct = default)
     {
         var key = HubKey(train);
         if (string.IsNullOrWhiteSpace(key)) return Task.CompletedTask;
@@ -64,7 +64,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     /// Sends the motor speed after a short pause, cancelling any pending send for the same hub. Use
     /// for a dragged slider so only the final value reaches the hardware. Best-effort (drops on error).
     /// </summary>
-    public void SetSpeedDebounced(Train train, int speed)
+    public void SetSpeedDebounced(TrainDto train, int speed)
     {
         var key = HubKey(train);
         if (string.IsNullOrWhiteSpace(key)) return;
@@ -79,7 +79,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
         _ = SendSpeedAfterDelayAsync(train, speed, cts.Token);
     }
 
-    private async Task SendSpeedAfterDelayAsync(Train train, int speed, CancellationToken ct)
+    private async Task SendSpeedAfterDelayAsync(TrainDto train, int speed, CancellationToken ct)
     {
         try { await Task.Delay(SpeedDebounceMs, ct); }
         catch (TaskCanceledException) { return; }
@@ -89,7 +89,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     }
 
     /// <summary>Sets the hub's built-in RGB LED to the train's configured colour.</summary>
-    public Task SetLedAsync(Train train, CancellationToken ct = default)
+    public Task SetLedAsync(TrainDto train, CancellationToken ct = default)
     {
         var key = HubKey(train);
         if (string.IsNullOrWhiteSpace(key)) return Task.CompletedTask;
@@ -100,7 +100,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     }
 
     /// <summary>Whether a discovered hub is the same physical device as this train (by id or MAC).</summary>
-    public static bool IsSameDevice(Train train, DiscoveredHub hub)
+    public static bool IsSameDevice(TrainDto train, DiscoveredHub hub)
         => string.Equals(train.HubId, hub.Id, StringComparison.OrdinalIgnoreCase)
         || (hub.MacAddress is not null && string.Equals(train.BleAddress, hub.MacAddress, StringComparison.OrdinalIgnoreCase));
 
@@ -108,7 +108,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     /// The key a hub is addressed by: the platform device id captured during discovery, or the typed
     /// BLE address as a fallback (Android accepts a MAC string; iOS needs discovery first).
     /// </summary>
-    public static string HubKey(Train train)
+    public static string HubKey(TrainDto train)
         => !string.IsNullOrWhiteSpace(train.HubId) ? train.HubId : train.BleAddress;
 
     private static (byte R, byte G, byte B) ParseHexColor(string hex)

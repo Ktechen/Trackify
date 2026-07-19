@@ -1,5 +1,4 @@
 using Trackify.Application.Lego;
-using Trackify.Domain.Trains;
 
 namespace Trackify.Cli;
 
@@ -19,7 +18,7 @@ internal static class Ui
     }
 
     /// <summary>A styled table of saved trains.</summary>
-    public static Table TrainsTable(IReadOnlyList<Train> trains)
+    public static Table TrainsTable(IReadOnlyList<TrainDto> trains)
     {
         var table = new Table()
             .Border(TableBorder.Rounded)

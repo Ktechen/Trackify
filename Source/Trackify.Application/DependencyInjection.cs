@@ -24,7 +24,7 @@ public static class DependencyInjection
     public static IServiceCollection AddTrackifyApplication(this IServiceCollection services)
     {
         services.AddSingleton<TrainControlService>();
-        services.AddSingleton<TrainResolver>();
+        services.AddSingleton<TrainService>();
 
 #if __ANDROID__ || __IOS__
         services

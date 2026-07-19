@@ -2,13 +2,13 @@
 namespace Trackify.Cli.Commands;
 
 /// <summary>Default view (no command given): the banner, saved trains, and a command cheat-sheet.</summary>
-public sealed class DashboardCommand(ITrainRepository repository) : AsyncCommand
+public sealed class DashboardCommand(TrainService query) : AsyncCommand
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
         Ui.Banner();
 
-        var trains = await repository.GetAllAsync(cancellationToken);
+        var trains = await query.GetAllAsync(cancellationToken);
         if (trains.Count == 0)
         {
             AnsiConsole.Write(new Panel("[yellow]No trains saved yet.[/]\nConfigure trains in the app, or copy its [grey]trackify.db[/] here.")

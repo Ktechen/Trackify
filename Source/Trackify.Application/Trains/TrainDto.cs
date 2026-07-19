@@ -1,13 +1,15 @@
-
-namespace Trackify.Domain.Trains;
+namespace Trackify.Application.Trains;
 
 /// <summary>
-/// The persisted, transport-agnostic configuration of a single train. Pure data shared by every
-/// front-end (Uno app + CLI); runtime connection state (connected? status text) is deliberately NOT
-/// here — that belongs to the presentation/control layer.
+/// Data-transfer view of a saved train. This is what crosses the Application boundary to the
+/// front-ends (CLI / Uno app), so the Domain entity <see cref="Train"/> never leaks past the
+/// use-case layer. It carries the configuration fields a front-end reads or edits; persistence
+/// audit fields (Id timestamps) stay on the Domain entity. Map with the extensions in
+/// <see cref="TrainMapping"/> (<c>ToDto</c> / <c>ToEntity</c>).
 /// </summary>
-public sealed record Train : BaseEntity
+public sealed record TrainDto
 {
+    public Guid Id { get; init; }
     public string Name { get; set; } = "";
     public HubType Hub { get; set; } = HubType.PoweredUpHub;
 

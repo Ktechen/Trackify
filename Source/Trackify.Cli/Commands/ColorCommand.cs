@@ -4,7 +4,7 @@ using Trackify.Domain.Enums;
 namespace Trackify.Cli.Commands;
 
 /// <summary>Sets a train's hub LED colour (persists on the hub after disconnect).</summary>
-public sealed class ColorCommand(TrainControlService control, TrainResolver resolver) : AsyncCommand<ColorSettings>
+public sealed class ColorCommand(TrainControlService control, TrainService resolver) : AsyncCommand<ColorSettings>
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, ColorSettings settings, CancellationToken cancellationToken)
     {
