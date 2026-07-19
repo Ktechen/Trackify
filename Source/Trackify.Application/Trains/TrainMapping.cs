@@ -1,9 +1,11 @@
+using Trackify.Domain.Common;
+
 namespace Trackify.Application.Trains;
 
 /// <summary>
 /// Maps between the Domain entity <see cref="Train"/> and the boundary <see cref="TrainDto"/>.
 /// The repository works in entities (a persistence detail); everything above the use-case layer
-/// works in DTOs. <c>ToEntity</c> preserves the <see cref="Train.Id"/> so a loaded-edited-saved
+/// works in DTOs. <c>ToEntity</c> preserves the <see cref="BaseEntity.Id"/> so a loaded-edited-saved
 /// round-trip updates the same row; the audit timestamps are managed by the entity/repository.
 /// </summary>
 public static class TrainMapping
