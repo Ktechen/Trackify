@@ -1,6 +1,5 @@
 using System.Globalization;
 using Trackify.Models.Trains;
-using Trackify.Presentation.Logging;
 using Train = Trackify.Models.Trains.Train;
 
 namespace Trackify.Presentation.ViewModels;
@@ -21,7 +20,7 @@ public partial class MainViewModel
     [ObservableProperty] private bool isDiscovering;
     [ObservableProperty] private string? discoverStatus;
     // Non-null while the "add this hub?" popup is showing: the found hub awaiting confirmation.
-    [ObservableProperty] private DiscoveredHub? pendingHub;
+    [ObservableProperty] private DiscoveredHubDto? pendingHub;
 
     // Scans until a hub turns up or the user stops it, then offers it for confirmation (PendingHub).
     private async Task DiscoverAsync()
@@ -81,33 +80,33 @@ public partial class MainViewModel
     }
 
     // Binds the hub to a matching train (or creates one) and selects it.
-    private void AdoptHubAsTrain(DiscoveredHub hubDto)
+    private void AdoptHubAsTrain(DiscoveredHubDto hubDtoDto)
     {
-        var train = Trains.FirstOrDefault(t => IsSameDevice(t, hubDto));
+        var train = Trains.FirstOrDefault(t => IsSameDevice(t, hubDtoDto));
         if (train is not null)
         {
-            train.HubId = hubDto.Id;
+            train.HubId = hubDtoDto.Id;
         }
         else
         {
-            train = CreateTrainFor(hubDto);
+            train = CreateTrainFor(hubDtoDto);
             Trains.Add(train);
         }
 
         SelectAfresh(train);
     }
 
-    private static bool IsSameDevice(Train train, DiscoveredHub hubDto)
-        => string.Equals(train.HubId, hubDto.Id, StringComparison.OrdinalIgnoreCase)
-        || (hubDto.MacAddress is not null && string.Equals(train.BleAddress, hubDto.MacAddress, StringComparison.OrdinalIgnoreCase));
+    private static bool IsSameDevice(Train train, DiscoveredHubDto hubDtoDto)
+        => string.Equals(train.HubId, hubDtoDto.Id, StringComparison.OrdinalIgnoreCase)
+        || (hubDtoDto.MacAddress is not null && string.Equals(train.BleAddress, hubDtoDto.MacAddress, StringComparison.OrdinalIgnoreCase));
 
-    private Train CreateTrainFor(DiscoveredHub hubDto) => new()
+    private Train CreateTrainFor(DiscoveredHubDto hubDtoDto) => new()
     {
         Id = $"trn-{_sequence++}",
-        Name = string.IsNullOrWhiteSpace(hubDto.Name) ? "Entdeckter Hub" : hubDto.Name!,
-        Hub = hubDto.HubType ?? HubType.PoweredUpHub,
-        HubId = hubDto.Id,
-        BleAddress = hubDto.MacAddress ?? hubDto.Id,
+        Name = string.IsNullOrWhiteSpace(hubDtoDto.Name) ? "Entdeckter Hub" : hubDtoDto.Name!,
+        Hub = hubDtoDto.HubType ?? HubType.PoweredUpHub,
+        HubId = hubDtoDto.Id,
+        BleAddress = hubDtoDto.MacAddress ?? hubDtoDto.Id,
         Color = LedColorType.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = 0,
         AccelFn = SpeedFunctionType.EaseOut, BrakeFn = SpeedFunctionType.EaseIn, IsActive = true,
     };

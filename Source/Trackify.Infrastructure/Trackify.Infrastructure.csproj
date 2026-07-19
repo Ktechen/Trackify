@@ -1,24 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Implements Application ports: JSON train store (shared) + the BlueZ onboard-radio hub transport
-       under Ble/. The BlueZ code always compiles; only the DI registration is Linux-gated (see below). -->
+  <!-- Implements Application ports: EF Core + SQLite train repository + the BlueZ onboard-radio hub
+       transport under Ble/. The BlueZ code always compiles; AddLinuxLego picks it vs a no-op purely at
+       RUNTIME (OperatingSystem.IsLinux()), so there is no LINUX compile symbol / TrackifyLinux flag. -->
   <PropertyGroup>
-      <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
     <!-- Linux.Bluetooth transitively pins Tmds.DBus 0.15.0 (advisory GHSA-xrw6-gwf8-vvr9); accepted here
          because BlueZ is only ever exercised on a trusted local Raspberry Pi. -->
     <NoWarn>$(NoWarn);NU1903</NoWarn>
-  </PropertyGroup>
-
-  <!--
-    There is no built-in 'LINUX' preprocessor symbol for a plain net10.0 target (OS symbols only exist
-    for OS-specific TFMs like -android). We define our own so AddLinuxLego can pick the real BlueZ
-    service vs a no-op fallback: TrackifyLinux defaults to true when building on a Linux host (the
-    Raspberry Pi / Ubuntu) and can be forced with -p:TrackifyLinux=true. The #if LINUX lives ONLY in
-    the DI extension; the BlueZ implementation files compile unconditionally.
-  -->
-  <PropertyGroup>
-    <TrackifyLinux Condition="'$(TrackifyLinux)' == '' and $([MSBuild]::IsOSPlatform('Linux'))">true</TrackifyLinux>
-    <DefineConstants Condition="'$(TrackifyLinux)' == 'true'">$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

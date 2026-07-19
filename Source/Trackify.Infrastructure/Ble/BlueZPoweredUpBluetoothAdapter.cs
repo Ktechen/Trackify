@@ -36,7 +36,7 @@ public sealed class BlueZPoweredUpBluetoothAdapter : IPoweredUpBluetoothAdapter
 
                 var name = await device.GetNameAsync();
                 var address = await device.GetAddressAsync();
-                await handler(new BlueZDeviceInfo(LwpAddressing.ParseMacAddress(address), name, manufacturerData));
+                await handler(new BlueZDeviceInfo(LwpAddressingMapping.ParseMacAddress(address), name, manufacturerData));
             }
             catch
             {
@@ -67,7 +67,7 @@ public sealed class BlueZPoweredUpBluetoothAdapter : IPoweredUpBluetoothAdapter
             throw new ArgumentException($"Expected a {nameof(BlueZDeviceInfo)}.", nameof(bluetoothDeviceInfo));
 
         var adapter = await GetAdapterAsync();
-        var device = await adapter.GetDeviceAsync(LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64))
+        var device = await adapter.GetDeviceAsync(LwpAddressingMapping.FormatMacAddress(info.MacAddressAsUInt64))
             ?? throw new InvalidOperationException($"BLE device {info.Name} is not known to BlueZ; discover it first.");
 
         return new BlueZDevice(device);

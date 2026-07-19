@@ -6,4 +6,4 @@ namespace Trackify.Application.Lego;
 /// identifier (Android: MAC string; iOS: a CoreBluetooth UUID) and is the key used to connect and
 /// send commands. <see cref="MacAddress"/> is only populated on platforms that expose it (Android).
 /// </summary>
-public sealed record DiscoveredHub(string Id, string? Name, string? MacAddress, HubType? HubType);
+public sealed record DiscoveredHubDto(string Id, string? Name, string? MacAddress, HubType? HubType);

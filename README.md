@@ -1,5 +1,12 @@
 # Trackify
 
+[![CI](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Ktechen/Trackify/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ktechen/Trackify/security/code-scanning)
+[![Android APK](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml)
+[![CLI linux-arm64](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml)
+[![License](https://img.shields.io/github/license/Ktechen/Trackify)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
+
 Configure and control **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — no
 server/backend. BLE speaks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/)
 via [SharpBrick.PoweredUp](https://github.com/sharpbrick/powered-up).

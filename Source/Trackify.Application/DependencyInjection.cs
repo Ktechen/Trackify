@@ -1,57 +1,35 @@
 using Microsoft.Extensions.DependencyInjection;
 using Trackify.Application.Trains;
 #if __ANDROID__ || __IOS__ || WINDOWS
-using SharpBrick.PoweredUp;
 using Trackify.Application.Services;
-#endif
-#if __ANDROID__ || __IOS__
-using SharpBrick.PoweredUp.Mobile;
 #endif
 
 namespace Trackify.Application;
 
-/// <summary>Application layer composition (use-case services + the platform hub transport).</summary>
+/// <summary>Application layer composition — use-case services + the per-platform hub transport.</summary>
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registers the Application use-case services and — filtered per platform right here in DI —
-    /// the matching <see cref="ILegoService"/> transport:
-    /// Android/iOS → <c>DirectLegoService</c> (SharpBrick .Mobile / Plugin.BLE),
-    /// Windows → <c>WindowsLegoService</c> (SharpBrick .WinRT).
-    /// The plain net10.0 flavor registers no transport — that composition root decides
-    /// (the CLI adds BlueZ via <c>AddTrackifyInfrastructure</c>; desktop/wasm add <c>UnsupportedLegoService</c>).
+    /// Registers the Application use-case services (<see cref="ITrainControlService"/>,
+    /// <see cref="ITrainService"/>) and — filtered per platform right here in DI — the matching
+    /// <see cref="ILegoService"/> transport via its <c>Add…Lego</c> helper (mirroring the CLI's
+    /// <c>AddLinuxLego</c>): Android → <c>AddAndroidLego</c>, iOS → <c>AddIosLego</c>, Windows →
+    /// <c>AddWindowsLego</c>. The plain net10.0 flavor registers none — the composition root decides
+    /// (the CLI adds BlueZ via <c>AddTrackifyInfrastructure</c>; desktop/wasm add a no-op in the app).
     /// </summary>
     public static IServiceCollection AddTrackifyApplication(this IServiceCollection services)
     {
-        services.AddSingleton<TrainControlService>();
-        services.AddSingleton<TrainService>();
+        services.AddSingleton<ITrainControlService, TrainControlService>();
+        services.AddSingleton<ITrainService, TrainService>();
 
-#if __ANDROID__ || __IOS__
-        services
-            .AddPoweredUp()
-            .AddXamarinBluetooth(CreateDeviceInfoProvider());
-        services.AddSingleton<ILegoService, DirectLegoService>();
-#if __IOS__
-        // iOS prompts by itself (NSBluetoothAlwaysUsageDescription); Android supplies an
-        // Activity-based IBluetoothPermissionService from the app's composition root.
-        services.AddSingleton<IBluetoothPermissionService, IosBluetoothPermissionService>();
-#endif
+#if __ANDROID__
+        services.AddAndroidLego();
+#elif __IOS__
+        services.AddIosLego();
 #elif WINDOWS
-        services
-            .AddPoweredUp()
-            .AddWinRTBluetooth();
-        services.AddSingleton<ILegoService, WindowsLegoService>();
+        services.AddWindowsLego();
 #endif
 
         return services;
     }
-
-#if __ANDROID__ || __IOS__
-    private static INativeDeviceInfoProvider CreateDeviceInfoProvider()
-#if __ANDROID__
-        => new AndroidDeviceInfoProvider();
-#else
-        => new IosDeviceInfoProvider();
-#endif
-#endif
 }

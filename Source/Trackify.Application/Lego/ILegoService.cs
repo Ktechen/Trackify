@@ -2,9 +2,10 @@
 namespace Trackify.Application.Lego;
 
 /// <summary>
-/// Controls LEGO Powered Up hubs. The transport is an implementation detail: mobile heads talk
-/// Bluetooth LE directly in-process (<c>DirectLegoService</c>), platforms without a usable BLE
-/// stack get <c>UnsupportedLegoService</c>. The view model depends only on this abstraction.
+/// Controls LEGO Powered Up hubs. The transport is an implementation detail selected per platform at
+/// DI time: Android/iOS/Windows use SharpBrick BLE (<c>AddAndroidLego</c>/<c>AddIosLego</c>/
+/// <c>AddWindowsLego</c>), the CLI on a Pi uses BlueZ (<c>AddLinuxLego</c>), and desktop/wasm get a
+/// no-op. Callers depend only on this abstraction.
 /// </summary>
 public interface ILegoService
 {
@@ -16,7 +17,7 @@ public interface ILegoService
     /// then returns what was seen (empty if cancelled before anything appeared). There is no fixed
     /// timeout - cancel the token to stop scanning.
     /// </summary>
-    Task<IReadOnlyList<DiscoveredHub>> DiscoverAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default);
 
     /// <summary>Connects to the hub with the given id, treating it as <paramref name="hubType"/>.</summary>
     Task ConnectAsync(string hubId, HubType hubType, CancellationToken ct = default);

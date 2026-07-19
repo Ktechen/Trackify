@@ -12,8 +12,8 @@ internal sealed class UnsupportedLegoService : ILegoService
 
     public bool IsSupported => false;
 
-    public Task<IReadOnlyList<DiscoveredHub>> DiscoverAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<DiscoveredHub>>([]);
+    public Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<DiscoveredHubDto>>([]);
 
     public Task ConnectAsync(string hubId, HubType hubType, CancellationToken ct = default)
         => throw new PlatformNotSupportedException(Message);

@@ -12,8 +12,8 @@ public sealed class FakeLegoService : ILegoService
 
     public bool IsSupported => true;
 
-    public Task<IReadOnlyList<DiscoveredHub>> DiscoverAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<DiscoveredHub>>([]);
+    public Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<DiscoveredHubDto>>([]);
 
     public Task ConnectAsync(string hubId, HubType hubType, CancellationToken ct = default)
     {

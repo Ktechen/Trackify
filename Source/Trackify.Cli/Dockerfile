@@ -1,8 +1,8 @@
 # Trackify CLI — build from the repo root as context:
 #   docker build -f Source/Trackify.Cli/Dockerfile -t trackify-cli .
 #
-# Building INSIDE a Linux container means the LINUX compile flag turns on automatically
-# (TrackifyLinux auto-detects the Linux build host), so the real BlueZ transport is compiled in.
+# BlueZ is always compiled in; the container runs on Linux, so AddLinuxLego selects the real BlueZ
+# transport at runtime (OperatingSystem.IsLinux()). No build flags needed.
 # The image is multi-arch by base image: on a Raspberry Pi, docker pulls the arm64 variants.
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build

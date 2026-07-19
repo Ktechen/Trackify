@@ -1,20 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Use cases + ports (interfaces) + the per-platform ILegoService implementations under Services/.
-       Multi-targeted so the platform BLE stacks (SharpBrick .Mobile / .WinRT) and their #if branches
-       exist per head; the plain net10.0 flavor stays transport-free (CLI/desktop/wasm). -->
+  <!-- Use cases + ports + the per-platform ILegoService transports under Services/ (SharpBrick
+       .Mobile/.WinRT). Multi-targeted per BUILD host so each head's BLE stack + #if branch exists;
+       the plain net10.0 flavor (Linux/CLI) stays transport-free — the CLI carries BlueZ instead. -->
   <PropertyGroup>
-    <!--
-      TFMs depend on the BUILD host, because the platform flavors need their workloads:
-      - Linux (Raspberry Pi / Docker): plain net10.0 only — no Android workload there, and the
-        CLI needs no mobile/Windows flavor. This keeps `dotnet publish Trackify.Cli` working
-        in a plain Linux SDK container.
-      - Windows dev box: + android + windows heads for the Uno app.
-      - macOS: + android + ios (the iOS toolchain only exists on a Mac).
-    -->
-      <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
-      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net9.0;net10.0-android;net10.0-windows10.0.19041.0</TargetFrameworks>
-      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('macOS'))">net10.0;net9.0;net10.0-android;net10.0-ios</TargetFrameworks>
+    <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net9.0;net10.0-android;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('macOS'))">net10.0;net9.0;net10.0-android;net10.0-ios</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,8 +14,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
-  <!-- On-device LEGO Powered Up control over Bluetooth LE, per head (same pins as before):
-       android/ios: SharpBrick .Mobile on Plugin.BLE · windows: SharpBrick .WinRT -->
+  <!-- On-device LEGO Powered Up control per head: android/ios → SharpBrick .Mobile on Plugin.BLE;
+       windows → SharpBrick .WinRT. Only referenced on the TFMs that use them. -->
   <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-windows'))">
     <PackageReference Include="SharpBrick.PoweredUp" />
   </ItemGroup>

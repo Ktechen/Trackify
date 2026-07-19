@@ -11,7 +11,7 @@ namespace Trackify.Application.Trains;
 /// both the Uno app and the CLI reuse it without duplicating control logic. UI-neutral: failures
 /// surface as exceptions/no-ops, never as localized status text.
 /// </summary>
-public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlService> logger)
+public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlService> logger) : ITrainControlService
 {
     /// <summary>Port A — the motor driven by the speed slider / speed command.</summary>
     public const byte MotorPort = 0;
@@ -26,7 +26,7 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     public bool IsSupported => lego.IsSupported;
 
     /// <summary>Scans for nearby hubs until one is found or <paramref name="ct"/> is cancelled.</summary>
-    public Task<IReadOnlyList<DiscoveredHub>> DiscoverAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default)
     {
         Log.Discovering(_log);
         return lego.DiscoverAsync(ct);
@@ -100,9 +100,9 @@ public sealed class TrainControlService(ILegoService lego, ILogger<TrainControlS
     }
 
     /// <summary>Whether a discovered hub is the same physical device as this train (by id or MAC).</summary>
-    public static bool IsSameDevice(TrainDto train, DiscoveredHub hubDto)
-        => string.Equals(train.HubId, hubDto.Id, StringComparison.OrdinalIgnoreCase)
-        || (hubDto.MacAddress is not null && string.Equals(train.BleAddress, hubDto.MacAddress, StringComparison.OrdinalIgnoreCase));
+    public static bool IsSameDevice(TrainDto train, DiscoveredHubDto hubDtoDto)
+        => string.Equals(train.HubId, hubDtoDto.Id, StringComparison.OrdinalIgnoreCase)
+        || (hubDtoDto.MacAddress is not null && string.Equals(train.BleAddress, hubDtoDto.MacAddress, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// The key a hub is addressed by: the platform device id captured during discovery, or the typed

@@ -2,7 +2,7 @@
 namespace Trackify.Cli.Commands;
 
 /// <summary>Lists the trains saved in the shared store.</summary>
-public sealed class ListCommand(TrainService query) : AsyncCommand
+public sealed class ListCommand(ITrainService query) : AsyncCommand
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {

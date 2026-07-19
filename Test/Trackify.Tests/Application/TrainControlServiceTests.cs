@@ -17,9 +17,9 @@ public class TrainControlServiceTests
     public void IsSameDevice_matches_by_id_or_mac()
     {
         var train = new TrainDto { HubId = "dev-1", BleAddress = "AA:BB:CC" };
-        Assert.True(TrainControlService.IsSameDevice(train, new DiscoveredHub("dev-1", null, null, null)));
-        Assert.True(TrainControlService.IsSameDevice(train, new DiscoveredHub("other", null, "aa:bb:cc", null)));
-        Assert.False(TrainControlService.IsSameDevice(train, new DiscoveredHub("other", null, "99:99:99", null)));
+        Assert.True(TrainControlService.IsSameDevice(train, new DiscoveredHubDto("dev-1", null, null, null)));
+        Assert.True(TrainControlService.IsSameDevice(train, new DiscoveredHubDto("other", null, "aa:bb:cc", null)));
+        Assert.False(TrainControlService.IsSameDevice(train, new DiscoveredHubDto("other", null, "99:99:99", null)));
     }
 
     [Fact]

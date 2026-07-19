@@ -34,14 +34,8 @@
         </UnoFeatures>
     </PropertyGroup>
 
-    <!--
-      On-device Bluetooth LE control of LEGO Powered Up hubs, per head:
-        - android/ios: native BLE via Plugin.BLE (SharpBrick.PoweredUp.Mobile)
-        - windows:     WinRT Bluetooth (SharpBrick.PoweredUp.WinRT)
-        - desktop/wasm: no BLE stack -> UnsupportedLegoService
-    -->
-    <!-- The BLE stacks (SharpBrick .Mobile/.WinRT, Plugin.BLE) flow transitively from
-         Trackify.Application, which owns the platform ILegoService implementations per TFM. -->
+    <!-- The app no longer does Bluetooth: train control lives in the CLI on the Raspberry Pi. It
+         registers a no-op ILegoService (Services/UnsupportedLegoService) so the UI still runs. -->
 
     <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
     <ItemGroup>

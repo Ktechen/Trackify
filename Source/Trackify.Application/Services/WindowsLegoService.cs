@@ -27,9 +27,9 @@ public sealed class WindowsLegoService : ILegoService
 
     public bool IsSupported => true;
 
-    public async Task<IReadOnlyList<DiscoveredHub>> DiscoverAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default)
     {
-        var found = new Dictionary<string, DiscoveredHub>();
+        var found = new Dictionary<string, DiscoveredHubDto>();
 
         // Scan runs until the first hub is seen or the caller cancels - no fixed time window.
         var firstFound = new TaskCompletionSource();
@@ -40,7 +40,7 @@ public sealed class WindowsLegoService : ILegoService
         {
             if (deviceInfo is PoweredUpBluetoothDeviceInfoWithMacAddress info && info.MacAddressAsUInt64 != 0)
             {
-                lock (found) found[LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64)] = ToDiscoveredHub(info);
+                lock (found) found[LwpAddressingMapping.FormatMacAddress(info.MacAddressAsUInt64)] = ToDiscoveredHubDto(info);
                 firstFound.TrySetResult();
             }
 
@@ -67,7 +67,7 @@ public sealed class WindowsLegoService : ILegoService
         }
 
         // WinRT identifies devices by numeric address, so connect from the MAC id.
-        var deviceInfo = await _adapter.CreateDeviceInfoByKnownStateAsync(LwpAddressing.ParseMacAddress(hubId))
+        var deviceInfo = await _adapter.CreateDeviceInfoByKnownStateAsync(LwpAddressingMapping.ParseMacAddress(hubId))
             ?? throw new InvalidOperationException("Ungültige Hub-Adresse.");
         var protocol = _host.CreateProtocol(deviceInfo);
 
@@ -83,7 +83,7 @@ public sealed class WindowsLegoService : ILegoService
 
         lock (_gate)
         {
-            _connectedHubs[hubId] = new ConnectedHub(protocol, LwpAddressing.RgbLedPortFor(hubType));
+            _connectedHubs[hubId] = new ConnectedHub(protocol, LwpAddressingMapping.RgbLedPortFor(hubType));
         }
     }
 
@@ -114,10 +114,10 @@ public sealed class WindowsLegoService : ILegoService
         return LwpProtocol.SetRgbColorAsync(entry.Protocol, rgbPort, red, green, blue);
     }
 
-    private static DiscoveredHub ToDiscoveredHub(PoweredUpBluetoothDeviceInfoWithMacAddress info) => new(
-        LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64),
+    private static DiscoveredHubDto ToDiscoveredHubDto(PoweredUpBluetoothDeviceInfoWithMacAddress info) => new(
+        LwpAddressingMapping.FormatMacAddress(info.MacAddressAsUInt64),
         string.IsNullOrWhiteSpace(info.Name) ? null : info.Name,
-        LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64),
+        LwpAddressingMapping.FormatMacAddress(info.MacAddressAsUInt64),
         LwpProtocol.MapHubType(info.ManufacturerData));
 
     private ConnectedHub RequireHub(string hubId)

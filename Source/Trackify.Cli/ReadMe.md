@@ -4,10 +4,9 @@ Controls LEGO Powered Up hubs over **onboard Bluetooth (BlueZ)** on a Linux box 
 Raspberry Pi / Linux server. Shares Domain/Application/Infrastructure (and the `trackify.db` store)
 with the Trackify app.
 
-**On Windows (dev/test):** the Windows build of the CLI (`net10.0-windows…` TFM — e.g. via the Rider
-run configs or `dotnet run -f net10.0-windows10.0.19041.0`) uses **WinRT Bluetooth**, so
-`discover`/`drive` work on the dev box too. The plain `net10.0` build has no Windows transport and
-reports "Bluetooth is not available".
+**Hub control is Linux/BlueZ only** (the Raspberry Pi). The CLI builds and runs on Windows for
+dev/test — `list`, the dashboard and the SQLite store all work — but `discover`/`drive` report
+"Bluetooth is not available", because there is no on-device BLE transport off-Linux anymore.
 
 ## Commands
 
@@ -37,16 +36,16 @@ at the same file. The hub MAC (`HubId`/`BleAddress`) comes from `trackify discov
 ```bash
 # From Windows for the Pi (arm64), self-contained (no .NET needed on the Pi):
 dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj -c Release -r linux-arm64 \
-  --self-contained -p:TrackifyLinux=true -o publish/
+  --self-contained -o publish/
 scp -r publish/ pi@raspberrypi:/opt/trackify/
 ssh pi@raspberrypi 'chmod +x /opt/trackify/trackify'
 ```
 
-`-p:TrackifyLinux=true` is required when cross-publishing **from Windows** (the LINUX compile flag is
-set from the build host; without it the no-op fallback is compiled instead of BlueZ). Building on the
-Pi (or in Docker/CI on Linux) turns it on automatically. Prerequisites on the Pi: `bluetoothd`
-running, user in the `bluetooth` group; run `trackify discover` once so BlueZ knows the device.
-The CI `cli-arm64.yml` workflow produces this artifact.
+No build flags needed even when cross-publishing from Windows: BlueZ is always compiled in, and
+`AddLinuxLego` picks the real transport vs. the no-op fallback at **runtime** via
+`OperatingSystem.IsLinux()` — so the same artifact works on the Pi. Prerequisites on the Pi:
+`bluetoothd` running, user in the `bluetooth` group; run `trackify discover` once so BlueZ knows the
+device. The CI `cli-arm64.yml` workflow produces this artifact.
 
 ## Docker
 
@@ -101,10 +100,9 @@ Steuert LEGO Powered Up Hubs über das **Onboard-Bluetooth (BlueZ)** eines Linux
 für Raspberry Pi / Linux-Server. Teilt sich Domain/Application/Infrastructure (und den `trackify.db`-
 Store) mit der Trackify-App.
 
-**Auf Windows (Entwickeln/Testen):** Der Windows-Build der CLI (`net10.0-windows…`-TFM, z. B. via
-Rider-Run-Config oder `dotnet run -f net10.0-windows10.0.19041.0`) nutzt **WinRT-Bluetooth** —
-`discover`/`drive` funktionieren also auch am Dev-Rechner. Der plain `net10.0`-Build hat bewusst
-keinen Windows-Transport und meldet „Bluetooth is not available".
+**Hub-Steuerung nur unter Linux/BlueZ** (Raspberry Pi). Die CLI baut und läuft auf Windows für
+Entwicklung/Test — `list`, das Dashboard und der SQLite-Store funktionieren —, aber `discover`/`drive`
+melden „Bluetooth is not available", da es außerhalb Linux keinen On-Device-BLE-Transport mehr gibt.
 
 ## Befehle
 
@@ -134,16 +132,16 @@ beide auf dieselbe Datei zeigen lassen. Die Hub-MAC (`HubId`/`BleAddress`) liefe
 ```bash
 # Von Windows aus für den Pi (arm64), self-contained (kein .NET auf dem Pi nötig):
 dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj -c Release -r linux-arm64 \
-  --self-contained -p:TrackifyLinux=true -o publish/
+  --self-contained -o publish/
 scp -r publish/ pi@raspberrypi:/opt/trackify/
 ssh pi@raspberrypi 'chmod +x /opt/trackify/trackify'
 ```
 
-`-p:TrackifyLinux=true` ist beim Cross-Publish **von Windows** Pflicht (das LINUX-Flag kommt vom
-Build-Host; ohne es wird der No-op-Fallback statt BlueZ kompiliert). Auf dem Pi (bzw. in Docker/CI
-unter Linux) ist es automatisch an. Voraussetzungen auf dem Pi: `bluetoothd` läuft, Benutzer in der
-`bluetooth`-Gruppe; einmal `trackify discover` ausführen, damit BlueZ das Gerät kennt. Der
-CI-Workflow `cli-arm64.yml` erzeugt dieses Artefakt.
+Kein Build-Flag nötig, auch beim Cross-Publish von Windows: BlueZ ist immer einkompiliert, und
+`AddLinuxLego` wählt zur **Laufzeit** per `OperatingSystem.IsLinux()` den echten Transport bzw. den
+No-op-Fallback — dasselbe Artefakt läuft also auf dem Pi. Voraussetzungen auf dem Pi: `bluetoothd`
+läuft, Benutzer in der `bluetooth`-Gruppe; einmal `trackify discover` ausführen, damit BlueZ das Gerät
+kennt. Der CI-Workflow `cli-arm64.yml` erzeugt dieses Artefakt.
 
 ## Docker
 

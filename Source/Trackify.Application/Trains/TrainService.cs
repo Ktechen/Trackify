@@ -5,7 +5,7 @@ namespace Trackify.Application.Trains;
 /// <see cref="TrainDto"/> at the boundary, so callers (CLI / Uno app) only ever see DTOs — the
 /// entity stays a persistence detail behind the repository.
 /// </summary>
-public sealed class TrainService(ITrainRepository repository)
+public sealed class TrainService(ITrainRepository repository) : ITrainService
 {
     /// <summary>All saved trains as DTOs.</summary>
     public async Task<IReadOnlyList<TrainDto>> GetAllAsync(CancellationToken cancellationToken = default)

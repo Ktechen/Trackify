@@ -3,7 +3,7 @@ using Trackify.Cli.Commands.Settings;
 namespace Trackify.Cli.Commands;
 
 /// <summary>Connects a train's hub and disconnects again — a quick reachability check.</summary>
-public sealed class ConnectCommand(TrainControlService control, TrainService resolver) : AsyncCommand<TrainSettings>
+public sealed class ConnectCommand(ITrainControlService control, ITrainService resolver) : AsyncCommand<TrainSettings>
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, TrainSettings settings, CancellationToken cancellationToken)
     {

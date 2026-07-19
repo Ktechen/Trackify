@@ -65,9 +65,9 @@ public partial class App : Microsoft.UI.Xaml.Application
             .WriteTo.Console()
             .CreateLogger();
 
-    // The platform ILegoService transports live in Trackify.Application (AddTrackifyApplication
-    // filters them per platform in DI). The app only contributes what genuinely belongs to it:
-    // the Android permission flow (it needs the Activity) and the no-BLE fallback for desktop/wasm.
+    // The platform ILegoService transports are wired per head inside AddTrackifyApplication
+    // (AddAndroidLego / AddIosLego / AddWindowsLego). The app adds only what genuinely belongs to it:
+    // the Android permission flow (needs the Activity) and the no-BLE fallback for desktop/wasm.
     private static void RegisterLegoService(IServiceCollection services)
     {
 #if __ANDROID__

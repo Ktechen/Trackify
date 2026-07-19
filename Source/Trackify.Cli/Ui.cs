@@ -44,7 +44,7 @@ internal static class Ui
     }
 
     /// <summary>A styled table of hubs found during a scan.</summary>
-    public static Table HubsTable(IReadOnlyList<DiscoveredHub> hubs)
+    public static Table HubsTable(IReadOnlyList<DiscoveredHubDto> hubs)
     {
         var table = new Table()
             .Border(TableBorder.Rounded)

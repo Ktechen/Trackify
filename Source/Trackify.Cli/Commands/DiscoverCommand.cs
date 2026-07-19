@@ -3,7 +3,7 @@ using Trackify.Cli.Commands.Settings;
 namespace Trackify.Cli.Commands;
 
 /// <summary>Scans for nearby hubs over Bluetooth and prints what turns up.</summary>
-public sealed class DiscoverCommand(TrainControlService control) : AsyncCommand<DiscoverSettings>
+public sealed class DiscoverCommand(ITrainControlService control) : AsyncCommand<DiscoverSettings>
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, DiscoverSettings settings, CancellationToken cancellationToken)
     {

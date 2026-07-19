@@ -5,7 +5,7 @@ namespace Trackify.Application.Lego;
 /// Transport-agnostic LEGO Wireless Protocol addressing helpers (no BLE stack, no SharpBrick).
 /// See https://lego.github.io/lego-ble-wireless-protocol-docs/. Shared by every transport.
 /// </summary>
-public static class LwpAddressing
+public static class LwpAddressingMapping
 {
     /// <summary>The built-in RGB LED's port for each hub model, or null when the model has none.</summary>
     public static byte? RgbLedPortFor(HubType hubType) => hubType switch

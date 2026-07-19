@@ -34,11 +34,11 @@ public sealed class DirectLegoService : ILegoService
 
     public bool IsSupported => true;
 
-    public async Task<IReadOnlyList<DiscoveredHub>> DiscoverAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default)
     {
         await EnsureRadioReadyAsync();
 
-        var found = new Dictionary<string, DiscoveredHub>();
+        var found = new Dictionary<string, DiscoveredHubDto>();
 
         // Scan runs until the first hub is seen or the caller cancels - no fixed time window.
         var firstFound = new TaskCompletionSource();
@@ -49,7 +49,7 @@ public sealed class DirectLegoService : ILegoService
         {
             if (deviceInfo is XamarinBluetoothDeviceInfo info && !string.IsNullOrEmpty(info.DeviceIdentifier))
             {
-                lock (found) found[info.DeviceIdentifier] = ToDiscoveredHub(info);
+                lock (found) found[info.DeviceIdentifier] = ToDiscoveredHubDto(info);
                 firstFound.TrySetResult();
             }
 
@@ -94,7 +94,7 @@ public sealed class DirectLegoService : ILegoService
 
         lock (_gate)
         {
-            _connectedHubs[hubId] = new ConnectedHub(protocol, LwpAddressing.RgbLedPortFor(hubType));
+            _connectedHubs[hubId] = new ConnectedHub(protocol, LwpAddressingMapping.RgbLedPortFor(hubType));
         }
     }
 
@@ -125,10 +125,10 @@ public sealed class DirectLegoService : ILegoService
         return LwpProtocol.SetRgbColorAsync(entry.Protocol, rgbPort, red, green, blue);
     }
 
-    private static DiscoveredHub ToDiscoveredHub(XamarinBluetoothDeviceInfo info) => new(
+    private static DiscoveredHubDto ToDiscoveredHubDto(XamarinBluetoothDeviceInfo info) => new(
         info.DeviceIdentifier,
         string.IsNullOrWhiteSpace(info.Name) ? null : info.Name,
-        info.MacAddressAsUInt64 == 0 ? null : LwpAddressing.FormatMacAddress(info.MacAddressAsUInt64),
+        info.MacAddressAsUInt64 == 0 ? null : LwpAddressingMapping.FormatMacAddress(info.MacAddressAsUInt64),
         LwpProtocol.MapHubType(info.ManufacturerData));
 
     // Ensures the app may use the radio AND that the radio is actually on before we touch it.

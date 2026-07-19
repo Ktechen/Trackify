@@ -1,7 +1,7 @@
 name: CLI linux-arm64
 
-# Self-contained arm64 build of the CLI for a Raspberry Pi. Built on a Linux runner, so the LINUX
-# flag auto-enables and the real BlueZ transport is compiled in — no -p:TrackifyLinux needed.
+# Self-contained arm64 build of the CLI for a Raspberry Pi. BlueZ is always compiled in; the real
+# transport is selected at runtime on the Pi (OperatingSystem.IsLinux()) — no build flags needed.
 on:
   workflow_dispatch:
   push:

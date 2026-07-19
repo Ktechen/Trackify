@@ -14,6 +14,8 @@ using Log = Trackify.Cli.Log;
 // High-performance logging with a Serilog backend (diagnostics go to the console at Information+).
 var serilog = new LoggerConfiguration()
     .MinimumLevel.Information()
+    // EF Core logs every SQL command at Information — far too noisy for a CLI. Only surface warnings+.
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
 
