@@ -5,6 +5,11 @@
         <OutputType>Exe</OutputType>
         <UnoSingleProject>true</UnoSingleProject>
 
+        <!-- App and CLI compose the same layers (incl. Trackify.Infrastructure) to share the SQLite
+             store. That pulls Tmds.DBus (BLE, never run off-Linux) and SQLitePCLRaw transitively, both
+             flagged NU1903 — accepted repo-wide (as in Infrastructure/CLI), so don't fail the build. -->
+        <NoWarn>$(NoWarn);NU1903</NoWarn>
+
         <!-- Display name -->
         <ApplicationTitle>Trackify</ApplicationTitle>
         <!-- App Identifier -->
@@ -44,13 +49,13 @@
         <PackageReference Include="Serilog.Sinks.Console" />
     </ItemGroup>
 
-    <!-- Clean Architecture shared core. NB: the app references Domain + Application only. It must NOT
-         reference Trackify.Infrastructure, which now carries the Linux/BlueZ stack (Linux.Bluetooth /
-         Tmds.DBus) that has no business in the Android/iOS/wasm/Windows heads. App-side persistence
-         (Phase 4) implements the Application ITrainStore port directly. -->
+    <!-- Clean Architecture shared core. The app composes the SAME layers as the CLI (Domain +
+         Application + Infrastructure) so both share the SQLite store; AddLinuxLego inside
+         AddTrackifyInfrastructure only wires BlueZ at runtime on Linux (a no-op on the app heads). -->
     <ItemGroup>
         <ProjectReference Include="..\Trackify.Domain\Trackify.Domain.csproj" />
         <ProjectReference Include="..\Trackify.Application\Trackify.Application.csproj" />
+        <ProjectReference Include="..\Trackify.Infrastructure\Trackify.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

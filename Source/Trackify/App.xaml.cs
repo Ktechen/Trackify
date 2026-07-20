@@ -1,9 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Serilog;
 using Trackify.Application;
-#if __ANDROID__
-using Trackify.Services;
-#endif
+using Trackify.Infrastructure;
 
 namespace Trackify;
 
@@ -45,15 +43,11 @@ public partial class App : Microsoft.UI.Xaml.Application
                 {
                     services.AddTrackifyDomain();
                     services.AddTrackifyApplication();
-                    RegisterLegoService(services);
+                    services.AddTrackifyInfrastructure();
                 })
                 .UseNavigation(RegisterRoutes)
             );
         MainWindow = builder.Window;
-
-#if DEBUG
-        MainWindow.UseStudio();
-#endif
         MainWindow.SetWindowIcon();
 
         Host = await builder.NavigateAsync<Shell>();
@@ -64,18 +58,6 @@ public partial class App : Microsoft.UI.Xaml.Application
             .MinimumLevel.Information()
             .WriteTo.Console()
             .CreateLogger();
-
-    // The platform ILegoService transports are wired per head inside AddTrackifyApplication
-    // (AddAndroidLego / AddIosLego / AddWindowsLego). The app adds only what genuinely belongs to it:
-    // the Android permission flow (needs the Activity) and the no-BLE fallback for desktop/wasm.
-    private static void RegisterLegoService(IServiceCollection services)
-    {
-#if __ANDROID__
-        services.AddSingleton<IBluetoothPermissionService, AndroidBluetoothPermissionService>();
-#elif !__IOS__ && !WINDOWS
-        services.AddSingleton<ILegoService, UnsupportedLegoService>();
-#endif
-    }
 
     private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
     {

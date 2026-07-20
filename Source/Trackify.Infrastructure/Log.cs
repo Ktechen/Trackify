@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Trackify.Infrastructure.Logging;
+namespace Trackify.Infrastructure;
 
 /// <summary>Source-generated, allocation-free log messages for the Infrastructure layer.</summary>
 internal static partial class Log

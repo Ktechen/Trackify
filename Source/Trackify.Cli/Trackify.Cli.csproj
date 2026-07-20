@@ -4,12 +4,17 @@
        onboard Bluetooth. Shares Domain/Application/Infrastructure with the Uno app. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- Single net10.0 everywhere. AddLinuxLego wires the BlueZ transport at runtime on the Pi and a
-         no-op elsewhere (so it builds/runs on the Windows dev box too, just without hub control). -->
+    <!--
+      Linux (Pi/Docker/CI): plain net10.0 → AddLinuxLego wires BlueZ at runtime (OperatingSystem.IsLinux()).
+      Windows dev box: ALSO build net10.0-windows → the WINDOWS symbol is defined there, so
+      AddTrackifyApplication compiles in AddWindowsLego (WinRT Bluetooth) and `discover`/`drive` work on
+      Windows too. Run/publish that TFM for Windows hub control; the plain net10.0 flavor has no transport.
+    -->
     <TargetFramework>net10.0</TargetFramework>
-    <!-- The Pi target — declared so restore produces the RID-specific assets when building/publishing
-         for arm64 (e.g. from Rider or `-r linux-arm64`), avoiding NETSDK1047. -->
-    <RuntimeIdentifiers>linux-arm64</RuntimeIdentifiers>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <!-- The Pi target — declared so restore produces the arm64 assets (Rider / `-r linux-arm64`),
+         avoiding NETSDK1047. Only on the plain net10.0 flavor (a linux RID + the windows TFM don't mix). -->
+    <RuntimeIdentifiers Condition="'$(TargetFramework)' == 'net10.0'">linux-arm64</RuntimeIdentifiers>
     <RootNamespace>Trackify.Cli</RootNamespace>
     <AssemblyName>trackify</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>

@@ -24,10 +24,6 @@ public static class LinuxLegoServiceExtensions
             services.TryAddSingleton<IPoweredUpBluetoothAdapter, BlueZPoweredUpBluetoothAdapter>();
             services.TryAddSingleton<ILegoService, BlueZLegoService>();
         }
-        else
-        {
-            services.TryAddSingleton<ILegoService, UnsupportedLegoService>();
-        }
 
         return services;
     }

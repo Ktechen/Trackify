@@ -4,9 +4,10 @@ Controls LEGO Powered Up hubs over **onboard Bluetooth (BlueZ)** on a Linux box 
 Raspberry Pi / Linux server. Shares Domain/Application/Infrastructure (and the `trackify.db` store)
 with the Trackify app.
 
-**Hub control is Linux/BlueZ only** (the Raspberry Pi). The CLI builds and runs on Windows for
-dev/test — `list`, the dashboard and the SQLite store all work — but `discover`/`drive` report
-"Bluetooth is not available", because there is no on-device BLE transport off-Linux anymore.
+**On Windows (dev/test):** build/run the `net10.0-windows…` TFM (e.g. `dotnet run -f
+net10.0-windows10.0.19041.0` or the Rider run config) — it uses **WinRT Bluetooth**, so
+`discover`/`drive` work on the dev box too. The plain `net10.0` build (what ships to the Pi) uses
+BlueZ on Linux and reports "Bluetooth is not available" off-Linux.
 
 ## Commands
 
@@ -100,9 +101,10 @@ Steuert LEGO Powered Up Hubs über das **Onboard-Bluetooth (BlueZ)** eines Linux
 für Raspberry Pi / Linux-Server. Teilt sich Domain/Application/Infrastructure (und den `trackify.db`-
 Store) mit der Trackify-App.
 
-**Hub-Steuerung nur unter Linux/BlueZ** (Raspberry Pi). Die CLI baut und läuft auf Windows für
-Entwicklung/Test — `list`, das Dashboard und der SQLite-Store funktionieren —, aber `discover`/`drive`
-melden „Bluetooth is not available", da es außerhalb Linux keinen On-Device-BLE-Transport mehr gibt.
+**Auf Windows (Entwickeln/Testen):** die `net10.0-windows…`-TFM bauen/starten (z. B. `dotnet run -f
+net10.0-windows10.0.19041.0` oder die Rider-Run-Config) — sie nutzt **WinRT-Bluetooth**, also
+funktionieren `discover`/`drive` auch am Dev-Rechner. Der plain `net10.0`-Build (der auf den Pi geht)
+nutzt BlueZ unter Linux und meldet außerhalb Linux „Bluetooth is not available".
 
 ## Befehle
 

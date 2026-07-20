@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Bluetooth;
-using SharpBrick.PoweredUp.Protocol;
-using Trackify.Infrastructure.Logging;
 using HubType = Trackify.Domain.Enums.HubType;
 
 namespace Trackify.Infrastructure.Ble;
