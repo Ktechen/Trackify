@@ -1,3 +1,4 @@
+#if __ANDROID__
 using Microsoft.Extensions.DependencyInjection;
 using SharpBrick.PoweredUp;
 using SharpBrick.PoweredUp.Mobile;
@@ -18,3 +19,4 @@ public static class AndroidLegoServiceExtensions
         return services;
     }
 }
+#endif
