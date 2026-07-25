@@ -1,0 +1,3 @@
+# Shell scripts must always use LF line endings so they run on Linux (the
+# Raspberry Pi / Docker), even when checked out or edited on a Windows box.
+*.sh text eol=lf
