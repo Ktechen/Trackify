@@ -49,6 +49,12 @@
         <PackageReference Include="Serilog.Sinks.Console" />
     </ItemGroup>
 
+    <!-- Server mode: talk to a Trackify backend (the CLI on a Pi) over REST (Refit) + SignalR. -->
+    <ItemGroup>
+        <PackageReference Include="Refit" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    </ItemGroup>
+
     <!-- Clean Architecture shared core. The app composes the SAME layers as the CLI (Domain +
          Application + Infrastructure) so both share the SQLite store; AddLinuxLego inside
          AddTrackifyInfrastructure only wires BlueZ at runtime on Linux (a no-op on the app heads). -->

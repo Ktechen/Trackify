@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Serilog;
 using Trackify.Application;
 using Trackify.Infrastructure;
+using Trackify.Services.Remote;
 
 namespace Trackify;
 
@@ -14,6 +15,22 @@ public partial class App : Microsoft.UI.Xaml.Application
     public App()
     {
         this.InitializeComponent();
+
+        // Global exception handling (ASP.NET-style): log every unhandled failure so nothing is
+        // swallowed silently — UI, background threads, and unobserved tasks.
+        Serilog.Log.Logger = CreateSerilogLogger();
+        this.UnhandledException += (_, e) =>
+        {
+            Serilog.Log.Error(e.Exception, "Unhandled UI exception");
+            e.Handled = true; // keep the app alive; the error is logged, not silently ignored
+        };
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            Serilog.Log.Error(e.ExceptionObject as Exception, "Unhandled domain exception");
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            Serilog.Log.Error(e.Exception, "Unobserved task exception");
+            e.SetObserved();
+        };
     }
 
     protected Window? MainWindow { get; private set; }
@@ -44,6 +61,16 @@ public partial class App : Microsoft.UI.Xaml.Application
                     services.AddTrackifyDomain();
                     services.AddTrackifyApplication();
                     services.AddTrackifyInfrastructure();
+
+                    // Server mode: with a backend URL configured, use the remote transport (REST +
+                    // SignalR to a Pi) instead of the device's own Bluetooth — it wins as ILegoService
+                    // because it's registered last — and enable syncing its trains into the local store.
+                    var serverUrl = context.Configuration["AppConfig:ServerUrl"];
+                    if (!string.IsNullOrWhiteSpace(serverUrl))
+                    {
+                        services.AddTrackifyRemote(serverUrl);
+                        services.AddSingleton<RemoteTrainSync>();
+                    }
                 })
                 .UseNavigation(RegisterRoutes)
             );
