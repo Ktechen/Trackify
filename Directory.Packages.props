@@ -30,9 +30,16 @@
          from net10, so it works across the whole net8–net10 range the libs multi-target. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
 
+    <!-- Remote backend client (app's Server mode): Refit for the REST one-shot actions, the SignalR
+         .NET client for real-time speed/LED. The server side is the CLI's Microsoft.AspNetCore.App. -->
+    <PackageVersion Include="Refit" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />
+
     <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
     <PackageVersion Include="Serilog" Version="4.2.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.0" />
+    <!-- Read Serilog levels/sinks from appsettings.json (CLI + serve) instead of hardcoding them. -->
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="9.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
 
     <!-- Test project. -->

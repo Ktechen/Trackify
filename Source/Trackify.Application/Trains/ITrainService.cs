@@ -11,4 +11,10 @@ public interface ITrainService
 
     /// <summary>Finds a saved train by its id or (case-insensitive) name; null if none matches.</summary>
     Task<TrainDto?> FindAsync(string nameOrId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Saves a discovered hub as a train, de-duplicated by hub identity (HubId, then MAC): if a train
+    /// already refers to that hub it is returned unchanged. Returns the saved (or existing) train.
+    /// </summary>
+    Task<TrainDto> SaveDiscoveredAsync(DiscoveredHubDto hub, CancellationToken cancellationToken = default);
 }

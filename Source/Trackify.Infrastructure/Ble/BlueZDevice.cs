@@ -18,6 +18,9 @@ internal sealed class BlueZDevice(Device device) : IPoweredUpBluetoothDevice
         {
             await device.ConnectAsync();
             await device.WaitForPropertyValueAsync("Connected", value: true, TimeSpan.FromSeconds(15));
+            // BlueZ reports Connected=true before GATT discovery finishes; the services aren't queryable
+            // until ServicesResolved flips. Without this wait GetServiceAsync races and returns null.
+            await device.WaitForPropertyValueAsync("ServicesResolved", value: true, TimeSpan.FromSeconds(15));
             _connected = true;
         }
 

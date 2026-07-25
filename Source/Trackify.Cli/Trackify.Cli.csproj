@@ -28,14 +28,26 @@
     <RepositoryUrl>https://github.com/Ktechen/Trackify</RepositoryUrl>
   </PropertyGroup>
 
+  <!-- `trackify serve` hosts an ASP.NET Core backend (REST + SignalR) so the Uno app can drive this
+       Pi remotely. FrameworkReference (not a NuGet package) pulls in the shared ASP.NET runtime. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="Spectre.Console.Cli.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <!-- Microsoft.Extensions.DependencyInjection + .Logging come from the Microsoft.AspNetCore.App
+         FrameworkReference above (referencing them again as packages trips NU1510). -->
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+  </ItemGroup>
+
+  <!-- Externalised configuration (Serilog levels, server URL/timeout) — copied next to the binary. -->
+  <ItemGroup>
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

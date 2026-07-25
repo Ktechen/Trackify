@@ -21,7 +21,10 @@ public static class LinuxLegoServiceExtensions
         if (OperatingSystem.IsLinux())
         {
             services.AddPoweredUp();
-            services.TryAddSingleton<IPoweredUpBluetoothAdapter, BlueZPoweredUpBluetoothAdapter>();
+            // One BlueZ adapter instance behind both SharpBrick's abstraction (for the host) and the
+            // concrete type (so BlueZLegoService can run its radio-ready preflight before scanning).
+            services.TryAddSingleton<BlueZPoweredUpBluetoothAdapter>();
+            services.TryAddSingleton<IPoweredUpBluetoothAdapter>(sp => sp.GetRequiredService<BlueZPoweredUpBluetoothAdapter>());
             services.TryAddSingleton<ILegoService, BlueZLegoService>();
         }
 

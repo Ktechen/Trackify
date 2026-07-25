@@ -69,9 +69,14 @@
         </StackPanel>
       </Border>
 
-      <Button Grid.Column="6" Style="{StaticResource IconButtonStyle}" Command="{Binding GoToStreckenplanerCommand}" ToolTipService.ToolTip="Streckenplaner öffnen">
-        <FontIcon Glyph="&#xE8A1;" FontSize="16" />
-      </Button>
+      <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4">
+        <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ToggleConnectionPanelCommand}" ToolTipService.ToolTip="Verbindung (Direkt/Server)">
+          <FontIcon Glyph="&#xE713;" FontSize="16" />
+        </Button>
+        <Button Style="{StaticResource IconButtonStyle}" Command="{Binding GoToStreckenplanerCommand}" ToolTipService.ToolTip="Streckenplaner öffnen">
+          <FontIcon Glyph="&#xE8A1;" FontSize="16" />
+        </Button>
+      </StackPanel>
     </Grid>
 
     <!-- CONTENT: responsive master-detail (columns/visibility driven by code-behind) -->
@@ -87,5 +92,32 @@
 
     <!-- ADD-HUB POPUP (modal overlay across the whole page) -->
     <local:AddHubDialog Grid.Row="0" Grid.RowSpan="2" />
+
+    <!-- CONNECTION PANEL — inline modal overlay toggled from the header (Direct vs Server, live switch) -->
+    <Grid Grid.Row="0" Grid.RowSpan="2"
+          Background="#99000000"
+          Visibility="{Binding IsConnectionPanelOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+      <Border Width="380" VerticalAlignment="Center" HorizontalAlignment="Center"
+              Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}"
+              BorderThickness="1" CornerRadius="14" Padding="20">
+        <StackPanel Spacing="14">
+          <TextBlock Text="Verbindung" FontSize="16" FontWeight="Bold" />
+          <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     Text="Servermodus: Steuerung über einen Trackify-Backend (Raspberry Pi). Aus = Direktmodus über das Bluetooth dieses Geräts." />
+          <ToggleSwitch Header="Server verwenden" OnContent="Server" OffContent="Direkt"
+                        IsOn="{Binding Connection.UseServer, Mode=TwoWay}" />
+          <TextBox Header="Server-Adresse" PlaceholderText="http://192.168.1.50:5000"
+                   IsEnabled="{Binding Connection.UseServer}"
+                   Text="{Binding Connection.ServerUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+          <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     Text="{Binding ConnectionStatus}"
+                     Visibility="{Binding ConnectionStatus, Converter={StaticResource NullToVisibilityConverter}}" />
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="Schließen" Command="{Binding ToggleConnectionPanelCommand}" />
+            <Button Content="Übernehmen" Command="{Binding ApplyConnectionCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
   </Grid>
 </Page>
