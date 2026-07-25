@@ -16,14 +16,18 @@ app (App / HMI / Web) and a [Spectre.Console](https://spectreconsole.net) CLI fo
 
 ## Screenshots
 
-**Dashboard**
+### Dashboard
 <img width="1003" alt="Dashboard" src="https://github.com/user-attachments/assets/ceb3b6d4-2356-4295-b155-7fffbbbddee1" />
 
-**Controls**
+### Controls
 <img width="1004" alt="Controls" src="https://github.com/user-attachments/assets/e16cce54-e177-42e6-9e38-367179f0eb7f" />
 
-**Train editor**
+### Train editor
 <img width="1527" alt="Train editor" src="https://github.com/user-attachments/assets/d2651d75-3c3c-4e80-8543-13d7d5f427b2" />
+
+### Train CLI
+<img width="619" height="915" alt="image" src="https://github.com/user-attachments/assets/16718614-c195-4cce-afa5-4b4569f9a621" />
+
 
 ## Architecture rules (must always hold)
 
