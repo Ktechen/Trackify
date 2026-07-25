@@ -10,7 +10,7 @@ namespace Trackify.Infrastructure.Ble;
 /// the Windows service — discover, open a SharpBrick protocol, keep it keyed by MAC — but the transport
 /// is <see cref="BlueZPoweredUpBluetoothAdapter"/>. Command building lives in <see cref="LwpCommands"/>.
 /// </summary>
-public sealed class BlueZLegoService(PoweredUpHost host, IPoweredUpBluetoothAdapter adapter, ILogger<BlueZLegoService> logger) : ILegoService
+public sealed class BlueZLegoService(PoweredUpHost host, BlueZPoweredUpBluetoothAdapter adapter, ILogger<BlueZLegoService> logger) : ILegoService
 {
     private readonly Lock _gate = new();
     private readonly Dictionary<string, ConnectedHub> _connectedHubs = new();
@@ -20,6 +20,10 @@ public sealed class BlueZLegoService(PoweredUpHost host, IPoweredUpBluetoothAdap
 
     public async Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default)
     {
+        // Fail fast with a clear message if the radio is off/missing — the fire-and-forget scan loop
+        // below can't surface that itself.
+        await adapter.EnsureReadyAsync(ct);
+
         var found = new Dictionary<string, DiscoveredHubDto>();
 
         // Scan runs until the first hub is seen or the caller cancels - no fixed time window.
@@ -56,6 +60,8 @@ public sealed class BlueZLegoService(PoweredUpHost host, IPoweredUpBluetoothAdap
             if (_connectedHubs.ContainsKey(hubId))
                 return;
         }
+
+        await adapter.EnsureReadyAsync(ct);
 
         var deviceInfo = await adapter.CreateDeviceInfoByKnownStateAsync(LwpAddressingMapping.ParseMacAddress(hubId))
             ?? throw new InvalidOperationException("Invalid hub address.");

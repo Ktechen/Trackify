@@ -1,3 +1,4 @@
+using Trackify.Application.Lego;
 using Trackify.Cli.Commands.Settings;
 
 namespace Trackify.Cli.Commands;
@@ -17,10 +18,23 @@ public sealed class DiscoverCommand(ITrainControlService control) : AsyncCommand
         using var scan = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         scan.CancelAfter(TimeSpan.FromSeconds(settings.TimeoutSeconds));
 
-        var hubs = await AnsiConsole.Status()
-            .Spinner(Spinner.Known.Dots)
-            .SpinnerStyle(Style.Parse("springgreen2"))
-            .StartAsync("Scanning for hubs… (Ctrl+C to stop)", async _ => await control.DiscoverAsync(scan.Token));
+        IReadOnlyList<DiscoveredHubDto> hubs;
+        try
+        {
+            hubs = await AnsiConsole.Status()
+                .Spinner(Spinner.Known.Dots)
+                .SpinnerStyle(Style.Parse("springgreen2"))
+                .StartAsync("Scanning for hubs… (Ctrl+C to stop)", async _ => await control.DiscoverAsync(scan.Token));
+        }
+        catch (OperationCanceledException)
+        {
+            return 0; // Ctrl+C / timeout during the scan — nothing to report.
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLineInterpolated($"[red]✗ Scan failed:[/] {ex.Message}");
+            return 1;
+        }
 
         if (hubs.Count == 0)
         {
