@@ -8,4 +8,8 @@ public sealed class DiscoverSettings : CommandSettings
     [CommandOption("-t|--timeout <SECONDS>")]
     [Description("Give up scanning after this many seconds (default 30).")]
     public int TimeoutSeconds { get; init; } = 30;
+
+    [CommandOption("--save")]
+    [Description("Save the discovered hub(s) to the train list (de-duplicated by hub identity).")]
+    public bool Save { get; init; }
 }
