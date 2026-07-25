@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Trackify.Models.Trains;
+using Trackify.Services.Remote;
 using Train = Trackify.Models.Trains.Train;
 
 namespace Trackify.Presentation.ViewModels;
@@ -14,6 +15,7 @@ namespace Trackify.Presentation.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly INavigator _navigator;
+    private readonly RemoteTrainSync _sync;
     private readonly ILogger<MainViewModel> _log;
     private int _sequence = 1;
 
@@ -22,6 +24,8 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private Train? selectedTrain;
     [ObservableProperty] private int activeCount;
     [ObservableProperty] private int totalCount;
+    [ObservableProperty] private bool isConnectionPanelOpen;
+    [ObservableProperty] private string? connectionStatus;
 
     public ObservableCollection<Train> Trains { get; } = [];
 
@@ -63,11 +67,20 @@ public partial class MainViewModel : ObservableObject
 
     public IRelayCommand BackToListCommand { get; }
 
-    public MainViewModel(INavigator navigator, ILegoService lego, ILogger<MainViewModel> logger)
+    /// <summary>Live connection mode + backend URL (Direct vs Server), bound by the Connection panel.</summary>
+    public ConnectionState Connection { get; }
+
+    public IRelayCommand ToggleConnectionPanelCommand { get; }
+
+    public IAsyncRelayCommand ApplyConnectionCommand { get; }
+
+    public MainViewModel(INavigator navigator, ILegoService lego, ConnectionState connection, RemoteTrainSync sync, ILogger<MainViewModel> logger)
     {
         _navigator = navigator;
         _lego = lego;
+        _sync = sync;
         _log = logger;
+        Connection = connection;
 
         AddTrainCommand = new RelayCommand(AddTrain);
         DuplicateTrainCommand = new RelayCommand(DuplicateTrain, () => SelectedTrain is not null);
@@ -83,6 +96,8 @@ public partial class MainViewModel : ObservableObject
         ConfirmAddHubCommand = new AsyncRelayCommand(ConfirmAddHubAsync);
         CancelAddHubCommand = new RelayCommand(CancelAddHub);
         BackToListCommand = new RelayCommand(() => SelectedTrain = null);
+        ToggleConnectionPanelCommand = new RelayCommand(() => IsConnectionPanelOpen = !IsConnectionPanelOpen);
+        ApplyConnectionCommand = new AsyncRelayCommand(ApplyConnectionAsync);
 
         ColorSwatches = [.. LegoinoCatalog.Colors.Select(c => new ColorSwatchItemViewModel { Value = c.Value, Name = c.Name, Hex = c.Hex })];
 
@@ -137,6 +152,39 @@ public partial class MainViewModel : ObservableObject
     }
 
     private async Task GoToStreckenplaner() => await _navigator.NavigateViewModelAsync<SecondViewModel>(this);
+
+    // Persists the chosen mode/URL (SwitchingLegoService picks it up live) and, in Server mode, pulls
+    // the backend's trains into the local store.
+    private async Task ApplyConnectionAsync()
+    {
+        Connection.Save();
+        Log.ConnectionModeChanged(_log, Connection.UseServer, Connection.ServerUrl);
+
+        if (!Connection.UseServer)
+        {
+            ConnectionStatus = "Direktmodus (Bluetooth dieses Geräts).";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Connection.ServerUrl))
+        {
+            ConnectionStatus = "Bitte eine Server-Adresse eingeben.";
+            return;
+        }
+
+        ConnectionStatus = "Synchronisiere Züge…";
+        try
+        {
+            var count = await _sync.SyncAsync();
+            ConnectionStatus = $"Servermodus aktiv — {count} Züge synchronisiert.";
+            Log.SyncCompleted(_log, count);
+        }
+        catch (Exception ex)
+        {
+            ConnectionStatus = $"Fehler: {ex.Message}";
+            Log.SyncFailed(_log, ex);
+        }
+    }
 
     partial void OnSearchChanged(string value) => ApplyFilter();
 

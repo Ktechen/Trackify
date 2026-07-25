@@ -7,11 +7,15 @@ namespace Trackify.Services.Remote;
 /// upserted, de-duplicated by <b>hub identity</b> (HubId → BleAddress → Name) so repeated syncs never
 /// pile up duplicates; a matched local row is updated in place (its id is kept) rather than re-added.
 /// </summary>
-public sealed class RemoteTrainSync(ITrackifyApi api, ITrainRepository repository)
+public sealed class RemoteTrainSync(ConnectionState state, ITrainRepository repository)
 {
-    /// <summary>Pulls all trains from the backend and upserts them locally; returns how many were written.</summary>
+    /// <summary>Pulls all trains from the configured backend and upserts them locally; returns how many were written.</summary>
     public async Task<int> SyncAsync(CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(state.ServerUrl))
+            return 0;
+
+        var api = TrackifyApiFactory.Create(state.ServerUrl);
         var remote = await api.GetTrainsAsync(ct);
         var local = await repository.GetAllAsync(ct);
         var written = 0;

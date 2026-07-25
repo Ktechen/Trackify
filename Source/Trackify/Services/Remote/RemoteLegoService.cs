@@ -27,6 +27,10 @@ public sealed class RemoteLegoService : ILegoService, IAsyncDisposable
         _hub.On<string, int>(TrainHubMethods.SpeedChanged, (hubId, speed) => SpeedChanged?.Invoke(hubId, speed));
     }
 
+    /// <summary>Builds a remote transport for a backend base URL (used by the live mode switch).</summary>
+    public static RemoteLegoService Create(string baseUrl)
+        => new(TrackifyApiFactory.Create(baseUrl), new RemoteServerOptions { BaseUrl = baseUrl });
+
     public bool IsSupported => true;
 
     public Task<IReadOnlyList<DiscoveredHubDto>> DiscoverAsync(CancellationToken ct = default)
