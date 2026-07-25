@@ -18,9 +18,11 @@ public static class ServerServiceCollectionExtensions
         // Enums as readable names on the wire (matches the store).
         services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-        // Open CORS so the app (incl. the WASM head, which sends an Origin) can call REST + the hub.
+        // Allow any LAN origin to call the API/hub so the app (incl. the WASM head, which sends an
+        // Origin) can reach it. Credentials are deliberately NOT enabled — the backend uses no cookies
+        // or auth, so we avoid the unsafe any-origin + AllowCredentials combination (CWE-942).
         services.AddCors(o => o.AddDefaultPolicy(p =>
-            p.SetIsOriginAllowed(_ => true).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+            p.SetIsOriginAllowed(_ => true).AllowAnyHeader().AllowAnyMethod()));
 
         return services;
     }

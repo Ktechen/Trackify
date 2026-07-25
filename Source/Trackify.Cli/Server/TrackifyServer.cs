@@ -53,9 +53,12 @@ internal static class TrackifyServer
         {
             var error = context.Features.Get<IExceptionHandlerFeature>()?.Error;
             var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("trackify.serve");
-            logger.LogError(error, "Unhandled request exception on {Method} {Path}", context.Request.Method, context.Request.Path);
+            // Sanitize user-controlled request data before logging (prevents log forging / CWE-117).
+            logger.LogError(error, "Unhandled request exception on {Method} {Path}",
+                Sanitize(context.Request.Method), Sanitize(context.Request.Path.Value));
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(new { error = error?.Message ?? "Unexpected error" });
+            // Return a generic message only — never leak internal exception detail to clients (CWE-209).
+            await context.Response.WriteAsJsonAsync(new { error = "Internal server error" });
         }));
 
         app.UseCors();
@@ -94,4 +97,8 @@ internal static class TrackifyServer
 
         app.MapGet(ApiRoutes.State, (TrainStateStore state) => state.Snapshot());
     }
+
+    // Removes CR/LF from user-controlled values so they can't inject forged lines into the log.
+    private static string Sanitize(string? value)
+        => string.IsNullOrEmpty(value) ? string.Empty : value.Replace("\r", string.Empty).Replace("\n", string.Empty);
 }
