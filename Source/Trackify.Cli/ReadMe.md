@@ -61,9 +61,36 @@ ssh pi@raspberrypi 'chmod +x /opt/trackify/trackify'
 
 No build flags needed even when cross-publishing from Windows: BlueZ is always compiled in, and
 `AddLinuxLego` picks the real transport vs. the no-op fallback at **runtime** via
-`OperatingSystem.IsLinux()` — so the same artifact works on the Pi. Prerequisites on the Pi:
-`bluetoothd` running, user in the `bluetooth` group; run `trackify discover` once so BlueZ knows the
-device. The CI `cli-arm64.yml` workflow produces this artifact.
+`OperatingSystem.IsLinux()` — so the same artifact works on the Pi. The CI `cli-arm64.yml` workflow
+produces this artifact.
+
+## Prerequisites on the Pi — install BlueZ
+
+Trackify drives hubs by talking to **`bluetoothd` over D-Bus**, so the **BlueZ** stack must be
+installed and running on the Pi. **Raspberry Pi OS** usually ships it; **Ubuntu Server** images do
+**not** — you'll see `bluetoothctl: command not found` and `bluetooth.service could not be found`.
+
+Run the bundled setup script once (Debian/Ubuntu). It's idempotent — safe to re-run:
+
+```bash
+sudo Source/Trackify.Cli/scripts/setup-bluez.sh   # or: sudo ./setup-bluez.sh from the scripts dir
+```
+
+It installs `bluez` (+ `rfkill`), enables & starts `bluetoothd`, unblocks and powers on the radio, and
+adds your user to the `bluetooth` group. Equivalent manual steps:
+
+```bash
+sudo apt update && sudo apt install -y bluez rfkill
+sudo systemctl enable --now bluetooth        # start bluetoothd now and at boot
+sudo rfkill unblock bluetooth                # clear any soft-block
+sudo usermod -aG bluetooth "$USER"           # D-Bus access for org.bluez (log out/in after)
+bluetoothctl power on                         # power the adapter
+```
+
+**Log out & back in (or reboot)** after the group change so a non-root `trackify` isn't denied on
+D-Bus. Then power on a hub and run `trackify discover` once so BlueZ knows the device. A handy
+read-only checker, `Source/Trackify.Cli/scripts/pi-bt-info.sh`, dumps the full radio/adapter/scan
+state if discovery still misbehaves.
 
 ## Docker
 
@@ -178,9 +205,37 @@ ssh pi@raspberrypi 'chmod +x /opt/trackify/trackify'
 
 Kein Build-Flag nötig, auch beim Cross-Publish von Windows: BlueZ ist immer einkompiliert, und
 `AddLinuxLego` wählt zur **Laufzeit** per `OperatingSystem.IsLinux()` den echten Transport bzw. den
-No-op-Fallback — dasselbe Artefakt läuft also auf dem Pi. Voraussetzungen auf dem Pi: `bluetoothd`
-läuft, Benutzer in der `bluetooth`-Gruppe; einmal `trackify discover` ausführen, damit BlueZ das Gerät
-kennt. Der CI-Workflow `cli-arm64.yml` erzeugt dieses Artefakt.
+No-op-Fallback — dasselbe Artefakt läuft also auf dem Pi. Der CI-Workflow `cli-arm64.yml` erzeugt
+dieses Artefakt.
+
+## Voraussetzungen auf dem Pi — BlueZ installieren
+
+Trackify steuert Hubs über **`bluetoothd` per D-Bus**, also muss der **BlueZ**-Stack auf dem Pi
+installiert sein und laufen. **Raspberry Pi OS** bringt ihn meist mit; **Ubuntu Server**-Images
+**nicht** — dann erscheint `bluetoothctl: command not found` und `bluetooth.service could not be found`.
+
+Das mitgelieferte Setup-Skript einmal ausführen (Debian/Ubuntu). Es ist idempotent — beliebig oft
+wiederholbar:
+
+```bash
+sudo Source/Trackify.Cli/scripts/setup-bluez.sh
+```
+
+Es installiert `bluez` (+ `rfkill`), aktiviert & startet `bluetoothd`, entsperrt und schaltet das Radio
+ein und fügt den Benutzer der `bluetooth`-Gruppe hinzu. Manuell entspricht das:
+
+```bash
+sudo apt update && sudo apt install -y bluez rfkill
+sudo systemctl enable --now bluetooth
+sudo rfkill unblock bluetooth
+sudo usermod -aG bluetooth "$USER"     # danach ab-/anmelden
+bluetoothctl power on
+```
+
+Nach der Gruppenänderung **ab- und wieder anmelden (oder neu starten)**, damit ein Nicht-Root-
+`trackify` auf D-Bus nicht abgewiesen wird. Dann einen Hub einschalten und einmal `trackify discover`
+ausführen. Das read-only-Prüfskript `Source/Trackify.Cli/scripts/pi-bt-info.sh` zeigt den kompletten
+Radio-/Adapter-/Scan-Status, falls die Erkennung weiter hakt.
 
 ## Docker
 
