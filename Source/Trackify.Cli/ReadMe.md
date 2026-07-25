@@ -19,10 +19,27 @@ trackify connect "Blauer Zug"  # reachability test (connect + disconnect)
 trackify drive   "Blauer Zug" --speed 40 --color Green   # run until Ctrl+C
 trackify stop    "Blauer Zug"  # stop the motor
 trackify color   "Blauer Zug" Blue                        # set the hub LED
+trackify auto                  # auto-pilot: run every saved train, re-scan on an interval
 trackify --help                # full help
 ```
 
 A train is addressed by **name or id** (see `trackify list`).
+
+## Auto mode (auto-pilot)
+
+`trackify auto` is a long-running loop meant for **unattended operation** on the Pi (systemd / Docker).
+Every `--interval` seconds (default **60**) it re-reads the saved trains from `trackify.db` and applies
+each one's saved configuration — connect, set the hub LED colour, and drive at its saved speed — and
+**reconnects any hub that has dropped** since the last sweep. On Ctrl+C / SIGINT it stops every motor
+and disconnects cleanly.
+
+```bash
+trackify auto                  # active saved trains, sweep every 60s
+trackify auto --interval 30    # sweep every 30s
+trackify auto --all            # include inactive trains too
+```
+
+New or edited trains are picked up automatically on the next sweep (the store is re-read each cycle).
 
 ## The train store (`trackify.db`)
 
@@ -65,7 +82,8 @@ container turns the LINUX flag on automatically, so real BlueZ is compiled in.
 
 ## Run permanently at boot (systemd)
 
-`trackify drive` already runs until stopped (Ctrl+C → motor stop + clean disconnect). For autostart:
+`trackify drive` runs a single train until stopped; `trackify auto` runs **every** saved train and
+re-scans on an interval. Both stop cleanly on SIGINT. For autostart, prefer `auto` for the whole fleet:
 
 ```ini
 # /etc/systemd/system/trackify.service
@@ -75,7 +93,8 @@ After=bluetooth.target
 Requires=bluetooth.service
 
 [Service]
-ExecStart=/opt/trackify/trackify drive "Blauer Zug" --speed 40
+# One train: drive "Blauer Zug" --speed 40  ·  Whole fleet: auto --interval 60
+ExecStart=/opt/trackify/trackify auto --interval 60
 Restart=on-failure
 RestartSec=5
 User=pi
@@ -116,10 +135,28 @@ trackify connect "Blauer Zug"  # Erreichbarkeits-Test (verbinden + trennen)
 trackify drive   "Blauer Zug" --speed 40 --color Green   # fahren bis Ctrl+C
 trackify stop    "Blauer Zug"  # Motor stoppen
 trackify color   "Blauer Zug" Blue                        # Hub-LED setzen
+trackify auto                  # Auto-Pilot: alle gespeicherten Züge fahren, per Intervall neu scannen
 trackify --help                # vollständige Hilfe
 ```
 
 Ein Zug wird per **Name oder Id** angesprochen (siehe `trackify list`).
+
+## Auto-Modus (Auto-Pilot)
+
+`trackify auto` ist eine Dauerschleife für den **unbeaufsichtigten Betrieb** auf dem Pi (systemd /
+Docker). Alle `--interval` Sekunden (Standard **60**) liest es die gespeicherten Züge aus `trackify.db`
+neu und wendet die gespeicherte Konfiguration jedes Zugs an — verbinden, Hub-LED setzen und mit der
+gespeicherten Geschwindigkeit fahren — und **verbindet abgebrochene Hubs automatisch neu**. Bei
+Ctrl+C / SIGINT werden alle Motoren gestoppt und sauber getrennt.
+
+```bash
+trackify auto                  # aktive gespeicherte Züge, Scan alle 60s
+trackify auto --interval 30    # Scan alle 30s
+trackify auto --all            # auch inaktive Züge einschließen
+```
+
+Neue oder geänderte Züge werden beim nächsten Durchlauf automatisch übernommen (der Store wird jedes
+Mal neu gelesen).
 
 ## Der Train-Store (`trackify.db`)
 

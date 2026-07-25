@@ -45,6 +45,7 @@ app.Configure(config =>
     config.AddCommand<DriveCommand>("drive").WithDescription("Run a train until Ctrl+C.").WithExample("drive", "\"Blauer Zug\"", "--speed", "40", "--color", "Green");
     config.AddCommand<StopCommand>("stop").WithDescription("Stop a train's motor.");
     config.AddCommand<ColorCommand>("color").WithDescription("Set a train's hub LED colour.").WithExample("color", "\"Blauer Zug\"", "Blue");
+    config.AddCommand<AutoCommand>("auto").WithDescription("Auto-pilot: keep all saved trains running, re-scanning on an interval.").WithExample("auto", "--interval", "60");
 });
 
 // Ctrl+C (also systemd/docker SIGINT) cancels this token; commands react and shut down cleanly.

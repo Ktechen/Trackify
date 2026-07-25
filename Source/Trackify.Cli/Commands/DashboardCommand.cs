@@ -26,7 +26,8 @@ public sealed class DashboardCommand(ITrainService query) : AsyncCommand
                 "[springgreen2]drive[/] <train>       run a train until Ctrl+C",
                 "[springgreen2]stop[/] <train>        stop a train's motor",
                 "[springgreen2]color[/] <train> <c>   set the hub LED colour",
-                "[springgreen2]connect[/] <train>     reachability test")))
+                "[springgreen2]connect[/] <train>     reachability test",
+                "[springgreen2]auto[/]                auto-pilot every saved train (loop)")))
             .Header("[springgreen2]Commands[/]")
             .BorderColor(Color.Grey37));
 
