@@ -4,9 +4,16 @@
        .Mobile/.WinRT). Multi-targeted per BUILD host so each head's BLE stack + #if branch exists;
        the plain net10.0 flavor (Linux/CLI) stays transport-free — the CLI carries BlueZ instead. -->
   <PropertyGroup>
+    <!-- A desktop/server RID publish (e.g. the CLI for the Pi: `-r linux-arm64`) must NOT drag in the
+         mobile (Mono) TFMs, or NuGet tries to restore a nonexistent
+         `Microsoft.NETCore.App.Runtime.Mono.<rid>` pack and the publish fails (NU1102). Detect such a
+         publish — a RID that is set and is neither android nor ios — and expose only the transport-free
+         net TFMs then. Plain builds (no RID) and mobile RIDs keep the full per-head set. -->
+    <_TrackifyDesktopRidPublish Condition="'$(RuntimeIdentifier)' != '' and !$(RuntimeIdentifier.Contains('android')) and !$(RuntimeIdentifier.Contains('ios'))">true</_TrackifyDesktopRidPublish>
+
     <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net9.0;net10.0-android;net10.0-windows10.0.19041.0</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('macOS'))">net10.0;net9.0;net10.0-android;net10.0-ios</TargetFrameworks>
+    <TargetFrameworks Condition="'$(_TrackifyDesktopRidPublish)' != 'true' and $([MSBuild]::IsOSPlatform('Windows'))">net10.0;net9.0;net10.0-android;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(_TrackifyDesktopRidPublish)' != 'true' and $([MSBuild]::IsOSPlatform('macOS'))">net10.0;net9.0;net10.0-android;net10.0-ios</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
