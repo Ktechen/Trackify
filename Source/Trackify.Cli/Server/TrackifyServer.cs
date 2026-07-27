@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Settings.Configuration;
 using Trackify.Application;
 using Trackify.Application.Lego;
 using Trackify.Application.Remote;
@@ -36,8 +37,10 @@ internal static class TrackifyServer
         // Everything comes from appsettings.json / env / args — nothing hardcoded. Kestrel binds the
         // "Urls" key automatically; Serilog levels + sinks are read from the "Serilog" section.
         builder.Logging.ClearProviders();
+        // Pass the Console sink assembly explicitly so Serilog config binding also works in a
+        // single-file publish (the Pi deploy), where it can't scan for sink assemblies.
         builder.Logging.AddSerilog(new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration)
+            .ReadFrom.Configuration(builder.Configuration, new ConfigurationReaderOptions(typeof(ConsoleLoggerConfigurationExtensions).Assembly))
             .CreateLogger(), dispose: true);
 
         builder.Services.AddTrackifyDomain();
