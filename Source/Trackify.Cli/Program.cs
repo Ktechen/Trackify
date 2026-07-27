@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
+using Serilog.Settings.Configuration;
 using Trackify.Application;
 using Trackify.Cli.Commands;
 using Spectre.Console.Cli.Extensions.DependencyInjection;
@@ -20,8 +21,10 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 // High-performance logging with a Serilog backend; levels + sinks are read from the "Serilog" section.
+// Pass the Console sink assembly explicitly so config binding also works in a single-file publish
+// (the Pi deploy), where Serilog can't scan the app directory for sink assemblies.
 var serilog = new LoggerConfiguration()
-    .ReadFrom.Configuration(configuration)
+    .ReadFrom.Configuration(configuration, new ConfigurationReaderOptions(typeof(ConsoleLoggerConfigurationExtensions).Assembly))
     .CreateLogger();
 
 var storePath = Environment.GetEnvironmentVariable("TRACKIFY_STORE");
