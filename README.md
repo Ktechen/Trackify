@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/github/license/Ktechen/Trackify)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
 
 Configure and control **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — no
 server/backend. BLE speaks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/)
