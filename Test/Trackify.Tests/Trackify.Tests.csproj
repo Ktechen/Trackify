@@ -14,6 +14,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="NetArchTest.Rules" />
+<PackageReference Include="coverlet.msbuild" />
   </ItemGroup>
 
   <ItemGroup>
