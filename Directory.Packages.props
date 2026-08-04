@@ -48,6 +48,8 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <!-- Architecture tests: enforce the Clean Architecture layer dependency rules in CI. -->
     <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
-<PackageVersion Include="coverlet.msbuild" Version="10.0.1" />
+    <!-- Coverage for the SonarCloud scan: emits an OpenCover report that sonar.yml feeds to the
+         scanner (SonarCloud's automatic analysis can't produce coverage — it never runs the tests). -->
+    <PackageVersion Include="coverlet.msbuild" Version="10.0.1" />
   </ItemGroup>
 </Project>

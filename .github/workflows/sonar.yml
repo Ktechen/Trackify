@@ -1,0 +1,77 @@
+name: SonarCloud
+
+# Coverage + static analysis, deliberately separate from ci.yml: ci.yml is the pre-merge gate, and a
+# Sonar outage or an expired token must not be able to block a merge.
+#
+# This REPLACES SonarCloud's automatic analysis. That mode never builds the project and never runs
+# the tests, so per its documented limitations "Code coverage information is not supported" — which
+# is why the coverage metric was missing entirely. Automatic analysis therefore has to be turned OFF
+# (SonarCloud -> Project -> Administration -> Analysis Method), otherwise this scan is rejected.
+#
+# Scope note: the scanner for .NET only sees projects that are built between `begin` and `end`. As in
+# ci.yml the Uno app (Source/Trackify, five heads) is not buildable on a Linux runner, so the
+# analysed scope here is the shared core + CLI + tests.
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+jobs:
+  sonar:
+    name: Scan + coverage
+    runs-on: ubuntu-latest
+    # Forks never receive SONAR_TOKEN; skip instead of failing their PR with an auth error.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Sonar needs the full history to attribute issues and resolve the new-code period.
+          fetch-depth: 0
+
+      # The Sonar scanner for .NET is a Java tool.
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Same as ci.yml: global.json pins 9.0.100 and rolls forward to the newest installed major.
+      - name: Setup .NET (8, 9, 10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Install Sonar scanner
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Sonar begin
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          dotnet sonarscanner begin
+          /k:"Ktechen_Trackify"
+          /o:"trackify1"
+          /d:sonar.token="$SONAR_TOKEN"
+          /d:sonar.host.url="https://sonarcloud.io"
+          /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/coverage/coverage.opencover.xml"
+
+      # A single step builds everything the scanner should see (the test project references the core
+      # libs and the CLI) and lets coverlet instrument that same build — no `--no-build`, otherwise
+      # nothing is instrumented. OpenCover is the report format Sonar's C# analyser consumes.
+      - name: Test + coverage
+        run: >
+          dotnet test Test/Trackify.Tests/Trackify.Tests.csproj -c Release
+          /p:CollectCoverage=true
+          /p:CoverletOutputFormat=opencover
+          /p:CoverletOutput="${{ github.workspace }}/coverage/"
+
+      - name: Sonar end
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
