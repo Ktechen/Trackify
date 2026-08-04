@@ -29,12 +29,9 @@ jobs:
           # Sonar needs the full history to attribute issues and resolve the new-code period.
           fetch-depth: 0
 
-      # The Sonar scanner for .NET is a Java tool.
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+      # No JDK step: `begin` runs a Roslyn analyzer inside MSBuild (pure .NET), and the Java-based
+      # engine that `end` uses to aggregate and upload provisions its own JRE — "from version 7.0,
+      # Java is no longer required because the scanner will download it automatically".
 
       # Same as ci.yml: global.json pins 9.0.100 and rolls forward to the newest installed major.
       - name: Setup .NET (8, 9, 10)
