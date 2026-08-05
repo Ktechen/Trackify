@@ -31,15 +31,18 @@ public partial class MainViewModel
             return;
         }
 
+        // Own the source locally and dispose it in the finally, so it is released exactly once by the
+        // scan that created it — cancelling a previous scan lets that one clean up after itself.
+        var cts = new CancellationTokenSource();
         _discoverCts?.Cancel();
-        _discoverCts = new CancellationTokenSource();
+        _discoverCts = cts;
 
         IsDiscovering = true;
         DiscoverStatus = "Suche läuft… (Stopp zum Abbrechen)";
         Log.DiscoverStarted(_log);
         try
         {
-            var hubs = await _lego.DiscoverAsync(_discoverCts.Token);
+            var hubs = await _lego.DiscoverAsync(cts.Token);
             if (hubs.Count == 0)
             {
                 DiscoverStatus = "Suche abgebrochen — kein Hub gefunden.";
@@ -56,6 +59,8 @@ public partial class MainViewModel
         finally
         {
             IsDiscovering = false;
+            if (ReferenceEquals(_discoverCts, cts)) _discoverCts = null;
+            cts.Dispose();
         }
     }
 
@@ -124,7 +129,7 @@ public partial class MainViewModel
         train.ConnectionStatus = "Verbinde…";
         try
         {
-            await _lego.ConnectAsync(HubKey(train), train.Hub);
+            await _lego.ConnectAsync(HubKey(train), train.Hub, CancellationToken.None);
             train.IsHardwareConnected = true;
             train.ConnectionStatus = "Verbunden";
             Log.HubConnected(_log, train.Id);
@@ -143,7 +148,8 @@ public partial class MainViewModel
     {
         if (SelectedTrain is not { } train) return;
 
-        try { await _lego.DisconnectAsync(HubKey(train)); }
+        // No token on purpose: disconnecting must still run to completion when the user navigates away.
+        try { await _lego.DisconnectAsync(HubKey(train), CancellationToken.None); }
         catch { /* best effort - the local flag below is what the UI reflects either way */ }
 
         train.IsHardwareConnected = false;
@@ -172,23 +178,35 @@ public partial class MainViewModel
     // The slider fires rapidly while dragging; only send the last value after a short pause.
     private void DebounceSendSpeed(Train train)
     {
+        // As in DiscoverAsync: the send owns its source and disposes it when it finishes, so each
+        // superseded debounce cleans itself up instead of leaking a CancellationTokenSource.
+        var cts = new CancellationTokenSource();
         _speedDebounceCts?.Cancel();
-        _speedDebounceCts = new CancellationTokenSource();
-        _ = SendSpeedAsync(train, _speedDebounceCts.Token);
+        _speedDebounceCts = cts;
+        _ = SendSpeedAsync(train, cts);
     }
 
-    private async Task SendSpeedAsync(Train train, CancellationToken ct)
+    private async Task SendSpeedAsync(Train train, CancellationTokenSource cts)
     {
-        try { await Task.Delay(TimeSpan.FromMilliseconds(200), ct); }
-        catch (TaskCanceledException) { return; }
+        try
+        {
+            try { await Task.Delay(TimeSpan.FromMilliseconds(200), cts.Token); }
+            catch (TaskCanceledException) { return; }
 
-        await SendToHubAsync(train, key => _lego.SetSpeedAsync(key, MotorPort, (sbyte)Math.Clamp(train.Speed, -100, 100)));
+            await SendToHubAsync(train, key => _lego.SetSpeedAsync(key, MotorPort, (sbyte)Math.Clamp(train.Speed, -100, 100), cts.Token));
+        }
+        finally
+        {
+            if (ReferenceEquals(_speedDebounceCts, cts)) _speedDebounceCts = null;
+            cts.Dispose();
+        }
     }
 
     private Task SendLedAsync(Train train)
     {
         var (r, g, b) = ParseHexColor(LegoinoCatalog.Color(train.Color).Hex);
-        return SendToHubAsync(train, key => _lego.SetLedAsync(key, r, g, b));
+        // No token: a colour change is a single fire-and-forget write, nothing supersedes it.
+        return SendToHubAsync(train, key => _lego.SetLedAsync(key, r, g, b, CancellationToken.None));
     }
 
     // Best-effort live control: a dropped command just means the next change resends it.

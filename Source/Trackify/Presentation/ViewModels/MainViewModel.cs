@@ -151,7 +151,8 @@ public partial class MainViewModel : ObservableObject
         ApplyFilter();
     }
 
-    private async Task GoToStreckenplaner() => await _navigator.NavigateViewModelAsync<SecondViewModel>(this);
+    // No token: a user-initiated page change runs to completion.
+    private async Task GoToStreckenplaner() => await _navigator.NavigateViewModelAsync<SecondViewModel>(this, cancellation: CancellationToken.None);
 
     // Persists the chosen mode/URL (SwitchingLegoService picks it up live) and, in Server mode, pulls
     // the backend's trains into the local store.
@@ -175,7 +176,8 @@ public partial class MainViewModel : ObservableObject
         ConnectionStatus = "Synchronisiere Züge…";
         try
         {
-            var count = await _sync.SyncAsync();
+            // No token: the sync is short and the panel stays open until it reports back.
+            var count = await _sync.SyncAsync(CancellationToken.None);
             ConnectionStatus = $"Servermodus aktiv — {count} Züge synchronisiert.";
             Log.SyncCompleted(_log, count);
         }

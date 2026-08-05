@@ -26,6 +26,12 @@ FROM mcr.microsoft.com/dotnet/runtime:10.0
 WORKDIR /app
 COPY --from=build /app .
 
+# Runs as root deliberately (sonar docker:S6471 is ignored for this file in .github/workflows/sonar.yml):
+# the container drives the HOST's bluetoothd over the mounted system D-Bus socket, which the default
+# BlueZ D-Bus policy grants to root, and it writes the store into a host bind mount (./data). Going
+# non-root needs USER $APP_UID *plus* a group_add for the host's `bluetooth` GID and a chowned ./data —
+# verify BLE and the store on a real Pi before making that change.
+
 # The train store lives on a mounted volume so it survives container rebuilds.
 ENV TRACKIFY_STORE=/data/trains.json
 VOLUME /data

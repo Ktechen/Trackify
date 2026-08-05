@@ -63,7 +63,11 @@ app.Configure(config =>
     config.AddCommand<StopCommand>("stop").WithDescription("Stop a train's motor.");
     config.AddCommand<ColorCommand>("color").WithDescription("Set a train's hub LED colour.").WithExample("color", "\"Blauer Zug\"", "Blue");
     config.AddCommand<AutoCommand>("auto").WithDescription("Auto-pilot: keep all saved trains running, re-scanning on an interval.").WithExample("auto", "--interval", "60");
+    // S5332: this is --help example text for the documented LAN deployment (a Pi has no cert), not a
+    // client dialling out over http. The bind address itself comes from appsettings/--urls.
+#pragma warning disable S5332 // Using http protocol is insecure
     config.AddCommand<ServerCommand>("server").WithDescription("Run the REST + SignalR backend so the app can drive this Pi.").WithExample("server", "--urls", "http://0.0.0.0:5000");
+#pragma warning restore S5332
 });
 
 // Ctrl+C (also systemd/docker SIGINT) cancels this token; commands react and shut down cleanly.
