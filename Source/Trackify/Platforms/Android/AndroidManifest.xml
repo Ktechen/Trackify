@@ -9,5 +9,10 @@
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
   <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
-  <application android:allowBackup="true" android:supportsRtl="true"></application>
+  <!-- allowBackup=false: the store holds device-local hub pairings (BLE ids/MACs of *this* phone's
+       hubs), which are meaningless once restored onto another device — so keep them off cloud backup.
+       usesCleartextTraffic=false: states the platform default explicitly. targetSdk is 36, and Android
+       already blocks cleartext for targetSdk >= 28, so this only tightens API 21-27 devices. NOTE: this
+       is also why Server mode cannot reach a plain-http Pi backend from the app — see ReadMe. -->
+  <application android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true"></application>
 </manifest>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
@@ -49,22 +50,21 @@ public class MainActivity : Microsoft.UI.Xaml.ApplicationActivity
             ? new[] { Android.Manifest.Permission.BluetoothScan, Android.Manifest.Permission.BluetoothConnect }
             : new[] { Android.Manifest.Permission.AccessFineLocation };
 
-        // A plain loop (rather than LINQ) so the API-23 guard above statically covers the
-        // CheckSelfPermission call for the platform-compatibility analyzer.
-        var missing = new List<string>();
-        foreach (var permission in required)
-        {
-            if (CheckSelfPermission(permission) != Permission.Granted)
-                missing.Add(permission);
-        }
-
-        if (missing.Count == 0)
+        var missing = NotYetGranted(required);
+        if (missing.Length == 0)
             return Task.FromResult(true);
 
         _blePermissionRequest = new TaskCompletionSource<bool>();
-        RequestPermissions(missing.ToArray(), BlePermissionRequestCode);
+        RequestPermissions(missing, BlePermissionRequestCode);
         return _blePermissionRequest.Task;
     }
+
+    // Split out and attributed rather than inlined: the attribute is what lets the
+    // platform-compatibility analyzer accept CheckSelfPermission (API 23+) inside a LINQ lambda,
+    // which cannot see the caller's OperatingSystem.IsAndroidVersionAtLeast(23) guard.
+    [SupportedOSPlatform("android23.0")]
+    private string[] NotYetGranted(IEnumerable<string> permissions)
+        => [.. permissions.Where(p => CheckSelfPermission(p) != Permission.Granted)];
 
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
     {

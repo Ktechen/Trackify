@@ -61,7 +61,7 @@ internal static class TrackifyServer
                 Sanitize(context.Request.Method), Sanitize(context.Request.Path.Value));
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             // Return a generic message only — never leak internal exception detail to clients (CWE-209).
-            await context.Response.WriteAsJsonAsync(new { error = "Internal server error" });
+            await context.Response.WriteAsJsonAsync(new { error = "Internal server error" }, context.RequestAborted);
         }));
 
         app.UseCors();

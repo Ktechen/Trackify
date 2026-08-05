@@ -11,6 +11,12 @@ name: SonarCloud
 # Scope note: the scanner for .NET only sees projects that are built between `begin` and `end`. As in
 # ci.yml the Uno app (Source/Trackify, five heads) is not buildable on a Linux runner, so the
 # analysed scope here is the shared core + CLI + tests.
+#
+# Scope exclusions (`begin` below):
+#  - docs/** is the vendored lego-ble-wireless-protocol-docs submodule — third-party HTML/JS we don't
+#    own and won't fix; it accounted for 51 of 61 "bugs" and most of the ncloc.
+#  - docker:S6471 (root user) is ignored for the CLI Dockerfile only; the reason is documented in the
+#    Dockerfile itself (host BlueZ D-Bus + bind-mounted store).
 on:
   pull_request:
     branches: [ master ]
@@ -57,6 +63,10 @@ jobs:
           /d:sonar.token="$SONAR_TOKEN"
           /d:sonar.host.url="https://sonarcloud.io"
           /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/coverage/coverage.opencover.xml"
+          /d:sonar.exclusions="docs/**"
+          /d:sonar.issue.ignore.multicriteria="dockerRoot"
+          /d:sonar.issue.ignore.multicriteria.dockerRoot.ruleKey="docker:S6471"
+          /d:sonar.issue.ignore.multicriteria.dockerRoot.resourceKey="Source/Trackify.Cli/Dockerfile"
 
       # A single step builds everything the scanner should see (the test project references the core
       # libs and the CLI) and lets coverlet instrument that same build — no `--no-build`, otherwise

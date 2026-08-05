@@ -45,9 +45,10 @@ public sealed class DriveCommand(ITrainControlService control, ITrainService res
         }
         finally
         {
-            // Deliberately without the (already cancelled) token: the train must still stop cleanly.
-            try { await control.SetSpeedAsync(train, 0); } catch { /* best effort */ }
-            await control.DisconnectAsync(train);
+            // Deliberately CancellationToken.None, not the (already cancelled) token: the train must
+            // still stop cleanly after Ctrl+C.
+            try { await control.SetSpeedAsync(train, 0, CancellationToken.None); } catch { /* best effort */ }
+            await control.DisconnectAsync(train, CancellationToken.None);
             AnsiConsole.MarkupLine("[grey]■ Stopped and disconnected.[/]");
         }
 
