@@ -56,6 +56,20 @@ Domain  ←  Application  ←  Infrastructure  ←  Front-ends (HMI: CLI, Uno ap
 6. **Enforced by the build**: project references only point inward, and namespace-matches-folder
    (`IDE0130`) + file-scoped namespaces (`IDE0161`) are errors (`Directory.Build.props`).
 
+## Architecture documentation (arc42)
+
+Full architecture documentation lives in **[docs/arc42/](docs/arc42/)**, following the
+[arc42](https://arc42.de/overview/) template. Good entry points:
+
+| If you want to… | Read |
+|---|---|
+| Understand *why* it looks like this | [§4 Solution Strategy](docs/arc42/04-solution-strategy.md) |
+| Find where code belongs | [§5 Building Block View](docs/arc42/05-building-block-view.md) |
+| Know how discovery / driving / shutdown actually work | [§6 Runtime View](docs/arc42/06-runtime-view.md) |
+| Deploy to a Pi, or understand the CI | [§7 Deployment View](docs/arc42/07-deployment-view.md) |
+| Avoid re-opening a settled decision | [§9 Architecture Decisions](docs/arc42/09-architecture-decisions.md) |
+| See what's knowingly unfinished | [§11 Risks and Technical Debt](docs/arc42/11-risks-and-technical-debt.md) |
+
 ## Projects
 
 | Project | Layer | Notes |
@@ -143,6 +157,20 @@ Domain  ←  Application  ←  Infrastructure  ←  Front-Ends (HMI: CLI, Uno-Ap
    …). Jede Schicht besitzt ihr DI: `AddTrackifyDomain/Application/Infrastructure`.
 6. **Vom Build erzwungen**: Projektverweise zeigen nur nach innen, und Namespace-passt-zu-Ordner
    (`IDE0130`) + file-scoped Namespaces (`IDE0161`) sind Fehler (`Directory.Build.props`).
+
+## Architekturdokumentation (arc42)
+
+Die vollständige Architekturdokumentation liegt in **[docs/arc42/](docs/arc42/)** und folgt der
+[arc42](https://arc42.de/overview/)-Vorlage (auf Englisch, wie Code und CLI). Einstiegspunkte:
+
+| Wenn du … willst | Lies |
+|---|---|
+| verstehen, *warum* es so aussieht | [§4 Solution Strategy](docs/arc42/04-solution-strategy.md) |
+| wissen, wo Code hingehört | [§5 Building Block View](docs/arc42/05-building-block-view.md) |
+| Discovery / Fahren / Shutdown im Detail | [§6 Runtime View](docs/arc42/06-runtime-view.md) |
+| auf einen Pi deployen oder die CI verstehen | [§7 Deployment View](docs/arc42/07-deployment-view.md) |
+| keine bereits getroffene Entscheidung neu aufrollen | [§9 Architecture Decisions](docs/arc42/09-architecture-decisions.md) |
+| sehen, was bewusst offen ist | [§11 Risks and Technical Debt](docs/arc42/11-risks-and-technical-debt.md) |
 
 ## Projekte
 

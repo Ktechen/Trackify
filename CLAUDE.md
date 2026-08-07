@@ -16,6 +16,14 @@ client can drive trains, using **HTTP/SSE** transport, with the MCP pieces livin
 - Layer note: an inbound MCP server is normally a front-end; per the issue it sits in Infrastructure,
   with the network host as the composition root. Runtime verification needs an MCP client + a Pi (BlueZ).
 
+## Architecture documentation
+
+Full arc42 documentation lives in **`docs/arc42/`** (12 sections, English, Mermaid diagrams). It is
+written from the code, so prefer it over re-deriving: `05-building-block-view.md` for where code
+belongs, `09-architecture-decisions.md` for settled decisions (don't re-open them), and
+`11-risks-and-technical-debt.md` for what is knowingly unfinished. Update the affected section in the
+same PR when the architecture changes.
+
 ## What this is
 
 **Trackify** configures and controls **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — there is **no server/backend**. BLE talks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/) via [SharpBrick.PoweredUp](https://github.com/sharpbrick/powered-up).
