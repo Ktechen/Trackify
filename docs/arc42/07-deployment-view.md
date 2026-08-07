@@ -115,17 +115,33 @@ docker compose run --rm trackify discover  # one-shot commands
 docker compose down                        # stops the train cleanly (SIGINT)
 ```
 
-A container has no radio of its own, so `docker-compose.yml` makes three specific concessions:
+A container has no radio of its own, so `docker-compose.yml` makes several specific concessions:
 
 | Setting | Why |
 |---|---|
 | `network_mode: host` | BLE goes through the **host's** `bluetoothd`; a bridge network would isolate it |
 | `volumes: /var/run/dbus:/var/run/dbus` | D-Bus socket access to `org.bluez` on the host |
+| `group_add: ${BLUETOOTH_GID:-113}` | The image runs non-root, and BlueZ's D-Bus policy grants `org.bluez` to root and the `bluetooth` group only |
 | `stop_signal: SIGINT` | `docker stop` must reach the clean-shutdown path, not `SIGTERM`-kill a moving train |
 | `restart: unless-stopped` | Survives reboots |
 
-The image runs as root — SonarCloud's `docker:S6471` is suppressed for this Dockerfile only, with the
-reason (host BlueZ D-Bus access + a bind-mounted store) documented in the Dockerfile itself.
+**The image runs as the non-root `app` user** (`USER $APP_UID`, UID 1654, supplied by the .NET base
+image). That resolves `docker:S6471`, but it moves two requirements onto the host, both one-time:
+
+1. **`bluetooth` group membership** — via `group_add`, using the host's actual GID
+   (`getent group bluetooth | cut -d: -f3`; commonly but not always 113).
+2. **A writable store** — a bind-mounted `./data` keeps its host ownership, so it needs
+   `sudo chown -R 1654:1654 data`.
+
+Get either wrong and the symptom is a D-Bus `AccessDenied` or a permission error on `/data`. Adding
+`user: "0:0"` to the service restores the previous root behaviour, which is the quickest way to
+confirm that a failure really is the non-root switch.
+
+> **Note on suppression.** An earlier attempt passed `sonar.issue.ignore.multicriteria` for
+> `docker:S6471` as a scanner `/d:` parameter. It silently did nothing — issue exclusions are
+> multi-value *server-side* settings that only apply when configured in the SonarCloud UI. The
+> parameter was live for the analysis of `9299be9` and the issue still came back `OPEN`. Fixing the
+> finding at the source was the durable answer.
 
 ## 7.4 Server mode (client/server)
 

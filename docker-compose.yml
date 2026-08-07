@@ -7,6 +7,10 @@
 # One-shot commands (scan, list, ...):
 #   docker compose run --rm trackify discover
 #   docker compose run --rm trackify list
+#
+# FIRST-TIME HOST SETUP (the container runs as non-root UID 1654 — see the Dockerfile):
+#   mkdir -p data && sudo chown -R 1654:1654 data      # the store must be writable by that UID
+#   export BLUETOOTH_GID=$(getent group bluetooth | cut -d: -f3)   # usually 113; verify on YOUR host
 
 services:
   trackify:
@@ -16,9 +20,16 @@ services:
     image: trackify-cli
     # BLE goes through the HOST's bluetoothd: share the host network and its system D-Bus socket.
     network_mode: host
+    # The image runs as the non-root `app` user (UID 1654). BlueZ's D-Bus policy grants org.bluez to
+    # root and to the host's `bluetooth` group only, so add that group by its HOST GID. Override with
+    # BLUETOOTH_GID if `getent group bluetooth` reports something other than 113 on your machine.
+    group_add:
+      - "${BLUETOOTH_GID:-113}"
     volumes:
       - /var/run/dbus:/var/run/dbus
-      - ./data:/data # trains.json lives here (TRACKIFY_STORE=/data/trains.json)
+      # Despite the name this is a SQLite database (TRACKIFY_STORE=/data/trains.json).
+      # Must be writable by UID 1654 — see FIRST-TIME HOST SETUP above.
+      - ./data:/data
     # SIGINT = Ctrl+C: triggers the CLI's clean shutdown (stop motor + disconnect).
     stop_signal: SIGINT
     restart: unless-stopped
