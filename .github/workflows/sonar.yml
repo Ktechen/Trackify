@@ -14,9 +14,15 @@ name: SonarCloud
 #
 # Scope exclusions (`begin` below):
 #  - docs/** is the vendored lego-ble-wireless-protocol-docs submodule — third-party HTML/JS we don't
-#    own and won't fix; it accounted for 51 of 61 "bugs" and most of the ncloc.
-#  - docker:S6471 (root user) is ignored for the CLI Dockerfile only; the reason is documented in the
-#    Dockerfile itself (host BlueZ D-Bus + bind-mounted store).
+#    own and won't fix; it accounted for 51 of 61 "bugs" and most of the ncloc. (It now also covers
+#    docs/arc42/, which is harmless — Sonar has no markdown analyser.)
+#
+# There is deliberately NO issue-exclusion here. A `sonar.issue.ignore.multicriteria` for docker:S6471
+# used to be passed as a /d: parameter and silently did nothing: issue exclusions are multi-value
+# SERVER-side settings, so they only apply when set in the SonarCloud UI (Project -> Administration ->
+# Analysis Scope), not from the scanner command line. The analysis of 9299be9 ran with that parameter
+# in place and still reported the issue as OPEN. The Dockerfile now runs as non-root instead, which
+# fixes the finding at the source — prefer that over reaching for an exclusion.
 on:
   pull_request:
     branches: [ master ]
@@ -64,9 +70,6 @@ jobs:
           /d:sonar.host.url="https://sonarcloud.io"
           /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/coverage/coverage.opencover.xml"
           /d:sonar.exclusions="docs/**"
-          /d:sonar.issue.ignore.multicriteria="dockerRoot"
-          /d:sonar.issue.ignore.multicriteria.dockerRoot.ruleKey="docker:S6471"
-          /d:sonar.issue.ignore.multicriteria.dockerRoot.resourceKey="Source/Trackify.Cli/Dockerfile"
 
       # A single step builds everything the scanner should see (the test project references the core
       # libs and the CLI) and lets coverlet instrument that same build — no `--no-build`, otherwise

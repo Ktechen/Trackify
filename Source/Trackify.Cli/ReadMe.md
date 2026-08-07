@@ -94,7 +94,19 @@ state if discovery still misbehaves.
 
 ## Docker
 
-From the repo root:
+The container runs as the **non-root** `app` user (UID 1654) that the .NET base image provides, so two
+host-side things have to line up once, before the first `up`:
+
+```bash
+# 1. The store is a host bind mount and keeps its host ownership — make it writable by UID 1654.
+mkdir -p data && sudo chown -R 1654:1654 data
+
+# 2. BlueZ grants org.bluez over D-Bus to root and to the `bluetooth` group only, so the container
+#    must join that group by its HOST GID. Usually 113 — check yours:
+export BLUETOOTH_GID=$(getent group bluetooth | cut -d: -f3)
+```
+
+Then, from the repo root:
 
 ```bash
 docker compose up -d                       # build + run permanently (auto-restart after reboot)
@@ -104,8 +116,13 @@ docker compose down                        # stops the train cleanly (SIGINT)
 ```
 
 `docker-compose.yml` uses host networking + a `/var/run/dbus` mount (BLE via the host's `bluetoothd`),
-`stop_signal: SIGINT` for a clean stop, and `restart: unless-stopped`. Building inside the Linux
-container turns the LINUX flag on automatically, so real BlueZ is compiled in.
+`group_add` for the bluetooth GID, `stop_signal: SIGINT` for a clean stop, and `restart: unless-stopped`.
+Building inside the Linux container turns the LINUX flag on automatically, so real BlueZ is compiled in.
+
+**If discovery finds nothing or the store can't be written**, the non-root switch is the first thing to
+suspect — check both steps above. `docker compose logs` shows a D-Bus `AccessDenied` for the group
+problem and a permission error on `/data` for the ownership one. To rule it out quickly, add
+`user: "0:0"` to the `trackify` service to run as root again as before.
 
 ## Run permanently at boot (systemd)
 
@@ -239,7 +256,19 @@ Radio-/Adapter-/Scan-Status, falls die Erkennung weiter hakt.
 
 ## Docker
 
-Aus dem Repo-Root:
+Der Container läuft als **Nicht-Root**-Benutzer `app` (UID 1654) aus dem .NET-Basisimage. Dafür müssen
+einmalig zwei Dinge auf dem Host passen, vor dem ersten `up`:
+
+```bash
+# 1. Der Store ist ein Host-Bind-Mount und behält die Host-Rechte — für UID 1654 beschreibbar machen.
+mkdir -p data && sudo chown -R 1654:1654 data
+
+# 2. BlueZ erlaubt org.bluez über D-Bus nur root und der Gruppe `bluetooth`; der Container muss dieser
+#    Gruppe per HOST-GID beitreten. Meist 113 — die eigene ermitteln:
+export BLUETOOTH_GID=$(getent group bluetooth | cut -d: -f3)
+```
+
+Danach aus dem Repo-Root:
 
 ```bash
 docker compose up -d                       # bauen + dauerhaft starten (Autostart nach Reboot)
@@ -249,8 +278,14 @@ docker compose down                        # stoppt den Zug sauber (SIGINT)
 ```
 
 `docker-compose.yml` nutzt Host-Networking + `/var/run/dbus`-Mount (BLE über den `bluetoothd` des
-Hosts), `stop_signal: SIGINT` für sauberes Stoppen und `restart: unless-stopped`. Da im Linux-
-Container gebaut wird, ist das LINUX-Flag automatisch an — echtes BlueZ ist einkompiliert.
+Hosts), `group_add` für die Bluetooth-GID, `stop_signal: SIGINT` für sauberes Stoppen und
+`restart: unless-stopped`. Da im Linux-Container gebaut wird, ist das LINUX-Flag automatisch an —
+echtes BlueZ ist einkompiliert.
+
+**Wenn die Erkennung nichts findet oder der Store nicht geschrieben werden kann**, ist zuerst die
+Nicht-Root-Umstellung zu prüfen — beide Schritte oben. `docker compose logs` zeigt bei der Gruppe ein
+D-Bus-`AccessDenied`, bei den Rechten einen Permission-Fehler auf `/data`. Zum schnellen Ausschließen
+`user: "0:0"` beim Service `trackify` ergänzen — dann läuft er wie bisher als root.
 
 ## Dauerbetrieb beim Booten (systemd)
 
