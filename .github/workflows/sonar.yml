@@ -5,8 +5,15 @@ name: SonarCloud
 #
 # This REPLACES SonarCloud's automatic analysis. That mode never builds the project and never runs
 # the tests, so per its documented limitations "Code coverage information is not supported" — which
-# is why the coverage metric was missing entirely. Automatic analysis therefore has to be turned OFF
-# (SonarCloud -> Project -> Administration -> Analysis Method), otherwise this scan is rejected.
+# is why the coverage metric was missing entirely.
+#
+# Automatic analysis therefore has to be turned OFF, or `sonarscanner end` fails the job with
+#   ERROR: You are running CI analysis while Automatic Analysis is enabled.
+# That is a server-side project setting — nothing in this repo can switch it off (a
+# `sonar-project.properties` file, sometimes suggested for this, is rejected outright by the scanner
+# for .NET). A PROJECT admin has to flip it once, at
+#   https://sonarcloud.io/project/settings?id=Ktechen_Trackify  ->  Analysis Method
+# after which every run here is accepted.
 #
 # Scope note: the scanner for .NET only sees projects that are built between `begin` and `end`. As in
 # ci.yml the Uno app (Source/Trackify, five heads) is not buildable on a Linux runner, so the
@@ -53,6 +60,9 @@ jobs:
           dotnet tool install --global dotnet-sonarscanner
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
+      # projectBaseDir is pinned on purpose: since scanner v8 it is auto-detected, and everything
+      # resolved relative to it (notably sonar.exclusions below) moves with it. The repo root is what
+      # those paths are written against, so say so instead of relying on the detection heuristic.
       - name: Sonar begin
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -62,6 +72,7 @@ jobs:
           /o:"trackify1"
           /d:sonar.token="$SONAR_TOKEN"
           /d:sonar.host.url="https://sonarcloud.io"
+          /d:sonar.projectBaseDir="${{ github.workspace }}"
           /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/coverage/coverage.opencover.xml"
           /d:sonar.exclusions="docs/**"
           /d:sonar.issue.ignore.multicriteria="dockerRoot"
