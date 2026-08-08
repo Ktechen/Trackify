@@ -1,18 +1,27 @@
 # Trackify
 
-[![CI](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/Ktechen/Trackify/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ktechen/Trackify/security/code-scanning)
-[![Android APK](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml)
-[![CLI linux-arm64](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml)
-[![License](https://img.shields.io/github/license/Ktechen/Trackify)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
-[![Quality Gate new Code Status](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify)
+## Status
 
+| Category | Badge |
+| --- | --- |
+| CI | [![CI](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml) |
+| CodeQL | [![CodeQL](https://github.com/Ktechen/Trackify/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ktechen/Trackify/security/code-scanning) |
+| Android APK | [![Android APK](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml) |
+| CLI linux-arm64 | [![CLI linux-arm64](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml) |
+| License | [![License](https://img.shields.io/github/license/Ktechen/Trackify)](LICENSE) |
+| Framework | [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com) |
+| Quality Gate | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Bugs | [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Vulnerabilities | [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Code Smells | [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Security Hotspots | [![Security Hotspots](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=security_hotspots)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Security Rating | [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Reliability Rating | [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Maintainability Rating | [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Technical Debt | [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Duplicated Lines | [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Coverage | [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
+| Lines of Code | [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
 Configure and control **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — no
 server/backend. BLE speaks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/)
 via [SharpBrick.PoweredUp](https://github.com/sharpbrick/powered-up).
