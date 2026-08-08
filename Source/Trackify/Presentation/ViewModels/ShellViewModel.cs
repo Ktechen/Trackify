@@ -1,13 +1,7 @@
 namespace Trackify.Presentation.ViewModels;
 
+// Shell carries no state of its own; it exists so Navigation's root RouteMap has a view-model to
+// bind the Shell view to. Add singleton-service wiring here when the shell needs any.
 public class ShellViewModel
 {
-    private readonly INavigator _navigator;
-
-    public ShellViewModel(
-        INavigator navigator)
-    {
-        _navigator = navigator;
-        // Add code here to initialize or attach event handlers to singleton services
-    }
 }

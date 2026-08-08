@@ -11,33 +11,44 @@ public static class TrackGeometry
     private static readonly double ArcLength = Math.PI * CurveRadius;
     private static readonly double TotalLength = 2 * StraightLength + 2 * ArcLength;
 
+    // Segment ids, in travel order around the loop. Named constants so the four tables below
+    // (ids, names, types, arc-length ranges) can't drift apart on a typo.
+    public const string Seg1 = "SEG-1";
+    public const string Seg2 = "SEG-2";
+    public const string Seg3 = "SEG-3";
+    public const string Seg4 = "SEG-4";
+    public const string Seg5 = "SEG-5";
+    public const string Seg6 = "SEG-6";
+    public const string Seg7 = "SEG-7";
+    public const string Seg8 = "SEG-8";
+
     public static readonly IReadOnlyList<string> SegmentIds =
     [
-        "SEG-1", "SEG-2", "SEG-3", "SEG-4", "SEG-5", "SEG-6", "SEG-7", "SEG-8",
+        Seg1, Seg2, Seg3, Seg4, Seg5, Seg6, Seg7, Seg8,
     ];
 
     public static readonly IReadOnlyDictionary<string, string> Names = new Dictionary<string, string>
     {
-        ["SEG-1"] = "Gerade Nordwest",
-        ["SEG-2"] = "Bahnhof Nord",
-        ["SEG-3"] = "Kurve Ost (oben)",
-        ["SEG-4"] = "Kurve Ost (unten)",
-        ["SEG-5"] = "Gerade Südost",
-        ["SEG-6"] = "Gerade Südwest",
-        ["SEG-7"] = "Kurve West (unten)",
-        ["SEG-8"] = "Kurve West (oben)",
+        [Seg1] = "Gerade Nordwest",
+        [Seg2] = "Bahnhof Nord",
+        [Seg3] = "Kurve Ost (oben)",
+        [Seg4] = "Kurve Ost (unten)",
+        [Seg5] = "Gerade Südost",
+        [Seg6] = "Gerade Südwest",
+        [Seg7] = "Kurve West (unten)",
+        [Seg8] = "Kurve West (oben)",
     };
 
     public static readonly IReadOnlyDictionary<string, SegmentType> Types = new Dictionary<string, SegmentType>
     {
-        ["SEG-1"] = SegmentType.Straight,
-        ["SEG-2"] = SegmentType.Station,
-        ["SEG-3"] = SegmentType.Curve,
-        ["SEG-4"] = SegmentType.Curve,
-        ["SEG-5"] = SegmentType.Straight,
-        ["SEG-6"] = SegmentType.Straight,
-        ["SEG-7"] = SegmentType.Curve,
-        ["SEG-8"] = SegmentType.Curve,
+        [Seg1] = SegmentType.Straight,
+        [Seg2] = SegmentType.Station,
+        [Seg3] = SegmentType.Curve,
+        [Seg4] = SegmentType.Curve,
+        [Seg5] = SegmentType.Straight,
+        [Seg6] = SegmentType.Straight,
+        [Seg7] = SegmentType.Curve,
+        [Seg8] = SegmentType.Curve,
     };
 
     public static string BuildTrackBed()
@@ -59,10 +70,10 @@ public static class TrackGeometry
         var l = StraightLength;
         var defs = new (string Id, double A, double B)[]
         {
-            ("SEG-1", 0, l / 2), ("SEG-2", l / 2, l),
-            ("SEG-3", l, l + arc / 2), ("SEG-4", l + arc / 2, l + arc),
-            ("SEG-5", l + arc, l + arc + l / 2), ("SEG-6", l + arc + l / 2, 2 * l + arc),
-            ("SEG-7", 2 * l + arc, 2 * l + arc + arc / 2), ("SEG-8", 2 * l + arc + arc / 2, TotalLength),
+            (Seg1, 0, l / 2), (Seg2, l / 2, l),
+            (Seg3, l, l + arc / 2), (Seg4, l + arc / 2, l + arc),
+            (Seg5, l + arc, l + arc + l / 2), (Seg6, l + arc + l / 2, 2 * l + arc),
+            (Seg7, 2 * l + arc, 2 * l + arc + arc / 2), (Seg8, 2 * l + arc + arc / 2, TotalLength),
         };
 
         var result = new List<SegmentGeometry>(defs.Length);

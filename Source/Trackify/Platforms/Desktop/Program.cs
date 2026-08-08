@@ -2,7 +2,7 @@ using Uno.UI.Hosting;
 
 namespace Trackify;
 
-internal class Program
+internal static class Program
 {
     [STAThread]
     public static void Main(string[] args)

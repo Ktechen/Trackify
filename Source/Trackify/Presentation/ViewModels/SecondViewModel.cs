@@ -55,7 +55,7 @@ public partial class SecondViewModel : ObservableObject
         TrackBedPathData = TrackGeometry.BuildTrackBed();
 
         Seed();
-        SelectedSegment = Segments.FirstOrDefault(s => s.Id == "SEG-2");
+        SelectedSegment = Segments.FirstOrDefault(s => s.Id == TrackGeometry.Seg2);
         RefreshStats();
     }
 
