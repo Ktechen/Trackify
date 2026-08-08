@@ -21,10 +21,6 @@
 | Technical Debt | [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
 | Duplicated Lines | [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
 | Coverage | [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
-| Lines of Code | [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
-Configure and control **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — no
-server/backend. BLE speaks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/)
-via [SharpBrick.PoweredUp](https://github.com/sharpbrick/powered-up).
 
 A Clean Architecture solution with **two front-ends over one shared core**: an [Uno Platform](https://platform.uno)
 app (App / HMI / Web) and a [Spectre.Console](https://spectreconsole.net) CLI for a Raspberry Pi / Linux server.
