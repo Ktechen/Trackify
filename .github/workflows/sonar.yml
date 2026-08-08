@@ -23,6 +23,15 @@ name: SonarCloud
 #  - docs/** is the vendored lego-ble-wireless-protocol-docs submodule — third-party HTML/JS we don't
 #    own and won't fix; it accounted for 51 of 61 "bugs" and most of the ncloc. (It now also covers
 #    docs/arc42/, which is harmless — Sonar has no markdown analyser.)
+#  - Source/Trackify/**/*.cs is the Uno app, which per the scope note above is never built here and
+#    therefore never analysed. Without the exclusion its files stay INDEXED, so 77 findings left over
+#    from the old automatic-analysis mode were frozen OPEN: nothing re-evaluates them, so neither a
+#    fix nor a false positive can ever close them. 60 of those 77 were false positives caused by
+#    analysis without a compilation — S2325 "make it static" on [ObservableProperty]-generated
+#    property reads and on IValueConverter members, and S8970 "nullable warnings are disabled here"
+#    when Directory.Build.props sets <Nullable>enable</Nullable>. Only the .cs is excluded, so the
+#    WasmScripts JS and any XML still get analysed. Drop this exclusion if the Uno heads are ever
+#    built inside begin/end (that needs a windows runner) — then the analysis becomes real.
 #
 # There is deliberately NO issue-exclusion here. A `sonar.issue.ignore.multicriteria` for docker:S6471
 # used to be passed as a /d: parameter and silently did nothing: issue exclusions are multi-value
@@ -80,7 +89,7 @@ jobs:
           /d:sonar.host.url="https://sonarcloud.io"
           /d:sonar.projectBaseDir="${{ github.workspace }}"
           /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/coverage/coverage.opencover.xml"
-          /d:sonar.exclusions="docs/**"
+          /d:sonar.exclusions="docs/**,Source/Trackify/**/*.cs"
 
       # A single step builds everything the scanner should see (the test project references the core
       # libs and the CLI) and lets coverlet instrument that same build — no `--no-build`, otherwise

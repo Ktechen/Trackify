@@ -3,7 +3,7 @@ using Uno.UI.Hosting;
 
 namespace Trackify.iOS;
 
-public class EntryPoint
+public static class EntryPoint
 {
     // This is the main entry point of the application.
     public static void Main(string[] args)

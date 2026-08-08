@@ -31,7 +31,12 @@ public partial class Train : ObservableObject
 
     public string SpeedLabel => (Speed > 0 ? "+" : "") + Speed;
 
-    public string SpeedDirectionLabel => Speed < 0 ? "rückwärts" : Speed > 0 ? "vorwärts" : "Stopp";
+    public string SpeedDirectionLabel => Speed switch
+    {
+        < 0 => "rückwärts",
+        > 0 => "vorwärts",
+        _ => "Stopp",
+    };
 
     public string HubToken => "HubType." + Hub;
 
@@ -49,13 +54,16 @@ public partial class Train : ObservableObject
 
     public bool IsBrakeFormulaValid => BrakeFn != SpeedFunctionType.Custom || SpeedFunction.TryCompile(BrakeExpression, out _);
 
-    public string AccelFormulaDisplay => AccelFn == SpeedFunctionType.Custom
-        ? (IsAccelFormulaValid ? $"f(x) = {AccelExpression}" : "⚠ ungültige Formel")
-        : LegoinoCatalog.SpeedFunction(AccelFn).Formula;
+    public string AccelFormulaDisplay => FormulaDisplay(AccelFn, AccelExpression, IsAccelFormulaValid);
 
-    public string BrakeFormulaDisplay => BrakeFn == SpeedFunctionType.Custom
-        ? (IsBrakeFormulaValid ? $"f(x) = {BrakeExpression}" : "⚠ ungültige Formel")
-        : LegoinoCatalog.SpeedFunction(BrakeFn).Formula;
+    public string BrakeFormulaDisplay => FormulaDisplay(BrakeFn, BrakeExpression, IsBrakeFormulaValid);
+
+    // Presets show their catalog formula; a custom function shows its own expression, or a warning.
+    private static string FormulaDisplay(SpeedFunctionType fn, string expression, bool isValid)
+    {
+        if (fn != SpeedFunctionType.Custom) return LegoinoCatalog.SpeedFunction(fn).Formula;
+        return isValid ? $"f(x) = {expression}" : "⚠ ungültige Formel";
+    }
 
     public SpeedProfileGraph Graph => SpeedCurve.BuildGraph(
         Math.Abs((int)Speed) / 100.0,

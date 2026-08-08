@@ -13,17 +13,18 @@ set -uo pipefail
 
 SCAN_SECONDS="${SCAN_SECONDS:-10}"
 LEGO_COMPANY_ID="0397"   # LEGO manufacturer id in BLE advertising data
+INDENT_SED='s/^/    /'   # indents captured command output under its section
 
 c_hdr='\033[1;36m'; c_ok='\033[1;32m'; c_warn='\033[1;33m'; c_err='\033[1;31m'; c_off='\033[0m'
-section() { echo; echo -e "${c_hdr}══════ $* ══════${c_off}"; }
-have()    { command -v "$1" >/dev/null 2>&1; }
-run()     { echo -e "\$ $*"; "$@" 2>&1 | sed 's/^/    /'; echo; }
-note()    { echo -e "  ${c_warn}» $*${c_off}"; }
-ok()      { echo -e "  ${c_ok}✓ $*${c_off}"; }
-bad()     { echo -e "  ${c_err}✗ $*${c_off}"; }
+section() { echo; echo -e "${c_hdr}══════ $* ══════${c_off}"; return 0; }
+have()    { local cmd="$1"; command -v "$cmd" >/dev/null 2>&1; return $?; }
+run()     { echo -e "\$ $*"; "$@" 2>&1 | sed "$INDENT_SED"; echo; return 0; }
+note()    { echo -e "  ${c_warn}» $*${c_off}"; return 0; }
+ok()      { echo -e "  ${c_ok}✓ $*${c_off}"; return 0; }
+bad()     { echo -e "  ${c_err}✗ $*${c_off}"; return 0; }
 
 SUDO=""
-if [ "$(id -u)" -ne 0 ]; then
+if [[ "$(id -u)" -ne 0 ]]; then
   if have sudo && sudo -n true 2>/dev/null; then SUDO="sudo"; else
     note "Not root and no passwordless sudo — hciconfig/btmgmt/dmesg sections may be skipped."
   fi
@@ -31,7 +32,7 @@ fi
 
 section "SYSTEM"
 run uname -a
-[ -f /proc/device-tree/model ] && { echo "  Model: $(tr -d '\0' </proc/device-tree/model)"; echo; }
+[[ -f /proc/device-tree/model ]] && { echo "  Model: $(tr -d '\0' </proc/device-tree/model)"; echo; }
 have lsb_release && run lsb_release -a
 
 section "BLUEZ VERSION"
@@ -55,9 +56,9 @@ fi
 
 section "KERNEL / DRIVER"
 run lsmod | grep -iE 'bluetooth|btbcm|hci_uart|btintel|btusb' || note "no BT modules listed"
-if [ -n "$SUDO" ] || [ "$(id -u)" -eq 0 ]; then
+if [[ -n "$SUDO" ]] || [[ "$(id -u)" -eq 0 ]]; then
   echo "  dmesg (Bluetooth lines):"
-  $SUDO dmesg 2>/dev/null | grep -iE 'bluetooth|hci|bcm43|firmware' | tail -n 30 | sed 's/^/    /'
+  $SUDO dmesg 2>/dev/null | grep -iE 'bluetooth|hci|bcm43|firmware' | tail -n 30 | sed "$INDENT_SED"
 else
   note "Skipping dmesg (needs root)."
 fi
@@ -72,7 +73,7 @@ else
 fi
 
 section "D-BUS (BlueZ talks over the system bus)"
-[ -S /var/run/dbus/system_bus_socket ] && ok "System D-Bus socket present." || bad "No /var/run/dbus/system_bus_socket (Docker: mount /var/run/dbus)."
+[[ -S /var/run/dbus/system_bus_socket ]] && ok "System D-Bus socket present." || bad "No /var/run/dbus/system_bus_socket (Docker: mount /var/run/dbus)."
 have busctl && run busctl --system list | grep -i bluez || true
 
 section "PERMISSIONS (current user)"
@@ -86,11 +87,11 @@ if have hciconfig; then
 else
   note "hciconfig not installed (package: bluez)."
 fi
-have btmgmt && { echo "  btmgmt info:"; ${SUDO:+$SUDO }btmgmt info 2>&1 | sed 's/^/    /'; echo; }
+have btmgmt && { echo "  btmgmt info:"; ${SUDO:+$SUDO }btmgmt info 2>&1 | sed "$INDENT_SED"; echo; }
 
 section "ADAPTER STATE (bluetoothctl show)"
 if have bluetoothctl; then
-  out="$(bluetoothctl show 2>&1)"; echo "$out" | sed 's/^/    /'; echo
+  out="$(bluetoothctl show 2>&1)"; echo "$out" | sed "$INDENT_SED"; echo
   echo "$out" | grep -qi 'Powered: yes'    && ok "Adapter Powered = yes"    || bad "Adapter Powered = no → bluetoothctl power on"
   echo "$out" | grep -qi 'Discovering: yes' && note "Adapter already Discovering (a scan is running)."
 else
@@ -110,10 +111,10 @@ if have bluetoothctl; then
   ( echo "menu scan"; echo "transport le"; echo "back"; echo "scan on"; sleep "$SCAN_SECONDS"; echo "scan off"; echo "quit" ) \
       | timeout $((SCAN_SECONDS + 5)) bluetoothctl >/tmp/bt_scan.log 2>&1
   echo "  --- devices seen after scan ---"
-  bluetoothctl devices 2>/dev/null | sed 's/^/    /'
+  bluetoothctl devices 2>/dev/null | sed "$INDENT_SED"
   echo
   echo "  --- scan log (advertisements) ---"
-  grep -iE 'Device|Name|ManufacturerData|RSSI|0397' /tmp/bt_scan.log 2>/dev/null | tail -n 40 | sed 's/^/    /'
+  grep -iE 'Device|Name|ManufacturerData|RSSI|0397' /tmp/bt_scan.log 2>/dev/null | tail -n 40 | sed "$INDENT_SED"
   echo
   if grep -qi "$LEGO_COMPANY_ID" /tmp/bt_scan.log 2>/dev/null; then
     ok "Saw LEGO manufacturer data (0x$LEGO_COMPANY_ID) — a hub is advertising."

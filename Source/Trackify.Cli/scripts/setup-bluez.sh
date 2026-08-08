@@ -19,7 +19,7 @@ ok()   { echo -e "  ${c_ok}✓ $*${c_off}"; }
 warn() { echo -e "  ${c_warn}» $*${c_off}"; }
 die()  { echo -e "  ${c_err}✗ $*${c_off}"; exit 1; }
 
-[ "$(id -u)" -eq 0 ] || die "Please run with sudo: sudo ./setup-bluez.sh"
+[[ "$(id -u)" -eq 0 ]] || die "Please run with sudo: sudo ./setup-bluez.sh"
 command -v apt-get >/dev/null 2>&1 || die "This script targets Debian/Ubuntu (apt). Install 'bluez' with your distro's package manager instead."
 
 # The human user to grant access to (the one who invoked sudo, not root).
@@ -73,7 +73,7 @@ bluetoothctl show 2>/dev/null | grep -E 'Name|Powered|Discoverable|Address' | se
 
 echo
 ok "BlueZ setup complete."
-if [ "${NEED_RELOGIN:-0}" = "1" ]; then
+if [[ "${NEED_RELOGIN:-0}" = "1" ]]; then
     echo -e "${c_warn}IMPORTANT:${c_off} log out & back in (or reboot) so '$TARGET_USER' picks up the 'bluetooth' group,"
     echo "           then run:  trackify discover"
 else

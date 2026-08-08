@@ -76,8 +76,6 @@ public sealed partial class MainPage : Page
 
         // The header stats/connection chip get cramped on a phone - hide them when narrow.
         HeaderStats.Visibility = isWide ? Visibility.Visible : Visibility.Collapsed;
-        HeaderChip.Visibility = isWide
-            ? (hasSelection ? Visibility.Visible : Visibility.Collapsed)
-            : Visibility.Collapsed;
+        HeaderChip.Visibility = (isWide && hasSelection) ? Visibility.Visible : Visibility.Collapsed;
     }
 }

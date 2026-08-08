@@ -1,3 +1,3 @@
-var UnoAppManifest = {
+window.UnoAppManifest = {
     displayName: "Trackify"
 }

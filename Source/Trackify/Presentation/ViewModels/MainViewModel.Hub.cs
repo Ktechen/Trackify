@@ -34,7 +34,7 @@ public partial class MainViewModel
         // Own the source locally and dispose it in the finally, so it is released exactly once by the
         // scan that created it — cancelling a previous scan lets that one clean up after itself.
         var cts = new CancellationTokenSource();
-        _discoverCts?.Cancel();
+        if (_discoverCts is not null) await _discoverCts.CancelAsync();
         _discoverCts = cts;
 
         IsDiscovering = true;

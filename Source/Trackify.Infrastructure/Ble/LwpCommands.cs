@@ -43,22 +43,28 @@ internal static class LwpCommands
     public static async Task ConnectWithRetryAsync(ILegoWirelessProtocol protocol, CancellationToken ct)
     {
         const int maxAttempts = 3;
-        for (var attempt = 1;; attempt++)
+        for (var attempt = 1; attempt < maxAttempts; attempt++)
         {
             try
             {
                 await protocol.ConnectAsync();
                 return;
             }
-            catch (Exception ex) when (ex is NullReferenceException or ArgumentNullException && attempt < maxAttempts)
+            catch (Exception ex) when (ex is NullReferenceException or ArgumentNullException)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(300), ct);
             }
-            catch (Exception ex) when (ex is NullReferenceException or ArgumentNullException)
-            {
-                throw new InvalidOperationException(
-                    "Connecting to the hub failed (unreachable or GATT not ready). Is it powered on and in range?", ex);
-            }
+        }
+
+        // Last attempt: no retry left, so translate the null-deref into a diagnosable error.
+        try
+        {
+            await protocol.ConnectAsync();
+        }
+        catch (Exception ex) when (ex is NullReferenceException or ArgumentNullException)
+        {
+            throw new InvalidOperationException(
+                "Connecting to the hub failed (unreachable or GATT not ready). Is it powered on and in range?", ex);
         }
     }
 
