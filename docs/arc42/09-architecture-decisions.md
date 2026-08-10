@@ -234,7 +234,9 @@ Windows) — **even with `-f <head>`**, because restore imports workloads for al
 
 **Decision.** `ci.yml` gates the shared core + CLI + tests on ubuntu-latest. The Android head is built
 by `android-apk.yml` on windows-latest for tags. The other heads are verified locally by developers.
-The same limitation scopes the SonarCloud analysis.
+The app is also outside the SonarCloud scope, for a related but separate reason
+([R-9](11-risks-and-technical-debt.md)): the analysis never builds, so its findings on the app are
+artefacts of the missing compilation rather than results.
 
 **Consequences.** The gate is fast and reliable on a single runner. The gap is real and accepted: a
 change that breaks only the desktop, WASM or iOS head **can merge**. Mitigation is the documented

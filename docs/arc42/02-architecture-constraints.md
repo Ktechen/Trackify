@@ -37,7 +37,7 @@ technology choices, then the rules the project imposes on itself.
 | OC-1 | **Single maintainer, hobby cadence.** Anything that only works because someone remembers it will break; conventions must be machine-checked. |
 | OC-2 | **CI runs on hosted GitHub runners.** The Uno app's five heads cannot be restored on one runner, so `ci.yml` gates the shared core + CLI + tests only; the Android head is covered by `android-apk.yml`. |
 | OC-3 | **Hardware verification is manual.** BLE cannot run in CI or in an agent environment — real behaviour is confirmed on a phone and on a Raspberry Pi. |
-| OC-4 | **SonarCloud + CodeQL** run on every PR. `docs/**` (the vendored LEGO submodule) is excluded — third-party HTML/JS the project neither owns nor fixes. |
+| OC-4 | **SonarCloud + CodeQL** run on every PR, both configured outside the workflow files. Excluded from Sonar: `docs/**` (the vendored LEGO submodule — third-party HTML/JS the project neither owns nor fixes) and `Source/Trackify/**/*.cs` (the Uno app, which the build-less analysis cannot judge — [R-9](11-risks-and-technical-debt.md)). |
 | OC-5 | The vendored LEGO protocol documentation is a **git submodule**; it is read-only reference material. |
 
 ## 2.4 Self-imposed conventions (enforced by the build)

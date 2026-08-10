@@ -89,33 +89,39 @@ have no hub address recorded yet will be merged into one local row.
 - **Realistic trigger:** trains created in the app before discovery has run, then synced from a Pi.
 - **Fix if it bites:** drop the name fallback and require a hub identity for matching.
 
-### R-9: `sonar.yml` has never published an analysis (high impact, needs a one-off admin action)
+### R-9: SonarCloud runs without a compilation, so its C# findings are weak (accepted)
 
-The project still has **Automatic Analysis** enabled server-side (`sonar.autoscan.enabled=true`), and
-the two modes are mutually exclusive: every `sonarscanner end` step is rejected with *"You are running
-CI analysis while Automatic Analysis is enabled"*, so the workflow has failed on **every** run to date
-while the `begin` and test steps pass. Three consequences, all of them easy to misread:
+The project uses SonarCloud's **Automatic Analysis** (`sonar.autoscan.enabled=true`). That mode and a
+CI scanner are mutually exclusive — `sonarscanner end` is rejected with *"You are running CI analysis
+while Automatic Analysis is enabled"* — and switching between them is a **server-side setting that no
+file in this repository can change**. A `.github/workflows/sonar.yml` did exist for exactly that
+purpose; because the setting was never flipped it failed on **every** run it ever made, published
+nothing, and was removed rather than left as a permanently red check. Two things follow:
 
-- **Coverage is not measured at all.** The OpenCover report is produced and never consumed, so the
-  coverage metric and its badge come from nothing.
-- **Every `/d:sonar.*` setting in `sonar.yml` is inert**, including the scope exclusions. What actually
-  scopes the published results is [`.sonarcloud.properties`](../../.sonarcloud.properties), the file
-  Automatic Analysis reads — which is why the two exclusion lists must be kept identical.
-- **The published C# findings are analysed without a compilation.** Source generators have not run and
-  package references are unresolved, so the results are unreliable in exactly the places that depend on
-  either — most visibly the Uno app, where every read of a `[ObservableProperty]`-generated property
-  and every `IValueConverter` member drew a bogus `S2325` "make it static", and `S8970` claimed nullable
-  warnings were disabled although `Directory.Build.props` sets `<Nullable>enable</Nullable>`. Applying
-  those "fixes" would not compile. The app is excluded for this reason.
+- **Coverage is not measured.** Automatic analysis never runs the tests, so per its documented
+  limitations coverage is unsupported. The metric has in fact never had a value, and the README
+  coverage badge was removed for that reason.
+- **C# is analysed without a compilation.** Source generators have not run and package references are
+  unresolved, so findings are unreliable wherever either matters — most visibly the Uno app, where
+  every read of an `[ObservableProperty]`-generated property and every `IValueConverter` member drew a
+  bogus `S2325` "make it static", and `S8970` claimed nullable warnings were disabled although
+  `Directory.Build.props` sets `<Nullable>enable</Nullable>`. Applying those "fixes" would not compile.
+  The app is excluded from analysis for this reason — see
+  [`.sonarcloud.properties`](../../.sonarcloud.properties), now the only Sonar configuration in the repo.
 
-- **Mitigation today:** C# rules are reproduced locally against the same analyzer version by injecting
+What is still worth having: the non-C# analysers (Docker, YAML, XML, JS, secrets) do not need a build
+and are unaffected, and the quality-gate badges stay meaningful for those.
+
+- **Mitigation:** C# rules are reproduced locally against the same analyzer version by injecting
   `SonarAnalyzer.CSharp` through `CustomAfterMicrosoftCommonProps` —
-  see [§7.6](07-deployment-view.md#76-build-and-delivery-pipeline).
-- **Fix:** a project admin turns Automatic Analysis off once, at
-  [Project Settings → Analysis Method](https://sonarcloud.io/project/settings?id=Ktechen_Trackify).
-  Nothing in this repository can do it — it is a server-side setting, and a `sonar-project.properties`
-  file (sometimes suggested) is rejected outright by the scanner for .NET. After the switch the CI scan
-  is accepted, coverage starts reporting, and the workflow's own exclusions take over.
+  see [§7.6](07-deployment-view.md#76-build-and-delivery-pipeline). This is the accurate view of the C#
+  rules, and it should be trusted over the SonarCloud UI.
+- **Reverse it** by turning Automatic Analysis off at
+  [Project Settings → Analysis Method](https://sonarcloud.io/project/settings?id=Ktechen_Trackify) and
+  restoring a scanner workflow (`git log -- .github/workflows/sonar.yml` has a working one, including
+  the coverlet → OpenCover coverage wiring). Do both or neither: a scanner workflow without the setting
+  change is dead weight, which is what it was. Note a `sonar-project.properties` file, often suggested
+  for this, is rejected outright by the scanner for .NET.
 
 ## 11.2 Technical debt
 

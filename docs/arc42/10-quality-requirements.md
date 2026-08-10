@@ -101,8 +101,8 @@ suspect.
 | Build health, warnings, code style | `TreatWarningsAsErrors` + `EnforceCodeStyleInBuild` | every build |
 | Layer integrity | NetArchTest architecture tests | `ci.yml` |
 | Logic correctness | xUnit tests foldered by layer | `ci.yml` |
-| Coverage, bugs, security & maintainability rating | SonarCloud (coverlet → OpenCover) | `sonar.yml`, badges in the README |
-| Security patterns | CodeQL | `codeql.yml` |
+| Bugs, security & maintainability rating | SonarCloud automatic analysis | `.sonarcloud.properties`, badges in the README |
+| Security patterns | CodeQL | GitHub default setup (no workflow file) |
 | Control latency, BLE behaviour, UI rendering | **Manual, on real hardware** | phone + Raspberry Pi |
 
 The last row is the honest gap: the top-priority quality goal (control responsiveness) has **no

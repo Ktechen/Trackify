@@ -86,7 +86,7 @@ restart and no UI changes.
 | Any warning at all | `TreatWarningsAsErrors` + `EnforceCodeStyleInBuild` |
 | Package version drift | Central Package Management (`Directory.Packages.props`) |
 | Uno version drift | `Uno.Sdk` pinned in `global.json`, not in package props |
-| Bugs, coverage, security rating | SonarCloud (`sonar.yml`) + CodeQL, per PR |
+| Bugs, security rating | SonarCloud automatic analysis + CodeQL, per PR (no coverage — see [R-9](11-risks-and-technical-debt.md)) |
 
 What *cannot* be enforced automatically is stated as a convention in
 [§2.4–2.5](02-architecture-constraints.md#24-self-imposed-conventions-enforced-by-the-build) and

@@ -5,7 +5,7 @@
 | Category | Badge |
 | --- | --- |
 | CI | [![CI](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml) |
-| CodeQL | [![CodeQL](https://github.com/Ktechen/Trackify/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ktechen/Trackify/security/code-scanning) |
+| CodeQL | [![CodeQL](https://img.shields.io/badge/CodeQL-default%20setup-2088FF?logo=github)](https://github.com/Ktechen/Trackify/security/code-scanning) |
 | Android APK | [![Android APK](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml) |
 | CLI linux-arm64 | [![CLI linux-arm64](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml) |
 | License | [![License](https://img.shields.io/github/license/Ktechen/Trackify)](LICENSE) |
@@ -20,7 +20,6 @@
 | Maintainability Rating | [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
 | Technical Debt | [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
 | Duplicated Lines | [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
-| Coverage | [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Ktechen_Trackify&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Ktechen_Trackify) |
 
 A Clean Architecture solution with **two front-ends over one shared core**: an [Uno Platform](https://platform.uno)
 app (App / HMI / Web) and a [Spectre.Console](https://spectreconsole.net) CLI for a Raspberry Pi / Linux server.
