@@ -141,7 +141,9 @@ confirm that a failure really is the non-root switch.
 > `docker:S6471` as a scanner `/d:` parameter. It silently did nothing — issue exclusions are
 > multi-value *server-side* settings that only apply when configured in the SonarCloud UI. The
 > parameter was live for the analysis of `9299be9` and the issue still came back `OPEN`. Fixing the
-> finding at the source was the durable answer.
+> finding at the source was the durable answer. In hindsight it was doubly doomed: the scanner
+> workflow carrying that parameter never published an analysis at all ([R-9](11-risks-and-technical-debt.md)),
+> so nothing it passed could have taken effect either way. The scanner has since been removed.
 
 ## 7.4 Server mode (client/server)
 
@@ -180,8 +182,8 @@ for a **trusted home LAN** and must not be exposed to the internet — see
 ```mermaid
 graph LR
     PR["PR → master"] --> CI["ci.yml<br/>ubuntu-latest"]
-    PR --> SON["sonar.yml<br/>scan + coverage"]
-    PR --> CQL["codeql.yml"]
+    PR --> SON["SonarCloud<br/>automatic analysis"]
+    PR --> CQL["CodeQL<br/>default setup"]
     TAG["tag v*"] --> APK["android-apk.yml<br/>windows-latest"]
     TAG --> ARM["cli-arm64.yml<br/>self-contained linux-arm64"]
 
@@ -195,10 +197,15 @@ graph LR
 | Workflow | Trigger | Runner | Does |
 |---|---|---|---|
 | `ci.yml` | PR / push to `master` | ubuntu-latest | Builds the CLI + shared core, runs the tests. **The pre-merge gate** |
-| `sonar.yml` | PR / push to `master` | ubuntu-latest | SonarCloud scan with coverage (OpenCover via coverlet). Deliberately separate from the gate so a Sonar outage cannot block a merge; skipped for fork PRs, which never receive `SONAR_TOKEN` |
-| `codeql.yml` | PR / push | — | Security code scanning |
 | `android-apk.yml` | tag `v*` / manual | windows-latest | JDK 17 + `android` workload, `-f net10.0-android` → `trackify-apk` |
 | `cli-arm64.yml` | tag `v*` / manual | ubuntu-latest | `-f net10.0 -r linux-arm64 --self-contained` → `trackify-cli-linux-arm64` |
+
+Two analyses run **without a workflow file in this repo**, so they have no `.yml` to read:
+
+| Analysis | Configured by | Notes |
+|---|---|---|
+| SonarCloud | [`.sonarcloud.properties`](../../.sonarcloud.properties) + the GitHub app | **Automatic analysis** — never builds, so it reports no coverage and analyses C# without a compilation. A scanner workflow cannot coexist with it → [R-9](11-risks-and-technical-debt.md) |
+| CodeQL | GitHub **default setup** (`dynamic/github-code-scanning/codeql`) | Runs `csharp`, `javascript-typescript` and `actions`. Configured in the repo's Security settings, not in version control |
 
 All workflows provision the .NET 8, 9 and 10 SDKs; `global.json` pins `9.0.100` with
 `rollForward: latestMajor`, so the newest installed major is used.
@@ -206,8 +213,9 @@ All workflows provision the .NET 8, 9 and 10 SDKs; `global.json` pins `9.0.100` 
 **The Uno app is intentionally not built by `ci.yml`.** Its five heads trigger workload imports and
 OS-locked TFMs (iOS needs macOS, Windows needs Windows) during *restore*, even with `-f <head>` — so
 gating one head reliably would need a per-OS + workload matrix. The Android head is covered by
-`android-apk.yml`; the remaining heads are verified locally. The same limitation scopes the
-SonarCloud analysis to the shared core + CLI + tests. → [§11](11-risks-and-technical-debt.md)
+`android-apk.yml`; the remaining heads are verified locally. The app is out of the SonarCloud scope
+too, for a related but distinct reason: automatic analysis never builds anything, so its C# findings
+on the app are noise rather than results. → [§11](11-risks-and-technical-debt.md)
 
 **Local verification** (what a change is expected to pass before it is pushed):
 
@@ -222,10 +230,10 @@ Buildable heads outside macOS: `net10.0-android`, `net10.0-desktop`, `net10.0-br
 `net10.0-windows10.0.19041.0`. Real BLE behaviour is confirmed on a device and on a Pi — it cannot be
 exercised in CI.
 
-**Checking SonarCloud's C# rules locally.** The scan needs a `SONAR_TOKEN` and only runs in CI, so a
-fix to a Sonar finding is otherwise unverifiable before pushing — and while
-[R-9](11-risks-and-technical-debt.md) stands, the published findings are not trustworthy anyway. The
-same rules can be run offline by injecting the analyzer package without touching any repo file: write
+**Checking SonarCloud's C# rules locally — the authoritative check.** Because the hosted analysis
+never compiles the code ([R-9](11-risks-and-technical-debt.md)), its C# findings cannot be trusted and
+a fix cannot be confirmed there. Run the same rules offline instead, by injecting the analyzer package
+without touching any repo file: write
 
 ```xml
 <Project><ItemGroup>
