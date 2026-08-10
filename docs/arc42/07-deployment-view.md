@@ -221,3 +221,28 @@ dotnet run --project Source/Trackify/Trackify.csproj -f net10.0-desktop   # laun
 Buildable heads outside macOS: `net10.0-android`, `net10.0-desktop`, `net10.0-browserwasm`,
 `net10.0-windows10.0.19041.0`. Real BLE behaviour is confirmed on a device and on a Pi — it cannot be
 exercised in CI.
+
+**Checking SonarCloud's C# rules locally.** The scan needs a `SONAR_TOKEN` and only runs in CI, so a
+fix to a Sonar finding is otherwise unverifiable before pushing — and while
+[R-9](11-risks-and-technical-debt.md) stands, the published findings are not trustworthy anyway. The
+same rules can be run offline by injecting the analyzer package without touching any repo file: write
+
+```xml
+<Project><ItemGroup>
+  <PackageReference Include="SonarAnalyzer.CSharp" VersionOverride="10.31.0.145097" PrivateAssets="all" />
+</ItemGroup></Project>
+```
+
+to a scratch file and pass it as `CustomAfterMicrosoftCommonProps`:
+
+```bash
+dotnet build Test/Trackify.Tests/Trackify.Tests.csproj -t:Rebuild \
+  -p:CustomAfterMicrosoftCommonProps=<path> \
+  -p:TreatWarningsAsErrors=false -p:EnforceCodeStyleInBuild=false
+```
+
+Building the **test** project covers the whole analysed scope, since it references the core libs and
+the CLI. `VersionOverride` bypasses Central Package Management; the two overrides stop warnings-as-errors
+from aborting the build before every rule has reported. Keep the version in step with the
+`sonar.cs.analyzer.dotnet.pluginVersion` the server reports. Non-C# rules (docker, XML, YAML,
+JavaScript) have no local equivalent — reason about those from the rule description.

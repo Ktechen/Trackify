@@ -15,6 +15,13 @@ name: SonarCloud
 #   https://sonarcloud.io/project/settings?id=Ktechen_Trackify  ->  Analysis Method
 # after which every run here is accepted.
 #
+# !! THAT HAS NOT HAPPENED YET (`sonar.autoscan.enabled=true`), so every run of this workflow to date
+# has failed at `Sonar end` and NONE of the /d: settings below have ever taken effect — the coverage
+# report is produced and never consumed, and the scope exclusions are inert. What actually scopes the
+# published results today is .sonarcloud.properties, the file automatic analysis reads. Keep its
+# exclusion list identical to the one here, or a scope change silently does nothing. See R-9 in
+# docs/arc42/11-risks-and-technical-debt.md.
+#
 # Scope note: the scanner for .NET only sees projects that are built between `begin` and `end`. As in
 # ci.yml the Uno app (Source/Trackify, five heads) is not buildable on a Linux runner, so the
 # analysed scope here is the shared core + CLI + tests.

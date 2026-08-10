@@ -17,7 +17,8 @@ namespace Trackify.Tests.Architecture;
 /// </summary>
 public class LayerTrainDependencyTests
 {
-    private const string Domain = "Trackify.Domain";
+    // No "Trackify.Domain" constant: Domain is the innermost layer, so every other layer is allowed
+    // to depend on it and no assertion below ever names it.
     private const string Application = "Trackify.Application";
     private const string Infrastructure = "Trackify.Infrastructure";
     private const string Cli = "Trackify.Cli";

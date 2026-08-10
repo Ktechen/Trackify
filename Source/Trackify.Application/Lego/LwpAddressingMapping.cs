@@ -24,7 +24,9 @@ public static class LwpAddressingMapping
 
     /// <summary>Parses "AA:BB:CC:DD:EE:FF" (or '-' separated) back into a 48-bit address.</summary>
     public static ulong ParseMacAddress(string mac)
-        // Explicit separator array: Split(':', '-') also binds to the (char, int count) overload.
-        => mac.Split([':', '-'])
+        // Separator array *and* explicit options on purpose: Split(':', '-') binds to the
+        // (char, int count) overload instead ('-' converts to int), and only the non-params
+        // (char[], StringSplitOptions) overload takes the array without S3878 calling it redundant.
+        => mac.Split([':', '-'], StringSplitOptions.None)
             .Aggregate<string?, ulong>(0, (current, part) => (current << 8) | Convert.ToByte(part, 16));
 }
