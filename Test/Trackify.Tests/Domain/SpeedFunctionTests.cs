@@ -16,7 +16,7 @@ public class SpeedFunctionTests
     {
         Assert.True(SpeedFunction.TryCompile("1-(1-x)^2", out var fn));
         Assert.NotNull(fn);
-        Assert.Equal(0.0, fn!(0), 3);
+        Assert.Equal(0.0, fn(0), 3);
         Assert.Equal(1.0, fn(1), 3);
     }
 
