@@ -10,8 +10,13 @@ public sealed class TrackifyDbContext(DbContextOptions<TrackifyDbContext> option
 {
     public DbSet<Train> Trains => Set<Train>();
 
+    public DbSet<TrackSegment> TrackSegments => Set<TrackSegment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-        => modelBuilder.Entity<Train>().HasKey(train => train.Id);
+    {
+        modelBuilder.Entity<Train>().HasKey(train => train.Id);
+        modelBuilder.Entity<TrackSegment>().HasKey(segment => segment.Id);
+    }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         => configurationBuilder.Properties<Enum>().HaveConversion<string>();

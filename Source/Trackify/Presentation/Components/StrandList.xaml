@@ -1,0 +1,86 @@
+<UserControl x:Class="Trackify.Presentation.Components.StrandList"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Trackify.Presentation.Behaviors"
+             xmlns:vm="using:Trackify.Presentation.ViewModels"
+             xmlns:models="using:Trackify.Models.Trains"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:SecondViewModel}">
+
+  <!-- Strand-grouped segment list: a header per strand ("Baue an" pick target), numbered rows with
+       reorder/duplicate/delete. Binds to the hosting SecondViewModel. -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ItemsControl ItemsSource="{Binding StrandGroups}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <StackPanel d:DataContext="{d:DesignInstance Type=vm:StrandGroup}">
+
+            <Button Padding="14,9" Background="{ThemeResource SurfaceVariantBrush}" BorderThickness="0,0,0,1"
+                    BorderBrush="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                    Command="{Binding ElementName=Root, Path=DataContext.SelectStrandCommand}" CommandParameter="{Binding StrandId}">
+              <Grid ColumnSpacing="9">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <FontIcon Grid.Column="0" Glyph="&#xE8AB;" FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontFamily="{StaticResource HeadingFontFamily}" FontWeight="SemiBold" FontSize="12.5"
+                           VerticalAlignment="Center" Margin="8,0,0,0" />
+                <TextBlock Grid.Column="2" Text="{Binding Count}" Style="{StaticResource MonoCaptionTextBlockStyle}" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+
+            <ItemsControl ItemsSource="{Binding Rows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Padding="20,10,12,10" ColumnSpacing="9" BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="0,0,0,1"
+                        d:DataContext="{d:DesignInstance Type=models:TrackSegment}">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"
+                            Background="{Binding SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                                local:TappedCommandBehavior.Command="{Binding ElementName=Root, Path=DataContext.SelectSegmentCommand}">
+                      <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding TypeLabel}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Nach oben"
+                            Command="{Binding ElementName=Root, Path=DataContext.MoveUpCommand}" CommandParameter="{Binding}">
+                      <FontIcon Glyph="&#xE74A;" FontSize="11" />
+                    </Button>
+                    <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Nach unten"
+                            Command="{Binding ElementName=Root, Path=DataContext.MoveDownCommand}" CommandParameter="{Binding}">
+                      <FontIcon Glyph="&#xE74B;" FontSize="11" />
+                    </Button>
+                    <Button Grid.Column="4" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Duplizieren"
+                            Command="{Binding ElementName=Root, Path=DataContext.DuplicateSegmentCommand}" CommandParameter="{Binding}">
+                      <FontIcon Glyph="&#xE8C8;" FontSize="11" />
+                    </Button>
+                    <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Löschen"
+                            Command="{Binding ElementName=Root, Path=DataContext.DeleteSegmentCommand}" CommandParameter="{Binding}">
+                      <FontIcon Glyph="&#xE74D;" FontSize="11" />
+                    </Button>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+          </StackPanel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </ScrollViewer>
+</UserControl>

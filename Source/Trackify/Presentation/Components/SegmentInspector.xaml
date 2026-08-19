@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Trackify.Presentation.Widgets"
+             xmlns:behaviors="using:Trackify.Presentation.Behaviors"
              xmlns:vm="using:Trackify.Presentation.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,19 +14,33 @@
     <ScrollViewer Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}}"
                   HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto" ZoomMode="Disabled">
-      <StackPanel Margin="24,24,24,40" Spacing="16">
+      <Grid Margin="24,24,24,40">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition x:Name="FahrverhaltenRow" Height="320" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition x:Name="SensorRow" Height="260" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
+        <StackPanel Grid.Row="0" Spacing="12">
         <StackPanel Orientation="Horizontal" Spacing="11">
-          <Border Width="14" Height="14" CornerRadius="5" Background="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
-          <Border Background="{ThemeResource PrimaryContainerBrush}" CornerRadius="7" Padding="10,3">
+          <Border Width="14" Height="14" Background="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+          <Border Style="{StaticResource TagAccentStyle}" Padding="10,3">
             <TextBlock Text="{Binding SelectedSegment.TypeLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OnPrimaryContainerBrush}" />
           </Border>
           <TextBlock Text="{Binding SelectedSegment.Id}" FontFamily="{StaticResource MonoFontFamily}" FontSize="11"
                      Foreground="{ThemeResource MutedTextBrush}" HorizontalAlignment="Right" />
         </StackPanel>
-        <TextBlock Text="{Binding SelectedSegment.Name}" FontSize="22" FontWeight="ExtraBold" TextWrapping="Wrap" />
+        <TextBox Text="{Binding SelectedSegment.Name, Mode=TwoWay}" FontFamily="{StaticResource HeadingFontFamily}" FontSize="22" FontWeight="SemiBold"
+                 Background="Transparent" BorderThickness="0" Padding="0" />
+        </StackPanel>
 
         <!-- FAHRVERHALTEN -->
+        <local:BlueprintFrame Grid.Row="1">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollMode="Disabled">
         <Border Style="{StaticResource SectionCardStyle}" Padding="20">
           <StackPanel Spacing="16">
             <TextBlock Text="Fahrverhalten" Style="{StaticResource SectionTitleTextBlockStyle}" FontWeight="Bold" />
@@ -53,11 +68,11 @@
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Vorwärts" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="19,0,0,19"
+                <Button Grid.Column="0" Content="Vorwärts" Style="{StaticResource SegmentPillButtonStyle}"
                         Background="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Forward}"
                         Foreground="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Forward}"
                         Command="{Binding SetDirectionCommand}" CommandParameter="Forward" />
-                <Button Grid.Column="1" Content="Rückwärts" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="0,19,19,0" Margin="-1,0,0,0"
+                <Button Grid.Column="1" Content="Rückwärts" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
                         Background="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Reverse}"
                         Foreground="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Reverse}"
                         Command="{Binding SetDirectionCommand}" CommandParameter="Reverse" />
@@ -89,8 +104,89 @@
             </StackPanel>
           </StackPanel>
         </Border>
+        </ScrollViewer>
+        </local:BlueprintFrame>
+
+        <Border Grid.Row="2" Height="16" Background="Transparent" VerticalAlignment="Stretch"
+                behaviors:RowSplitterBehavior.Target="{Binding ElementName=FahrverhaltenRow}"
+                behaviors:RowSplitterBehavior.MinHeight="160" behaviors:RowSplitterBehavior.MaxHeight="900">
+          <Rectangle Height="1" Fill="{ThemeResource OutlineVariantBrush}" VerticalAlignment="Center" />
+        </Border>
+
+        <!-- WEICHE -->
+        <local:BlueprintFrame Grid.Row="3" Visibility="{Binding SelectedSegment.IsWeiche, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Border Style="{StaticResource SectionCardStyle}" Padding="20">
+          <StackPanel Spacing="14">
+            <TextBlock Text="Weiche" Style="{StaticResource SectionTitleTextBlockStyle}" FontWeight="Bold" />
+
+            <StackPanel Spacing="10">
+              <TextBlock Text="Zweig" Style="{StaticResource LabelTextBlockStyle}" />
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Nach links" Style="{StaticResource SegmentPillButtonStyle}"
+                        Background="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Left}"
+                        Foreground="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Left}"
+                        Command="{Binding SetBranchDirectionCommand}" CommandParameter="Left" />
+                <Button Grid.Column="1" Content="Nach rechts" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
+                        Background="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Right}"
+                        Foreground="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Right}"
+                        Command="{Binding SetBranchDirectionCommand}" CommandParameter="Right" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Spacing="10">
+              <TextBlock Text="Gestellt auf" Style="{StaticResource LabelTextBlockStyle}" />
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Stammgleis" Style="{StaticResource SegmentPillButtonStyle}"
+                        Background="{Binding SelectedSegment.Route, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Main}"
+                        Foreground="{Binding SelectedSegment.Route, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Main}"
+                        Command="{Binding SetRouteCommand}" CommandParameter="Main" />
+                <Button Grid.Column="1" Content="Zweig" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
+                        Background="{Binding SelectedSegment.Route, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Branch}"
+                        Foreground="{Binding SelectedSegment.Route, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Branch}"
+                        Command="{Binding SetRouteCommand}" CommandParameter="Branch" />
+              </Grid>
+            </StackPanel>
+
+            <Grid ColumnSpacing="9" Margin="0,4,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0">
+                <TextBlock Text="{Binding SelectedBranchName}" FontFamily="{StaticResource HeadingFontFamily}" FontSize="14" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding SelectedBranchCount}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+              </StackPanel>
+              <Button Grid.Column="1" Content="Im Zweig bauen" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="36" Padding="12,0"
+                      Command="{Binding GotoBranchCommand}" />
+            </Grid>
+
+            <StackPanel Spacing="7">
+              <TextBlock Text="Zweig-Ende anschließen an" Style="{StaticResource LabelTextBlockStyle}" />
+              <ComboBox ItemsSource="{Binding BranchLinkOptions}" DisplayMemberPath="Name" SelectedValuePath="Id"
+                        SelectedValue="{Binding SelectedSegment.BranchLinkSegmentId, Mode=TwoWay}"
+                        PlaceholderText="— offen lassen —" HorizontalAlignment="Stretch" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        </local:BlueprintFrame>
+
+        <Border Grid.Row="4" Height="16" Background="Transparent" VerticalAlignment="Stretch"
+                behaviors:RowSplitterBehavior.Target="{Binding ElementName=SensorRow}" behaviors:RowSplitterBehavior.Invert="True"
+                behaviors:RowSplitterBehavior.MinHeight="140" behaviors:RowSplitterBehavior.MaxHeight="700">
+          <Rectangle Height="1" Fill="{ThemeResource OutlineVariantBrush}" VerticalAlignment="Center" />
+        </Border>
 
         <!-- SENSOR -->
+        <local:BlueprintFrame Grid.Row="5">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollMode="Disabled">
         <Border Style="{StaticResource SectionCardStyle}" Padding="20">
           <StackPanel Spacing="16">
             <StackPanel Orientation="Horizontal" Spacing="9">
@@ -108,15 +204,15 @@
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Kein" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="19,0,0,19"
+                <Button Grid.Column="0" Content="Kein" Style="{StaticResource SegmentPillButtonStyle}"
                         Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=None}"
                         Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=None}"
                         Command="{Binding SetSensorCommand}" CommandParameter="None" />
-                <Button Grid.Column="1" Content="Farbe" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="0" Margin="-1,0,0,0"
+                <Button Grid.Column="1" Content="Farbe" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
                         Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Color}"
                         Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Color}"
                         Command="{Binding SetSensorCommand}" CommandParameter="Color" />
-                <Button Grid.Column="2" Content="Abstand" Style="{StaticResource SegmentPillButtonStyle}" CornerRadius="0,19,19,0" Margin="-1,0,0,0"
+                <Button Grid.Column="2" Content="Abstand" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
                         Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Distance}"
                         Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Distance}"
                         Command="{Binding SetSensorCommand}" CommandParameter="Distance" />
@@ -149,8 +245,31 @@
             </StackPanel>
           </StackPanel>
         </Border>
+        </ScrollViewer>
+        </local:BlueprintFrame>
 
-      </StackPanel>
+        <Grid Grid.Row="6" ColumnSpacing="8" Margin="0,16,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Button Grid.Column="0" Content="Duplizieren" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="40"
+                  Command="{Binding DuplicateSegmentCommand}" CommandParameter="{Binding SelectedSegment}" />
+          <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}" ToolTipService.ToolTip="Nach oben"
+                  Command="{Binding MoveUpCommand}" CommandParameter="{Binding SelectedSegment}">
+            <FontIcon Glyph="&#xE74A;" FontSize="13" />
+          </Button>
+          <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" ToolTipService.ToolTip="Nach unten"
+                  Command="{Binding MoveDownCommand}" CommandParameter="{Binding SelectedSegment}">
+            <FontIcon Glyph="&#xE74B;" FontSize="13" />
+          </Button>
+          <Button Grid.Column="3" Content="Löschen" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="40" Foreground="{ThemeResource ErrorBrush}"
+                  Command="{Binding DeleteSegmentCommand}" CommandParameter="{Binding SelectedSegment}" />
+        </Grid>
+
+      </Grid>
     </ScrollViewer>
 
     <StackPanel Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"

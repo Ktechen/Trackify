@@ -70,6 +70,16 @@ public static class LegoinoCatalog
         new(SensorActionType.ReverseDirection, "Richtung wechseln"),
     ];
 
+    /// <summary>The Streckenplaner's "Teil anhängen" toolbar (Gerade/Kurve links/Kurve rechts/Weiche/Bahnhof).</summary>
+    public static readonly IReadOnlyList<TrackPartOption> TrackParts =
+    [
+        new(SegmentType.Straight, null, "Gerade"),
+        new(SegmentType.Curve, CurveDirection.Left, "Kurve links"),
+        new(SegmentType.Curve, CurveDirection.Right, "Kurve rechts"),
+        new(SegmentType.Switch, null, "Weiche"),
+        new(SegmentType.Station, null, "Bahnhof"),
+    ];
+
     public static HubOption Hub(HubType value) => Hubs.First(h => h.Value == value);
     public static DeviceOption Device(DeviceType value) => Devices.First(d => d.Value == value);
     public static ColorOption Color(LedColorType value) => Colors.First(c => c.Value == value);

@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Trackify.Presentation.Components"
       xmlns:vm="using:Trackify.Presentation.ViewModels"
+      xmlns:behaviors="using:Trackify.Presentation.Behaviors"
       xmlns:utu="using:Uno.Toolkit.UI"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -37,7 +38,8 @@
         <FontIcon Glyph="&#xE72B;" FontSize="16" />
       </Button>
 
-      <Border Grid.Column="1" Width="42" Height="42" CornerRadius="13" Background="{ThemeResource PrimaryContainerBrush}" Margin="0,0,14,0">
+      <Border Grid.Column="1" Width="42" Height="42" Background="{ThemeResource PrimaryContainerBrush}"
+              BorderBrush="{ThemeResource PrimaryBrush}" BorderThickness="1" Margin="0,0,14,0">
         <Grid Width="24" Height="24">
           <Path Data="M4 7h16M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2M4 7v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7"
                 Stroke="{ThemeResource OnPrimaryContainerBrush}" StrokeThickness="2" />
@@ -48,7 +50,7 @@
       </Border>
 
       <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
-        <TextBlock Text="Streckenplaner" FontSize="16" FontWeight="Bold" />
+        <TextBlock Text="Streckenplaner" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold" />
         <TextBlock Text="2D · Segmente &amp; Sensoren" Style="{StaticResource MonoCaptionTextBlockStyle}" />
       </StackPanel>
 
@@ -61,19 +63,44 @@
         <TextBlock Text="{Binding AverageSpeed}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
       </StackPanel>
 
-      <Border Grid.Column="5" Style="{StaticResource ChipBorderStyle}">
-        <TextBlock Text="Backend folgt" FontSize="11" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-      </Border>
+      <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="36" Padding="14,0"
+              Command="{Binding SaveCommand}" IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}">
+        <TextBlock Text="Speichern" FontSize="12.5" />
+      </Button>
     </Grid>
 
-    <Grid Grid.Row="1" utu:SafeArea.Insets="Bottom,Left,Right">
+    <!-- CONTENT: canvas+toolbar always visible; the strand list and segment inspector swap between a
+         3-column desktop/tablet layout and a stacked mobile layout (inspector as a bottom sheet,
+         visible only while a segment is selected) — columns/rows/visibility owned by code-behind. -->
+    <Grid x:Name="ContentGrid" Grid.Row="1" utu:SafeArea.Insets="Bottom,Left,Right">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="372" />
+        <ColumnDefinition x:Name="CanvasColumn" Width="*" />
+        <ColumnDefinition x:Name="Splitter1Column" Width="6" />
+        <ColumnDefinition x:Name="ListColumn" Width="236" />
+        <ColumnDefinition x:Name="Splitter2Column" Width="6" />
+        <ColumnDefinition x:Name="InspectorColumn" Width="318" />
       </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition x:Name="CanvasRow" />
+        <RowDefinition x:Name="ListRow" Height="0" />
+      </Grid.RowDefinitions>
 
-      <local:TrackCanvas Grid.Column="0" />
-      <local:SegmentInspector Grid.Column="1" />
+      <local:TrackCanvas x:Name="CanvasHost" Grid.Column="0" Grid.Row="0" />
+
+      <Border x:Name="Splitter1Handle" Grid.Column="1" Grid.Row="0" Background="Transparent" HorizontalAlignment="Stretch"
+              behaviors:ColumnSplitterBehavior.Target="{Binding ElementName=ListColumn}" behaviors:ColumnSplitterBehavior.Invert="True"
+              behaviors:ColumnSplitterBehavior.MinWidth="180" behaviors:ColumnSplitterBehavior.MaxWidth="420">
+        <Rectangle Width="1" Fill="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
+      </Border>
+      <local:StrandList x:Name="ListHost" Grid.Column="2" Grid.Row="0" />
+
+      <Border x:Name="Splitter2Handle" Grid.Column="3" Grid.Row="0" Background="Transparent" HorizontalAlignment="Stretch"
+              behaviors:ColumnSplitterBehavior.Target="{Binding ElementName=InspectorColumn}" behaviors:ColumnSplitterBehavior.Invert="True"
+              behaviors:ColumnSplitterBehavior.MinWidth="260" behaviors:ColumnSplitterBehavior.MaxWidth="520">
+        <Rectangle Width="1" Fill="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
+      </Border>
+      <local:SegmentInspector x:Name="InspectorHost" Grid.Column="4" Grid.Row="0"
+                               Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="1,0,0,0" />
     </Grid>
   </Grid>
 </Page>
