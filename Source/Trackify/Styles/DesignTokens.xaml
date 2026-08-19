@@ -130,8 +130,12 @@
     <Setter Property="CornerRadius" Value="{StaticResource RadiusFull}" />
     <Setter Property="FontFamily" Value="{StaticResource HeadingFontFamily}" />
     <Setter Property="Height" Value="38" />
-    <Setter Property="Padding" Value="16,0" />
+    <!-- Padding stays tight: these sit two- and three-up in `*` columns inside the narrowest panes
+         (segment inspector), where a wider padding pushes the longest labels ("Rückwärts",
+         "Stammgleis") past the pane edge instead of shrinking. -->
+    <Setter Property="Padding" Value="10,0" />
     <Setter Property="FontSize" Value="12.5" />
+    <Setter Property="MinWidth" Value="0" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
   </Style>
