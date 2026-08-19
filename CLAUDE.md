@@ -16,6 +16,29 @@ client can drive trains, using **HTTP/SSE** transport, with the MCP pieces livin
 - Layer note: an inbound MCP server is normally a front-end; per the issue it sits in Infrastructure,
   with the network host as the composition root. Runtime verification needs an MCP client + a Pi (BlueZ).
 
+## Agent library — which role to reach for
+
+Ten role agents live in **`.claude/agents/`**, grounded in `docs/arc42/` and applying the
+[req42](https://req42.de/) method for requirements work (deliberately no `docs/req42/` — requirements
+are derived from code + arc42 on demand). See `.claude/agents/README.md` for the full routing table.
+
+| Agent | Reach for it when | Writes code? |
+|---|---|---|
+| `tech-lead` | Work spans layers or roles and needs decomposing and routing | no |
+| `requirements-engineer` | Scope is unclear or disputed; you need acceptance criteria | no |
+| `architect` | Layer placement, a new ADR, anything touching `docs/arc42/` | docs only |
+| `core-developer` | Domain / Application / Infrastructure / CLI + backend | yes |
+| `uno-ui-developer` | `Source/Trackify/Presentation/**` — XAML, MVVM, layout | yes |
+| `ble-specialist` | LWP, SharpBrick, BlueZ, Plugin.BLE, discovery/connect | yes |
+| `test-engineer` | Tests, including the NetArchTest layer rules | yes |
+| `devops-engineer` | Workflows, Docker, Pi publish/systemd, packaging | yes |
+| `code-reviewer` | Pre-PR review of the working diff | no |
+| `ux-copy-reviewer` | German UI wording, error-message quality, safe-area/a11y | no |
+
+`tech-lead` is the only one that spawns others; the rest are leaves — call them directly when the role
+is already obvious. Placement decisions go to `architect` **before** implementation, since the layer
+rules are build-enforced and guessing costs a whole pass.
+
 ## Architecture documentation
 
 Full arc42 documentation lives in **`docs/arc42/`** (12 sections, English, Mermaid diagrams). It is

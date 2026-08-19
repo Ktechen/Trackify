@@ -95,7 +95,7 @@
       <local:TrainListPanel x:Name="ListPanel" Grid.Column="0" />
       <Border x:Name="SplitterHandle" Grid.Column="1" Background="Transparent" HorizontalAlignment="Stretch"
               behaviors:ColumnSplitterBehavior.Target="{Binding ElementName=ListColumn}"
-              behaviors:ColumnSplitterBehavior.MinWidth="260" behaviors:ColumnSplitterBehavior.MaxWidth="560">
+              behaviors:ColumnSplitterBehavior.MinWidth="260" behaviors:ColumnSplitterBehavior.MaxWidth="480">
         <Rectangle Width="1" Fill="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
       </Border>
       <local:TrainEditor x:Name="EditorHost" Grid.Column="2" />

@@ -32,16 +32,25 @@
         </Grid.RowDefinitions>
 
         <!-- Desktop: the four sections lay out as a 2x2 tile grid instead of one stacked, scrolling
-             mobile-style column (drag-resizable rows collapse — a dashboard doesn't need them). -->
+             mobile-style column (drag-resizable rows collapse — a dashboard doesn't need them).
+
+             The trigger can only see the *window* width, but what the tiles get is the editor column
+             — window minus the drag-resizable train rail (capped at 480 in MainPage.xaml) minus the
+             splitter. The threshold is picked so that even with the rail dragged fully open, each
+             tile still gets ~430px (1400 - 480 - 6 - margins - spacing, halved); at the old 1150 the
+             two tiles were squeezed to ~330 and their content was clipped, since the surrounding
+             ScrollViewer deliberately has no horizontal scrolling. Keep the two in sync: raising the
+             rail's MaxWidth means raising MinWindowWidth by the same amount. -->
         <VisualStateManager.VisualStateGroups>
           <VisualStateGroup>
             <VisualState x:Name="Narrow" />
             <VisualState x:Name="Wide">
               <VisualState.StateTriggers>
-                <AdaptiveTrigger MinWindowWidth="1150" />
+                <AdaptiveTrigger MinWindowWidth="1400" />
               </VisualState.StateTriggers>
               <VisualState.Setters>
                 <Setter Target="ContentGrid.MaxWidth" Value="1400" />
+                <Setter Target="ContentGrid.ColumnSpacing" Value="20" />
                 <Setter Target="TileColumn.Width" Value="*" />
                 <Setter Target="Splitter1.Visibility" Value="Collapsed" />
                 <Setter Target="Splitter2.Visibility" Value="Collapsed" />

@@ -26,14 +26,23 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Spacing="12">
-        <StackPanel Orientation="Horizontal" Spacing="11">
-          <Border Width="14" Height="14" Background="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
-          <Border Style="{StaticResource TagAccentStyle}" Padding="10,3">
+        <!-- Grid, not a horizontal StackPanel: the GUID has to trim to the pane width, and a
+             StackPanel would measure it with infinite width and let it overflow the pane. -->
+        <Grid ColumnSpacing="11">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Border Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center"
+                  Background="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+          <Border Grid.Column="1" Style="{StaticResource TagAccentStyle}" Padding="10,3">
             <TextBlock Text="{Binding SelectedSegment.TypeLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OnPrimaryContainerBrush}" />
           </Border>
-          <TextBlock Text="{Binding SelectedSegment.Id}" FontFamily="{StaticResource MonoFontFamily}" FontSize="11"
-                     Foreground="{ThemeResource MutedTextBrush}" HorizontalAlignment="Right" />
-        </StackPanel>
+          <TextBlock Grid.Column="2" Text="{Binding SelectedSegment.Id}" FontFamily="{StaticResource MonoFontFamily}" FontSize="11"
+                     Foreground="{ThemeResource MutedTextBrush}" VerticalAlignment="Center" TextAlignment="Right"
+                     TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+        </Grid>
         <TextBox Text="{Binding SelectedSegment.Name, Mode=TwoWay}" FontFamily="{StaticResource HeadingFontFamily}" FontSize="22" FontWeight="SemiBold"
                  Background="Transparent" BorderThickness="0" Padding="0" />
         </StackPanel>
