@@ -2,6 +2,8 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Trackify.Presentation.Components"
+      xmlns:widgets="using:Trackify.Presentation.Widgets"
+      xmlns:behaviors="using:Trackify.Presentation.Behaviors"
       xmlns:vm="using:Trackify.Presentation.ViewModels"
       xmlns:utu="using:Uno.Toolkit.UI"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -40,7 +42,8 @@
         <FontIcon Glyph="&#xE72B;" FontSize="16" />
       </Button>
 
-      <Border Grid.Column="1" Width="42" Height="42" CornerRadius="13" Background="{ThemeResource PrimaryContainerBrush}" Margin="0,0,14,0">
+      <Border Grid.Column="1" Width="42" Height="42" Background="{ThemeResource PrimaryContainerBrush}"
+              BorderBrush="{ThemeResource PrimaryBrush}" BorderThickness="1" Margin="0,0,14,0">
         <Grid Width="24" Height="24">
           <Path Data="M5 4h11a3 3 0 0 1 3 3v8H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" Fill="{ThemeResource OnPrimaryContainerBrush}" />
           <Ellipse Width="4" Height="4" Fill="{ThemeResource OnPrimaryContainerBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6,16,0,0" />
@@ -49,7 +52,7 @@
       </Border>
 
       <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
-        <TextBlock Text="Train-Konfiguration" FontSize="16" FontWeight="Bold" />
+        <TextBlock Text="Train-Konfiguration" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold" />
         <TextBlock Text="Powered Up · Legoino-Schnittstelle" Style="{StaticResource MonoCaptionTextBlockStyle}" />
       </StackPanel>
 
@@ -79,15 +82,23 @@
       </StackPanel>
     </Grid>
 
-    <!-- CONTENT: responsive master-detail (columns/visibility driven by code-behind) -->
+    <!-- CONTENT: responsive master-detail (columns/visibility driven by code-behind). The splitter
+         column lets the list pane be dragged wider/narrower on desktop (SplitterColumn.Width=0,
+         handle collapsed, in the narrow layout — there's nothing to split there). -->
     <Grid x:Name="ContentGrid" Grid.Row="1" utu:SafeArea.Insets="Bottom,Left,Right">
       <Grid.ColumnDefinitions>
         <ColumnDefinition x:Name="ListColumn" Width="346" />
+        <ColumnDefinition x:Name="SplitterColumn" Width="6" />
         <ColumnDefinition x:Name="EditorColumn" Width="*" />
       </Grid.ColumnDefinitions>
 
       <local:TrainListPanel x:Name="ListPanel" Grid.Column="0" />
-      <local:TrainEditor x:Name="EditorHost" Grid.Column="1" />
+      <Border x:Name="SplitterHandle" Grid.Column="1" Background="Transparent" HorizontalAlignment="Stretch"
+              behaviors:ColumnSplitterBehavior.Target="{Binding ElementName=ListColumn}"
+              behaviors:ColumnSplitterBehavior.MinWidth="260" behaviors:ColumnSplitterBehavior.MaxWidth="560">
+        <Rectangle Width="1" Fill="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
+      </Border>
+      <local:TrainEditor x:Name="EditorHost" Grid.Column="2" />
     </Grid>
 
     <!-- ADD-HUB POPUP (modal overlay across the whole page) -->
@@ -97,27 +108,28 @@
     <Grid Grid.Row="0" Grid.RowSpan="2"
           Background="#99000000"
           Visibility="{Binding IsConnectionPanelOpen, Converter={StaticResource BoolToVisibilityConverter}}">
-      <Border Width="380" VerticalAlignment="Center" HorizontalAlignment="Center"
-              Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}"
-              BorderThickness="1" CornerRadius="14" Padding="20">
-        <StackPanel Spacing="14">
-          <TextBlock Text="Verbindung" FontSize="16" FontWeight="Bold" />
-          <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                     Text="Servermodus: Steuerung über einen Trackify-Backend (Raspberry Pi). Aus = Direktmodus über das Bluetooth dieses Geräts." />
-          <ToggleSwitch Header="Server verwenden" OnContent="Server" OffContent="Direkt"
-                        IsOn="{Binding Connection.UseServer, Mode=TwoWay}" />
-          <TextBox Header="Server-Adresse" PlaceholderText="http://192.168.1.50:5000"
-                   IsEnabled="{Binding Connection.UseServer}"
-                   Text="{Binding Connection.ServerUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-          <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                     Text="{Binding ConnectionStatus}"
-                     Visibility="{Binding ConnectionStatus, Converter={StaticResource NullToVisibilityConverter}}" />
-          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-            <Button Content="Schließen" Command="{Binding ToggleConnectionPanelCommand}" />
-            <Button Content="Übernehmen" Command="{Binding ApplyConnectionCommand}" />
+      <widgets:BlueprintFrame VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Border Width="380" Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}"
+                BorderThickness="1" Padding="20">
+          <StackPanel Spacing="14">
+            <TextBlock Text="Verbindung" FontFamily="{StaticResource HeadingFontFamily}" FontSize="19" FontWeight="SemiBold" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       Text="Servermodus: Steuerung über einen Trackify-Backend (Raspberry Pi). Aus = Direktmodus über das Bluetooth dieses Geräts." />
+            <ToggleSwitch Header="Server verwenden" OnContent="Server" OffContent="Direkt"
+                          IsOn="{Binding Connection.UseServer, Mode=TwoWay}" />
+            <TextBox Header="Server-Adresse" PlaceholderText="http://192.168.1.50:5000"
+                     IsEnabled="{Binding Connection.UseServer}"
+                     Text="{Binding Connection.ServerUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       Text="{Binding ConnectionStatus}"
+                       Visibility="{Binding ConnectionStatus, Converter={StaticResource NullToVisibilityConverter}}" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Content="Schließen" Style="{StaticResource IconButtonStyle}" Width="Auto" Padding="16,0" Height="40" Command="{Binding ToggleConnectionPanelCommand}" />
+              <Button Content="Übernehmen" Style="{StaticResource FabButtonStyle}" Height="40" Command="{Binding ApplyConnectionCommand}" />
+            </StackPanel>
           </StackPanel>
-        </StackPanel>
-      </Border>
+        </Border>
+      </widgets:BlueprintFrame>
     </Grid>
   </Grid>
 </Page>

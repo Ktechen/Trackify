@@ -48,26 +48,32 @@ public sealed partial class MainPage : Page
 
         if (isWide)
         {
-            // Two columns side by side: list rail + editor.
-            ListColumn.Width = new GridLength(346);
+            // Two columns side by side: list rail (drag-resizable via SplitterHandle) + editor.
+            if (ListColumn.Width.Value == 0) ListColumn.Width = new GridLength(346);
+            SplitterColumn.Width = new GridLength(6);
             EditorColumn.Width = new GridLength(1, GridUnitType.Star);
             ListPanel.Visibility = Visibility.Visible;
+            SplitterHandle.Visibility = Visibility.Visible;
             EditorHost.Visibility = Visibility.Visible;
         }
         else if (hasSelection)
         {
             // Narrow + a train selected: show the editor full width.
             ListColumn.Width = new GridLength(0);
+            SplitterColumn.Width = new GridLength(0);
             EditorColumn.Width = new GridLength(1, GridUnitType.Star);
             ListPanel.Visibility = Visibility.Collapsed;
+            SplitterHandle.Visibility = Visibility.Collapsed;
             EditorHost.Visibility = Visibility.Visible;
         }
         else
         {
             // Narrow + nothing selected: show the list full width (the "home" pane).
             ListColumn.Width = new GridLength(1, GridUnitType.Star);
+            SplitterColumn.Width = new GridLength(0);
             EditorColumn.Width = new GridLength(0);
             ListPanel.Visibility = Visibility.Visible;
+            SplitterHandle.Visibility = Visibility.Collapsed;
             EditorHost.Visibility = Visibility.Collapsed;
         }
 

@@ -20,7 +20,6 @@ public partial class MainViewModel : ObservableObject
     private int _sequence = 1;
 
     [ObservableProperty] private string search = "";
-    [ObservableProperty] private TrainFilterType filter = TrainFilterType.All;
     [ObservableProperty] private Train? selectedTrain;
     [ObservableProperty] private int activeCount;
     [ObservableProperty] private int totalCount;
@@ -44,8 +43,6 @@ public partial class MainViewModel : ObservableObject
     public IRelayCommand DuplicateTrainCommand { get; }
 
     public IRelayCommand DeleteTrainCommand { get; }
-
-    public IRelayCommand<string> SetFilterCommand { get; }
 
     public IRelayCommand<LedColorType?> SetColorCommand { get; }
 
@@ -85,7 +82,6 @@ public partial class MainViewModel : ObservableObject
         AddTrainCommand = new RelayCommand(AddTrain);
         DuplicateTrainCommand = new RelayCommand(DuplicateTrain, () => SelectedTrain is not null);
         DeleteTrainCommand = new RelayCommand(DeleteTrain, () => SelectedTrain is not null);
-        SetFilterCommand = new RelayCommand<string>(name => Filter = Enum.Parse<TrainFilterType>(name!));
         SetColorCommand = new RelayCommand<LedColorType?>(SetSelectedTrainColor);
         GoToStreckenplanerCommand = new AsyncRelayCommand(GoToStreckenplaner);
         ConnectCommand = new AsyncRelayCommand(ConnectSelectedTrainAsync, () => SelectedTrain is { IsHardwareConnected: false });
@@ -102,7 +98,7 @@ public partial class MainViewModel : ObservableObject
         ColorSwatches = [.. LegoinoCatalog.Colors.Select(c => new ColorSwatchItemViewModel { Value = c.Value, Name = c.Name, Hex = c.Hex })];
 
         Trains.CollectionChanged += TrainsOnCollectionChanged;
-        ApplyFilter();
+        RefreshFilteredTrains();
     }
 
     private void AddTrain()
@@ -124,7 +120,7 @@ public partial class MainViewModel : ObservableObject
         var copy = SelectedTrain.Clone($"trn-{_sequence++}");
         Trains.Insert(Trains.IndexOf(SelectedTrain) + 1, copy);
         SelectedTrain = copy;
-        ApplyFilter();
+        RefreshFilteredTrains();
     }
 
     private void DeleteTrain()
@@ -133,7 +129,7 @@ public partial class MainViewModel : ObservableObject
 
         Trains.Remove(SelectedTrain);
         SelectedTrain = Trains.FirstOrDefault();
-        ApplyFilter();
+        RefreshFilteredTrains();
     }
 
     private void SetSelectedTrainColor(LedColorType? color)
@@ -142,13 +138,12 @@ public partial class MainViewModel : ObservableObject
             SelectedTrain.Color = value;
     }
 
-    // Clears search/filter so a just-added train is visible, then selects it.
+    // Clears the search so a just-added train is visible, then selects it.
     private void SelectAfresh(Train train)
     {
-        Filter = TrainFilterType.All;
         Search = "";
         SelectedTrain = train;
-        ApplyFilter();
+        RefreshFilteredTrains();
     }
 
     // No token: a user-initiated page change runs to completion.
@@ -188,9 +183,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    partial void OnSearchChanged(string value) => ApplyFilter();
-
-    partial void OnFilterChanged(TrainFilterType value) => ApplyFilter();
+    partial void OnSearchChanged(string value) => RefreshFilteredTrains();
 
     partial void OnSelectedTrainChanged(Train? oldValue, Train? newValue)
     {
@@ -205,7 +198,7 @@ public partial class MainViewModel : ObservableObject
 
     private void SelectedTrainOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(Train.Name) or nameof(Train.IsActive)) ApplyFilter();
+        if (e.PropertyName is nameof(Train.Name) or nameof(Train.IsActive)) RefreshFilteredTrains();
         if (e.PropertyName is nameof(Train.Color)) UpdateColorSwatchSelection();
 
         if (sender is Train train)
@@ -236,29 +229,20 @@ public partial class MainViewModel : ObservableObject
             swatch.IsSelected = SelectedTrain is not null && swatch.Value == SelectedTrain.Color;
     }
 
-    private void ApplyFilter()
+    private void RefreshFilteredTrains()
     {
         FilteredTrains.Clear();
-        foreach (var train in Trains.Where(MatchesFilterAndSearch))
+        foreach (var train in Trains.Where(MatchesSearch))
             FilteredTrains.Add(train);
 
         RefreshCounts();
     }
 
-    private bool MatchesFilterAndSearch(Train train)
+    private bool MatchesSearch(Train train)
     {
-        var matchesFilter = Filter switch
-        {
-            TrainFilterType.Active => train.IsActive,
-            TrainFilterType.Inactive => !train.IsActive,
-            _ => true,
-        };
-
         var query = Search.Trim();
-        var matchesSearch = query.Length == 0
+        return query.Length == 0
             || train.Name.Contains(query, StringComparison.OrdinalIgnoreCase)
             || train.Hub.ToString().Contains(query, StringComparison.OrdinalIgnoreCase);
-
-        return matchesFilter && matchesSearch;
     }
 }

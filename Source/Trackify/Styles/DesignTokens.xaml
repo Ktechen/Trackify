@@ -3,35 +3,47 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!--
-    Component tokens from the "Modul- & Komponenten-Übersicht" design system reference:
-    Foundations (typography, corner radius) + the recurring section-card / FAB / icon-button /
-    segmented-pill shapes used across Train-Konfiguration and Streckenplaner.
+    Component tokens for the "Industry" design system (claude.ai/design import
+    "Trackify Mobile.dc.html", _ds/industry-.../styles.css): a square, hairline-bordered "blueprint"
+    wireframe look — Foundations (typography, corner radius) + the recurring section-card / FAB /
+    icon-button / segmented-pill / tag shapes used across Train-Konfiguration and Streckenplaner.
   -->
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
-      <Color x:Key="MutedTextColor">#8A848F</Color>
+      <Color x:Key="MutedTextColor">#8A8A8D</Color>
       <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <Color x:Key="MutedTextColor">#948F99</Color>
+      <Color x:Key="MutedTextColor">#B7B7BA</Color>
       <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <!-- Form · CornerRadius -->
-  <CornerRadius x:Key="RadiusSmall">8</CornerRadius>
-  <CornerRadius x:Key="RadiusMedium">12</CornerRadius>
-  <CornerRadius x:Key="RadiusLarge">16</CornerRadius>
-  <CornerRadius x:Key="RadiusExtraLarge">20</CornerRadius>
-  <CornerRadius x:Key="RadiusFull">26</CornerRadius>
+  <!-- Form · CornerRadius — the Industry system is deliberately square (styles.css:
+       ".card,.btn,.input,.tag,.seg,.dialog{border-radius:0}"). Token NAMES are kept so nothing
+       else needs to change; only the values collapse toward 0. RadiusSmall stays non-zero for the
+       one place styles.css itself does round a touch (its radius-sm token, the tag pill's corner). -->
+  <CornerRadius x:Key="RadiusSmall">2</CornerRadius>
+  <CornerRadius x:Key="RadiusMedium">0</CornerRadius>
+  <CornerRadius x:Key="RadiusLarge">0</CornerRadius>
+  <CornerRadius x:Key="RadiusExtraLarge">0</CornerRadius>
+  <CornerRadius x:Key="RadiusFull">0</CornerRadius>
 
   <FontFamily x:Key="MonoFontFamily">Consolas,Courier New,Courier,monospace</FontFamily>
 
-  <!-- Typografie · Title/Body 14/600, Label 12/500, mono caption/value -->
+  <!-- The mock's Barlow Condensed isn't embedded (no font binaries vendored from third-party repos) —
+       named as a fallback stack: renders as Barlow Condensed if the platform happens to have it
+       installed, otherwise degrades gracefully to the system UI font, no asset download involved. -->
+  <FontFamily x:Key="HeadingFontFamily">Barlow Condensed,Segoe UI Semibold,Segoe UI,sans-serif</FontFamily>
+
+  <!-- Typografie · Title/Body 14/600, Label 12/500, mono caption/value. Section/kicker titles use
+       the condensed heading face (Barlow Condensed) per the mock; body/mono are unchanged. -->
   <Style x:Key="SectionTitleTextBlockStyle" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource HeadingFontFamily}" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="CharacterSpacing" Value="60" />
     <Setter Property="Foreground" Value="{ThemeResource OnSurfaceVariantBrush}" />
   </Style>
   <Style x:Key="LabelTextBlockStyle" TargetType="TextBlock">
@@ -52,43 +64,55 @@
 
   <!-- Section card (Verbindung, Ports & Geräte, Antrieb, Farbe & Hub-LED, Fahrverhalten, Sensor, …) -->
   <Style x:Key="SectionCardStyle" TargetType="Border">
-    <Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
-    <Setter Property="BorderBrush" Value="{ThemeResource SurfaceVariantBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{ThemeResource OutlineVariantBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusExtraLarge}" />
     <Setter Property="Padding" Value="24,22" />
   </Style>
 
-  <!-- Enum-Token &amp; Chip ("Backend folgt") -->
+  <!-- Enum-Token &amp; Chip ("Backend folgt") — tag-outline by default; TagAccentStyle/TagNeutralStyle
+       below cover the filled variants (.tag-accent/.tag-neutral in styles.css). -->
   <Style x:Key="ChipBorderStyle" TargetType="Border">
-    <Setter Property="BorderBrush" Value="{ThemeResource OutlineVariantBrush}" />
+    <Setter Property="BorderBrush" Value="{ThemeResource PrimaryBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusSmall}" />
     <Setter Property="Padding" Value="11,5" />
   </Style>
-
-  <!-- Extended FAB ("+ Neuer Train") -->
-  <Style x:Key="FabButtonStyle" TargetType="Button">
+  <Style x:Key="TagAccentStyle" TargetType="Border" BasedOn="{StaticResource ChipBorderStyle}">
     <Setter Property="Background" Value="{ThemeResource PrimaryContainerBrush}" />
-    <Setter Property="Foreground" Value="{ThemeResource OnPrimaryContainerBrush}" />
-    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style x:Key="TagNeutralStyle" TargetType="Border" BasedOn="{StaticResource ChipBorderStyle}">
+    <Setter Property="Background" Value="{ThemeResource SurfaceVariantBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <!-- Extended FAB ("+ Neuer Train") — filled accent, square, per .btn-primary -->
+  <Style x:Key="FabButtonStyle" TargetType="Button">
+    <Setter Property="Background" Value="{ThemeResource PrimaryBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource OnPrimaryBrush}" />
+    <Setter Property="FontFamily" Value="{StaticResource HeadingFontFamily}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="FontSize" Value="14" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
     <Setter Property="Padding" Value="20,0" />
     <Setter Property="Height" Value="50" />
-    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{ThemeResource PrimaryBrush}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
   </Style>
 
-  <!-- Icon button (Duplizieren, Löschen) -->
+  <!-- Icon button (Duplizieren, Löschen) — bordered square (.btn-secondary.btn-icon) -->
   <Style x:Key="IconButtonStyle" TargetType="Button">
     <Setter Property="Width" Value="40" />
     <Setter Property="Height" Value="40" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="CornerRadius" Value="20" />
+    <Setter Property="BorderBrush" Value="{ThemeResource OutlineVariantBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusSmall}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
@@ -97,12 +121,14 @@
     Segmented pill button (Alle/Aktiv/Inaktiv, Vorwärts/Rückwärts, Kein/Farbe/Abstand).
     A plain command-driven Button rather than a themed ToggleButton/RadioButton: each instance
     binds its own Background/Foreground via SegmentBackgroundConverter/SegmentForegroundConverter
-    against the current enum value, and Click executes a "select this value" command.
+    against the current enum value, and Click executes a "select this value" command. Square,
+    border-first per .seg-opt (selected = filled accent, via the converters' selected branch).
   -->
   <Style x:Key="SegmentPillButtonStyle" TargetType="Button">
     <Setter Property="BorderBrush" Value="{ThemeResource OutlineVariantBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusFull}" />
+    <Setter Property="FontFamily" Value="{StaticResource HeadingFontFamily}" />
     <Setter Property="Height" Value="38" />
     <Setter Property="Padding" Value="16,0" />
     <Setter Property="FontSize" Value="12.5" />

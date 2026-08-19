@@ -21,9 +21,10 @@
         <TextBox Text="{Binding Search, Mode=TwoWay}"
                  PlaceholderText="Train suchen…"
                  Padding="34,11,14,11"
-                 BorderThickness="0"
+                 BorderThickness="1"
+                 BorderBrush="{ThemeResource OutlineVariantBrush}"
                  CornerRadius="{StaticResource RadiusFull}"
-                 Background="{ThemeResource SurfaceVariantBrush}"
+                 Background="{ThemeResource SurfaceBrush}"
                  FontSize="13.5" />
         <FontIcon Glyph="&#xE721;" FontSize="14" Margin="13,0,0,0" HorizontalAlignment="Left" Foreground="{ThemeResource OnSurfaceVariantBrush}" IsHitTestVisible="False" />
       </Grid>
@@ -58,29 +59,6 @@
           </Button>
         </Grid>
       </Border>
-
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Button Grid.Column="0" Content="Alle" Style="{StaticResource SegmentPillButtonStyle}"
-                CornerRadius="19,0,0,19"
-                Background="{Binding Filter, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=All}"
-                Foreground="{Binding Filter, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=All}"
-                Command="{Binding SetFilterCommand}" CommandParameter="All" />
-        <Button Grid.Column="1" Content="Aktiv" Style="{StaticResource SegmentPillButtonStyle}"
-                CornerRadius="0" Margin="-1,0,0,0"
-                Background="{Binding Filter, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Active}"
-                Foreground="{Binding Filter, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Active}"
-                Command="{Binding SetFilterCommand}" CommandParameter="Active" />
-        <Button Grid.Column="2" Content="Inaktiv" Style="{StaticResource SegmentPillButtonStyle}"
-                CornerRadius="0,19,19,0" Margin="-1,0,0,0"
-                Background="{Binding Filter, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Inactive}"
-                Foreground="{Binding Filter, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Inactive}"
-                Command="{Binding SetFilterCommand}" CommandParameter="Inactive" />
-      </Grid>
     </StackPanel>
 
     <ListView Grid.Row="1"
@@ -105,7 +83,7 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12"
+            <Border Grid.Column="0" Width="42" Height="42"
                     Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}" Opacity=".88">
               <Grid Width="23" Height="23">
                 <Path Data="M5 4h11a3 3 0 0 1 3 3v8H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" Fill="White" />

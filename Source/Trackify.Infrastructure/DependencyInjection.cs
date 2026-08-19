@@ -24,6 +24,7 @@ public static class DependencyInjection
 
         services.AddDbContextFactory<TrackifyDbContext>(options => options.UseSqlite($"Data Source={resolvedPath}"));
         services.AddSingleton<ITrainRepository, SqliteTrainRepository>();
+        services.AddSingleton<ITrackSegmentRepository, SqliteTrackSegmentRepository>();
 
         services.AddLinuxLego();
         return services;
