@@ -43,4 +43,16 @@ public static class TrackMetrics
 
     /// <summary>Normalises a heading step into 0..15, so -1 reads as 15 and 16 as 0.</summary>
     public static int NormalizeHeading(int heading) => ((heading % HeadingCount) + HeadingCount) % HeadingCount;
+
+    /// <summary>
+    /// The shortest signed turn from <paramref name="from"/> to <paramref name="to"/>, in -8..7.
+    /// Signed and shortest because the useful statement is "one step short", which a plain 0..15
+    /// difference would report as 15.
+    /// </summary>
+    public static int ShortestHeadingStep(int from, int to)
+    {
+        var difference = NormalizeHeading(from - to);
+
+        return difference > HeadingCount / 2 ? difference - HeadingCount : difference;
+    }
 }

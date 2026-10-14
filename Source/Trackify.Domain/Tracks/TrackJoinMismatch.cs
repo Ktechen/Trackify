@@ -21,17 +21,8 @@ public sealed record TrackJoinMismatch
     public double GapStuds => Expected.DistanceTo(Actual);
 
     /// <summary>
-    /// How many 22.5 degree steps the two facings differ by, as the shortest signed turn (-8..7).
-    /// Signed and shortest because the useful message is "your loop is one curve short", which a
-    /// plain 0..15 difference would report as 15.
+    /// How many 22.5 degree steps the two facings differ by, as the shortest signed turn (-8..7) —
+    /// so a loop one curve short reports -1 rather than 15.
     /// </summary>
-    public int HeadingStepsOff
-    {
-        get
-        {
-            var difference = TrackMetrics.NormalizeHeading(Expected.Heading - Actual.Heading);
-
-            return difference > TrackMetrics.HeadingCount / 2 ? difference - TrackMetrics.HeadingCount : difference;
-        }
-    }
+    public int HeadingStepsOff => TrackMetrics.ShortestHeadingStep(Expected.Heading, Actual.Heading);
 }
