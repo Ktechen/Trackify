@@ -150,9 +150,13 @@ social/media — is noise for Trackify.
 - **No C#/.NET build resolver.** `/ecc:build-fix` delegates to the cpp/dart/django/go/java/kotlin/
   pytorch/react/rust/swift resolvers; for a failed `dotnet build` there is nothing to delegate to
   (`ecc:build-error-resolver` is the TypeScript one). Use this file's own build-and-verify loop.
-- **No Uno / XAML / MAUI / WinUI skill at all.** The entire app head — `Presentation/`,
-  Components/Widgets, converters, design tokens, the German UI — is uncovered.
-  `ecc:windows-desktop-e2e` is Windows-app E2E, not Uno.
+- **No Uno / XAML / MAUI / WinUI skill at all.** ECC leaves the entire app head — `Presentation/`,
+  Components/Widgets, converters, design tokens, the German UI — uncovered;
+  `ecc:windows-desktop-e2e` is Windows-app E2E, not Uno. **Filled locally** by the project skill
+  [`.claude/skills/uno-xaml-conventions/SKILL.md`](.claude/skills/uno-xaml-conventions/SKILL.md),
+  distilled from "Conventions (enforced)" / "Gotchas" above plus
+  `docs/arc42/05-building-block-view.md` §5.2.4 — invoke `uno-xaml-conventions` before editing
+  anything under `Source/Trackify/`. Keep it in step when these conventions change.
 
 **Hooks.** Installed at `hook_profile=standard`, so ECC's `GateGuard` demands a stated reason before
 the first Bash call of a session, and other hooks fire on tool use. Lighten it permanently by
