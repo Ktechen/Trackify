@@ -108,3 +108,53 @@ CLI deployment (Pi publish — no build flags; `trains.json`/store schema, syste
 - Mobile safe-area (status bar / gesture nav / notch) is handled with the Uno `Toolkit` feature: `utu:SafeArea.Insets` on the page header (`Top`) and content (`Bottom`). Adding a mobile screen? Apply the same so system bars don't overlap.
 - **BlueZ (Pi) discovery/connect must mirror the mobile stack or hubs never appear** (`BlueZPoweredUpBluetoothAdapter`): (1) **power the radio on first** — a soft-`rfkill`/`Powered=false` adapter silently scans/connects nothing; `GetReadyAdapterAsync` calls `SetPoweredAsync(true)` and otherwise throws an actionable message. (2) **Scan on the LE transport** (`SetDiscoveryFilterAsync{Transport=le}`) — BlueZ's default "auto" (BR/EDR+LE) routinely misses BLE-only hubs and their manufacturer data. (3) **Also enumerate `GetDevicesAsync()`** at scan start — a fresh `StartDiscovery` never re-fires `DeviceFound` for devices BlueZ already cached (mobile sees them from live advertisements). (4) After connect, **wait for `ServicesResolved=true`, not just `Connected`** (`BlueZDevice`) — GATT lookups race and return null otherwise.
 - **`Discover()` is fire-and-forget** (`void`, `_ = DiscoverLoopAsync(...)` per SharpBrick's `IPoweredUpBluetoothAdapter`) so exceptions inside it are swallowed — a radio-off error can't surface through it. `BlueZLegoService.DiscoverAsync` therefore awaits `adapter.EnsureReadyAsync()` **before** starting the scan. That preflight is why the service depends on the concrete `BlueZPoweredUpBluetoothAdapter` (a method not on SharpBrick's interface), wired via a **forwarding singleton registration** (concrete singleton + `IPoweredUpBluetoothAdapter` factory → same instance) so the SharpBrick host and the service share one radio.
+
+## ECC plugin — what applies to this repo
+
+`ecc@ecc` (v2.2.3, user scope) ships **408 skills, 71 agents, 97 commands** covering every stack under
+the sun. A *plugin* install is **all-or-nothing** — `plugin.json` declares `skills: ["./skills/"]`, so
+there is no per-skill enable and nothing to "install" selectively. (The `--modules` / install-profile
+machinery in `manifests/` belongs to the standalone `ecc setup` installer, a different install path;
+the `lean@1` context profile is marked "proposed" and does not activate anything.) The useful act is
+therefore **knowing which handful applies here**. Everything not listed below — Swift/Apple, Flutter,
+Go, Rust, Python/Django/FastAPI, React/Vue/Next, Kotlin, healthcare, supply-chain, prediction-market,
+social/media — is noise for Trackify.
+
+**Use these**
+
+| ECC piece | Why it fits Trackify |
+| --- | --- |
+| `ecc:dotnet-patterns` (skill) | Idiomatic C#: DI, async/await, Result pattern, **Repository + EF Core** — maps onto `BaseRepository<T>` / `IDbContextFactory` |
+| `ecc:csharp-reviewer` (agent) | The only C# reviewer ECC has — .NET conventions, async, nullable reference types |
+| `ecc:hexagonal-architecture` (skill) | Ports/adapters *is* the `ILegoService` seam and the layer rule `Architecture/LayerDependencyTests.cs` enforces |
+| `ecc:error-handling` (skill) + `ecc:silent-failure-hunter` (agent) | Matches the standing rule: no silent empty catches — log + return failure, or rethrow |
+| `ecc:architecture-decision-records` (skill) | Feeds `docs/arc42/09-architecture-decisions.md` |
+| `ecc:database-migrations` (skill) | The `EnsureCreated()`-instead-of-migrations debt (arc42 §11) |
+| `ecc:docker-patterns` (skill) | `Source/Trackify.Cli/Dockerfile` + root `docker-compose.yml` |
+| `ecc:type-design-analyzer`, `ecc:comment-analyzer` (agents) | Read-only and language-agnostic, so they work here unchanged |
+| `/ecc:code-review`, `/ecc:test-coverage`, `/ecc:security-scan`, `/ecc:quality-gate` | Stack-agnostic commands |
+
+**Use with a caveat**
+
+- **`ecc:csharp-testing`** — right framework (xUnit) but it prescribes **FluentAssertions, NSubstitute
+  and Testcontainers**, none of which this repo uses. Tests here are plain xUnit with hand-written
+  doubles in `Test/Trackify.Tests/Fakes/`. Take its structure advice (AAA, `[Theory]`, data builders);
+  **do not add those packages** to `Directory.Packages.props`.
+- **`ecc:mcp-server-patterns`** — **Node/TypeScript only, zero C# content.** For the
+  `ModelContextProtocol` 2.2.0 work in `Trackify.Infrastructure/Mcp/` it is worth reading on transport
+  choice (stdio vs Streamable HTTP) and tool shape, but it has no C# SDK API. Do not treat it as a
+  reference for `[McpServerTool]` / `AddMcpServer`.
+
+**Gaps — ECC has nothing for these**
+
+- **No C#/.NET build resolver.** `/ecc:build-fix` delegates to the cpp/dart/django/go/java/kotlin/
+  pytorch/react/rust/swift resolvers; for a failed `dotnet build` there is nothing to delegate to
+  (`ecc:build-error-resolver` is the TypeScript one). Use this file's own build-and-verify loop.
+- **No Uno / XAML / MAUI / WinUI skill at all.** The entire app head — `Presentation/`,
+  Components/Widgets, converters, design tokens, the German UI — is uncovered.
+  `ecc:windows-desktop-e2e` is Windows-app E2E, not Uno.
+
+**Hooks.** Installed at `hook_profile=standard`, so ECC's `GateGuard` demands a stated reason before
+the first Bash call of a session, and other hooks fire on tool use. Lighten it permanently by
+reinstalling with `--config hook_profile=minimal`, or per session with `ECC_GATEGUARD=off` /
+`ECC_DISABLED_HOOKS=pre:bash:gateguard-fact-force`.
