@@ -76,9 +76,9 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition x:Name="CanvasColumn" Width="*" />
         <ColumnDefinition x:Name="Splitter1Column" Width="6" />
-        <ColumnDefinition x:Name="ListColumn" Width="236" />
+        <ColumnDefinition x:Name="ListColumn" Width="260" />
         <ColumnDefinition x:Name="Splitter2Column" Width="6" />
-        <ColumnDefinition x:Name="InspectorColumn" Width="318" />
+        <ColumnDefinition x:Name="InspectorColumn" Width="340" />
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
         <RowDefinition x:Name="CanvasRow" />
@@ -89,14 +89,14 @@
 
       <Border x:Name="Splitter1Handle" Grid.Column="1" Grid.Row="0" Background="Transparent" HorizontalAlignment="Stretch"
               behaviors:ColumnSplitterBehavior.Target="{Binding ElementName=ListColumn}" behaviors:ColumnSplitterBehavior.Invert="True"
-              behaviors:ColumnSplitterBehavior.MinWidth="180" behaviors:ColumnSplitterBehavior.MaxWidth="420">
+              behaviors:ColumnSplitterBehavior.MinWidth="240" behaviors:ColumnSplitterBehavior.MaxWidth="420">
         <Rectangle Width="1" Fill="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
       </Border>
       <local:StrandList x:Name="ListHost" Grid.Column="2" Grid.Row="0" />
 
       <Border x:Name="Splitter2Handle" Grid.Column="3" Grid.Row="0" Background="Transparent" HorizontalAlignment="Stretch"
               behaviors:ColumnSplitterBehavior.Target="{Binding ElementName=InspectorColumn}" behaviors:ColumnSplitterBehavior.Invert="True"
-              behaviors:ColumnSplitterBehavior.MinWidth="260" behaviors:ColumnSplitterBehavior.MaxWidth="520">
+              behaviors:ColumnSplitterBehavior.MinWidth="320" behaviors:ColumnSplitterBehavior.MaxWidth="560">
         <Rectangle Width="1" Fill="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
       </Border>
       <local:SegmentInspector x:Name="InspectorHost" Grid.Column="4" Grid.Row="0"

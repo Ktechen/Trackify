@@ -29,7 +29,7 @@
                 </Grid.ColumnDefinitions>
                 <FontIcon Grid.Column="0" Glyph="&#xE8AB;" FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                 <TextBlock Grid.Column="1" Text="{Binding Name}" FontFamily="{StaticResource HeadingFontFamily}" FontWeight="SemiBold" FontSize="12.5"
-                           VerticalAlignment="Center" Margin="8,0,0,0" />
+                           VerticalAlignment="Center" Margin="8,0,0,0" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                 <TextBlock Grid.Column="2" Text="{Binding Count}" Style="{StaticResource MonoCaptionTextBlockStyle}" VerticalAlignment="Center" />
               </Grid>
             </Button>
@@ -37,39 +37,45 @@
             <ItemsControl ItemsSource="{Binding Rows}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Grid Padding="20,10,12,10" ColumnSpacing="9" BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="0,0,0,1"
+                  <!-- Compact row: the label column is the only flexible one, so keep the fixed cost
+                       (swatch + four icon buttons + spacing) small enough that a narrow rail still
+                       leaves room for the name. Both labels trim instead of wrapping — a squeezed
+                       column would otherwise break them character-by-character. -->
+                  <Grid Padding="14,9,8,9" ColumnSpacing="6" BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="0,0,0,1"
                         d:DataContext="{d:DesignInstance Type=models:TrackSegment}">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" MinWidth="52" />
                       <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"
+                    <Border Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,2,0"
                             Background="{Binding SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center"
                                 local:TappedCommandBehavior.Command="{Binding ElementName=Root, Path=DataContext.SelectSegmentCommand}">
-                      <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Text="{Binding TypeLabel}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+                      <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold"
+                                 TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding TypeLabel}" Style="{StaticResource MonoCaptionTextBlockStyle}"
+                                 TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
 
-                    <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Nach oben"
+                    <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Width="26" Height="26" ToolTipService.ToolTip="Nach oben"
                             Command="{Binding ElementName=Root, Path=DataContext.MoveUpCommand}" CommandParameter="{Binding}">
                       <FontIcon Glyph="&#xE74A;" FontSize="11" />
                     </Button>
-                    <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Nach unten"
+                    <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}" Width="26" Height="26" ToolTipService.ToolTip="Nach unten"
                             Command="{Binding ElementName=Root, Path=DataContext.MoveDownCommand}" CommandParameter="{Binding}">
                       <FontIcon Glyph="&#xE74B;" FontSize="11" />
                     </Button>
-                    <Button Grid.Column="4" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Duplizieren"
+                    <Button Grid.Column="4" Style="{StaticResource IconButtonStyle}" Width="26" Height="26" ToolTipService.ToolTip="Duplizieren"
                             Command="{Binding ElementName=Root, Path=DataContext.DuplicateSegmentCommand}" CommandParameter="{Binding}">
                       <FontIcon Glyph="&#xE8C8;" FontSize="11" />
                     </Button>
-                    <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Löschen"
+                    <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}" Width="26" Height="26" ToolTipService.ToolTip="Löschen"
                             Command="{Binding ElementName=Root, Path=DataContext.DeleteSegmentCommand}" CommandParameter="{Binding}">
                       <FontIcon Glyph="&#xE74D;" FontSize="11" />
                     </Button>
