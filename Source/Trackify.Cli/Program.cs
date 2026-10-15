@@ -52,7 +52,13 @@ app.Configure(config =>
     config.SetExceptionHandler((ex, _) =>
     {
         Log.Unhandled(hostLogger, ex);
-        AnsiConsole.MarkupLineInterpolated($"[red]✗ Error:[/] {ex.Message}");
+
+        // Report the innermost message: commands are built by DI, so a failure in a repository's
+        // constructor arrives wrapped in "Could not resolve type ...", which tells the user nothing.
+        var cause = ex;
+        while (cause.InnerException is { } inner) cause = inner;
+
+        AnsiConsole.MarkupLineInterpolated($"[red]✗ Error:[/] {cause.Message}");
         return 1;
     });
 

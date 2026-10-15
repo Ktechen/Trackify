@@ -1,0 +1,63 @@
+<UserControl x:Class="Trackify.Presentation.Components.PieceList"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:behaviors="using:Trackify.Presentation.Behaviors"
+             xmlns:vm="using:Trackify.Presentation.ViewModels"
+             xmlns:models="using:Trackify.Models.Trains"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:SecondViewModel}">
+
+  <!-- The parts the plan needs, as a flat list: in a graph a part has no position in a chain, so
+       there is nothing to reorder — this is a parts list, not a sequence. Binds to SecondViewModel. -->
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+
+    <Border Grid.Row="0" Padding="14,10" Background="{ThemeResource SurfaceVariantBrush}"
+            BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="0,0,0,1">
+      <StackPanel Orientation="Horizontal" Spacing="7">
+        <TextBlock Text="{Binding PieceCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12.5" FontWeight="SemiBold" />
+        <TextBlock Text="Teile" FontSize="12.5" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+        <TextBlock Text="·" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+        <TextBlock Text="{Binding OpenEndCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12.5" FontWeight="SemiBold" />
+        <TextBlock Text="offene Enden" FontSize="12.5" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <ItemsControl ItemsSource="{Binding Pieces}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid Padding="14,10" ColumnSpacing="9" d:DataContext="{d:DesignInstance Type=models:TrackPiece}"
+                  BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="0,0,0,1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+
+              <Border Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"
+                      Background="{Binding SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+
+              <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                          behaviors:TappedCommandBehavior.Command="{Binding ElementName=Root, Path=DataContext.SelectPieceCommand}">
+                <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{Binding TypeLabel}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+              </StackPanel>
+
+              <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Löschen"
+                      Command="{Binding ElementName=Root, Path=DataContext.DeletePieceCommand}" CommandParameter="{Binding}">
+                <FontIcon Glyph="&#xE74D;" FontSize="11" />
+              </Button>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

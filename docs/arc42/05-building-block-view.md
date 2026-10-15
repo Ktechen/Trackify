@@ -127,12 +127,12 @@ back to the transport-free TFMs, or NuGet would try to restore a nonexistent Mon
 | Folder | Contents |
 |---|---|
 | `Presentation/Pages` | `Shell`, `MainPage` (responsive master–detail — the one allowed code-behind), `SecondPage` |
-| `Presentation/Components` | Page-specific sections inheriting the page `DataContext`: `TrainListPanel`, `TrainEditor`, `TrackCanvas`, `SegmentInspector`, `AddHubDialog` |
+| `Presentation/Components` | Page-specific sections inheriting the page `DataContext`: `TrainListPanel`, `TrainEditor`, `TrackCanvas` (the drawing surface), `PieceList`, `SegmentInspector`, `AddHubDialog` |
 | `Presentation/Widgets` | Reusable atoms with `DependencyProperty`s — `SpeedProfileWidget.Graph` |
 | `Presentation/ViewModels` | `MainViewModel` (+ `.Hub` partial), `ShellViewModel`, `SecondViewModel`, small item VMs |
-| `Presentation/Converters` / `Behaviors` | Nine converters registered once in `Styles/Converters.xaml`; `TappedCommandBehavior` instead of event handlers |
-| `Helpers` | `SpeedCurve` → `SpeedProfileGraph` (presentation-only SVG path data), `TrackGeometry` |
-| `Models/Trains` | `Train`/`TrackSegment` as `ObservableObject` view models |
+| `Presentation/Converters` / `Behaviors` | Nine converters registered once in `Styles/Converters.xaml`; `TappedCommandBehavior` and `DrawGestureBehavior` instead of event handlers |
+| `Helpers` | `SpeedCurve` → `SpeedProfileGraph` and `TrackPlanFitter` → `FittedPlan` (both presentation-only path data) |
+| `Models/Trains` | `Train`, `TrackPiece`, `TrackAnchor` as `ObservableObject` view models |
 | `Services/Remote` | `ConnectionState`, `SwitchingLegoService`, `RemoteLegoService`, `ITrackifyApi` (Refit), `TrackifyApiFactory`, `RemoteServerOptions`, `RemoteTrainSync` |
 | `Services` | `AndroidBluetoothPermissionService` (needs the `Activity`, so it cannot live in Application) |
 | `Platforms` | Per-head entry points; exempt from the namespace-matches-folder rule |

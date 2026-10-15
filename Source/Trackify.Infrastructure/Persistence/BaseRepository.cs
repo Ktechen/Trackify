@@ -26,7 +26,7 @@ public abstract class BaseRepository<TContext, T> : IBaseRepository<T>
         DbContextFactory = dbContextFactory;
 
         using var database = DbContextFactory.CreateDbContext();
-        database.Database.Migrate();
+        TrackifySchema.BringUpToDate(database);
     }
 
     public async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

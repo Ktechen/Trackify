@@ -11,7 +11,7 @@ using Trackify.Infrastructure.Persistence;
 namespace Trackify.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TrackifyDbContext))]
-    [Migration("20261014193211_InitialCreate")]
+    [Migration("20261015122519_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

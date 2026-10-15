@@ -16,7 +16,7 @@ public sealed class SqliteTrackPlanRepository : ITrackPlanRepository
         _dbContextFactory = dbContextFactory;
 
         using var database = _dbContextFactory.CreateDbContext();
-        database.Database.Migrate();
+        TrackifySchema.BringUpToDate(database);
     }
 
     public async Task<TrackPlanSnapshot> LoadAsync(CancellationToken cancellationToken = default)
