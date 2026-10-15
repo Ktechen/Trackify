@@ -6,6 +6,18 @@
     <!-- xUnit analyzers are strict; a test project shouldn't fail the build on their style nits. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+
+    <!--
+      Coverage scope. The target is 100% line / >=90% branch on code that can actually run here, so
+      the parts that cannot are excluded deliberately rather than papered over with tests that mock
+      the hardware away:
+        Infrastructure/Ble    - BlueZ over D-Bus; needs a Raspberry Pi with a real radio.
+        Application/Services  - Plugin.BLE and WinRT transports; compile only on their own heads.
+      Measure with: dotnet test ... -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura
+      Threshold is deliberately NOT set yet: it would fail every build until the scope is covered.
+    -->
+    <Exclude>[Trackify.Infrastructure]Trackify.Infrastructure.Ble.*,[Trackify.Application]Trackify.Application.Services.*</Exclude>
+    <ExcludeByFile>**/Platforms/**/*.cs,**/*.g.cs,**/*.g.i.cs</ExcludeByFile>
   </PropertyGroup>
 
   <ItemGroup>

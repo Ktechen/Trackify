@@ -11,12 +11,21 @@
     <!-- Same opt-out as Trackify.Tests: xUnit analyzers shouldn't fail the build on style nits. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+
+    <!--
+      Coverage scope for the app head. Excluded because none of it can run in a test host: the
+      per-head entry points, the hosting composition root, the XAML-generated partials, and the two
+      deliberate layout code-behinds, which need a live visual tree. What is left is the ViewModels,
+      the fitter, the models, converters and behaviors — and that is what the 100% target covers.
+    -->
+    <ExcludeByFile>**/Platforms/**/*.cs,**/App.xaml.cs,**/*.g.cs,**/*.g.i.cs,**/Pages/MainPage.xaml.cs,**/Pages/SecondPage.xaml.cs</ExcludeByFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.msbuild" />
   </ItemGroup>
 
   <ItemGroup>
