@@ -14,6 +14,8 @@
     <PackageReference Include="SharpBrick.PoweredUp" />
     <PackageReference Include="Linux.Bluetooth" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <!-- Design-time only: `dotnet ef migrations add` needs it, the published app does not. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>

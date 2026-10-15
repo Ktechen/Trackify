@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Trackify.Application.TrackPlans;
 using Trackify.Application.Trains;
 #if __ANDROID__ || __IOS__ || WINDOWS
 using Trackify.Application.Services;
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddSingleton<ITrainControlService, TrainControlService>();
         services.AddSingleton<ITrainService, TrainService>();
         services.AddSingleton<ITrackPlanService, TrackPlanService>();
+        services.AddSingleton<ITrackPlanExchangeService, TrackPlanExchangeService>();
 
 #if __ANDROID__
         services.AddAndroidLego();
