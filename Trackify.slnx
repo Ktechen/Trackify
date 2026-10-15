@@ -29,5 +29,6 @@
   </Folder>
   <Folder Name="/Test/">
     <Project Path="Test/Trackify.Tests/Trackify.Tests.csproj" />
+    <Project Path="Test/Trackify.Ui.Tests/Trackify.Ui.Tests.csproj" />
   </Folder>
 </Solution>

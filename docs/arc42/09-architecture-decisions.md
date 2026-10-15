@@ -243,6 +243,13 @@ change that breaks only the desktop, WASM or iOS head **can merge**. Mitigation 
 local check (build the four buildable heads + a desktop launch smoke test). Closing this properly
 needs a per-OS + workload CI matrix. → [§11](11-risks-and-technical-debt.md)
 
+The same gap now covers `Test/Trackify.Ui.Tests`, which tests the app head's own code
+(`SecondViewModel`, `TrackPlanFitter`). It references `Source/Trackify`, so it inherits the head's
+constraints and targets `net10.0-windows10.0.19041.0`: the desktop head pulls in WPF transitively, and
+`NETSDK1136` then requires a Windows-targeted consumer. It therefore **runs on Windows only and is not
+in `ci.yml`** — the plain `net10.0` `Trackify.Tests` stays the CI gate. Run it locally with
+`dotnet test Test/Trackify.Ui.Tests/Trackify.Ui.Tests.csproj`.
+
 ---
 
 ### ADR-14: Bounded connect retry around a SharpBrick null-deref

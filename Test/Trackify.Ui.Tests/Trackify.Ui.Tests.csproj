@@ -1,0 +1,26 @@
+<Project Sdk="Uno.Sdk">
+
+  <!-- Tests the app head's own code: TrackPlanFitter and SecondViewModel. It has to use Uno.Sdk and a
+       head TFM because net10.0-desktop is an Uno.Sdk alias, and Source/Trackify has no plain net10.0
+       target the existing net10.0 test project could reference. Desktop is the cheapest head to
+       reference — no emulator, nothing beyond the Skia host. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- Same opt-out as Trackify.Tests: xUnit analyzers shouldn't fail the build on style nits. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Source\Trackify\Trackify.csproj" />
+  </ItemGroup>
+
+</Project>

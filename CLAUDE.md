@@ -36,7 +36,11 @@ It's a **Clean Architecture** solution with two front-ends over one shared core.
   - **Repository pattern**: entities derive from `Domain/Common/BaseEntity` (Guid `Id` + `DateCreated`/`DateUpdated`); repositories derive from the generic `Infrastructure/Persistence/BaseRepository<T>` (default EF CRUD — `GetById/GetAll/Find/Add/AddRange/Update/Delete` over an `IDbContextFactory`) and implement a per-entity port that extends `Application/Common/IBaseRepository<T>` (e.g. `ITrainRepository : IBaseRepository<Train>`; `SqliteTrainRepository` adds only the default-db-path helper). Schema is applied with EF Core **migrations** (`Database.Migrate()` on first use; `dotnet-ef` is a local tool in `.config/dotnet-tools.json`), so changing an entity’s shape means **adding a migration** rather than deleting the dev `trackify.db`. A database created by the older `EnsureCreated()` has no `__EFMigrationsHistory` and has to be moved aside once — see arc42 ADR-18.
 - `Trackify` — the [Uno Platform](https://platform.uno) app (single project, multi-head = App / HMI / **Web = WASM head**). References **Domain + Application only**; the BLE transports flow from Application per head (`AddTrackifyApplication` calls the right `Add{Android,Ios,Windows}Lego`). The app's own `Services/` holds only `AndroidBluetoothPermissionService` (needs the `Activity`) + the desktop/wasm no-op registration.
 - `Trackify.Cli` — a **Spectre.Console.Cli** console app to deploy on a Linux server / Raspberry Pi (plain `net10.0` → BlueZ via `AddLinuxLego`'s runtime check). On a Windows dev box it additionally targets `net10.0-windows10.0.19041.0`, where the `WINDOWS` symbol makes Application compile in `AddWindowsLego` (WinRT) — so `discover`/`drive` work on Windows too (run that TFM; the plain `net10.0` flavor has no Windows transport). `RuntimeIdentifiers=linux-arm64` (on the net10.0 flavor) so arm64 restore/publish works from Rider.
-- `Trackify.Tests` — xUnit (pure-logic + store round-trip).
+- `Trackify.Tests` — xUnit (pure-logic + store round-trip), plain `net10.0`, the CI gate.
+- `Trackify.Ui.Tests` — xUnit against the **app head's own code** (`SecondViewModel` drawing gestures,
+  `TrackPlanFitter`). Uses `Uno.Sdk` and targets `net10.0-windows10.0.19041.0`, because the app head has
+  no plain `net10.0` target to reference and the desktop head drags in WPF (`NETSDK1136`). **Windows
+  only, not in CI** — see arc42 ADR-13.
 
 - .NET 10, Uno.Sdk `6.5.36` (pinned in `global.json`; SDK pinned to `10.0.0` + `rollForward: latestMajor` → uses the newest installed major, net10 heads require the .NET 10 SDK). Update Uno in `global.json`, not in package props.
 - **CI** (GitHub Actions, `.github/workflows/`): `ci.yml` is the pre-merge gate on PRs to `master` — an ubuntu job builds the CLI + shared core and runs the tests. The Uno app is deliberately not built in CI (its 5 heads need workloads + macOS/Windows even with `-f <head>`, because restore imports workloads for all TFMs); the Android head is covered by `android-apk.yml`. `android-apk.yml` builds the Android APK on windows-latest (JDK 17 + `android` workload, `-f net10.0-android`) on tag `v*` or manual dispatch; artifact `trackify-apk`. Both provision the .NET 8/9/10 SDKs.
@@ -59,6 +63,10 @@ dotnet run --project Source/Trackify/Trackify.csproj -f net10.0-desktop
 # Shared core / CLI / tests
 dotnet build Source/Trackify.Cli/Trackify.Cli.csproj      # CLI compiles here; real BLE only on a Pi
 dotnet test  Test/Trackify.Tests/Trackify.Tests.csproj
+
+# App-head tests (SecondViewModel + TrackPlanFitter). Windows only: it references Source/Trackify,
+# so it targets net10.0-windows10.0.19041.0 and is deliberately NOT in ci.yml (arc42 ADR-13).
+dotnet test  Test/Trackify.Ui.Tests/Trackify.Ui.Tests.csproj
 dotnet run --project Source/Trackify.Cli -- --help        # trackify discover | list | connect | drive | stop | color
 ```
 
