@@ -29,9 +29,9 @@ graph TD
 
 | Building block | Responsibility | Must not |
 |---|---|---|
-| `Trackify.Domain` | The persisted, transport-agnostic model (`Train`, `TrackSegment`, `BaseEntity`), all enums, and pure speed-profile maths (`SpeedFunction`, `ExpressionParser`) | Know about UI, logging, EF Core, BLE, or any other layer |
-| `Trackify.Application` | Ports (`ILegoService`, `ITrainRepository`, `ITrainControlService`, `ITrainService`, `IBluetoothPermissionService`), use-cases, `TrainDto` + mapping, the LEGO catalog, the shared network contract, **and** the Android/iOS/Windows BLE transports | Reference Infrastructure, a front-end, or EF Core |
-| `Trackify.Infrastructure` | EF Core + SQLite repository (`BaseRepository<T>` → `SqliteTrainRepository`) and the BlueZ/Linux transport | Reference a front-end |
+| `Trackify.Domain` | The persisted, transport-agnostic model (`Train`, `TrackPart`, `TrackLink`, `BaseEntity`), all enums, the real-dimension track-part catalogue and plan geometry (`Tracks/`), and pure speed-profile maths (`SpeedFunction`, `ExpressionParser`) | Know about UI, logging, EF Core, BLE, or any other layer |
+| `Trackify.Application` | Ports (`ILegoService`, `ITrainRepository`, `ITrackPlanRepository`, `ITrainControlService`, `ITrainService`, `ITrackPlanExchangeService`, `IBluetoothPermissionService`), use-cases, `TrainDto` + mapping, the versioned track-plan exchange format, the LEGO catalog, the shared network contract, **and** the Android/iOS/Windows BLE transports | Reference Infrastructure, a front-end, or EF Core |
+| `Trackify.Infrastructure` | EF Core + SQLite repositories (`BaseRepository<T>` → `SqliteTrainRepository`, `SqliteTrackPlanRepository`), the schema migrations, and the BlueZ/Linux transport | Reference a front-end |
 | `Trackify` (Uno app) | Presentation: pages, view models, converters, behaviors, widgets; Android permission glue; the Direct/Server switch and the remote transport | Contain business logic, or touch `Trackify.Domain.Trains` entities directly |
 | `Trackify.Cli` | argv parsing, console rendering, the auto-pilot loop, and the ASP.NET Core backend host | Touch `Trackify.Domain.Trains` (arch-test enforced) |
 | `Trackify.Tests` | xUnit tests foldered by layer + the architecture rules | — |
@@ -44,8 +44,12 @@ graph TD
 |---|---|
 | `Common/BaseEntity` | `record` base: GUID v7 `Id`, `DateCreated`/`DateUpdated` as Unix ms |
 | `Trains/Train` | The persisted train configuration: name, `HubType`, `BleAddress`, `HubId`, LED colour, port A/B device types, speed, accel/brake function + custom expression, `IsActive`. Runtime state (connected? status text) is deliberately absent |
-| `Trains/TrackSegment` | Per-segment configuration: type, max speed, direction, accel/brake functions, sensor + sensor action, slow target. Geometry and labels belong to presentation |
-| `Enums/*` | `HubType`, `DeviceType`, `LedColorType`, `SegmentType`, `SensorType`, `SensorActionType`, `SpeedFunctionType`, `TrackDirection`, `TrainFilterType` — one file each |
+| `Tracks/TrackPart` | A laid, saved part: which catalogue piece (`SpecKey`), plan order, and how a train behaves over it — max speed, direction, accel/brake functions, sensor + sensor action, slow target, plus `SwitchConfig` for a point. Carries **no** coordinates |
+| `Tracks/TrackLink` | One saved port-to-port joint: `FromPartId`/`FromPort` → `ToPartId`/`ToPort`. Parts plus links *are* the plan — [ADR-17](09-architecture-decisions.md#adr-17-a-track-plan-is-a-graph-of-port-connections-not-coordinates) |
+| `Tracks/TrackPartCatalog`, `TrackPartSpec`, `TrackMetrics` | The catalogue of parts LEGO actually makes, in studs and 22.5° steps (straight 53401, R40 curve 53400, points 53407/53404, crossing 32087, station) |
+| `Tracks/TrackPlanWalker`, `TrackSnapper`, `TrackLoopCloser` | Pure geometry over the graph: derive every pose by walking it (reporting a `TrackJoinMismatch` when the user's links contradict the dimensions), turn a drawn gesture into whole catalogue parts, and close a loop by search |
+| `Tracks/StudPose`, `StudPoint`, `TrackPort`, `TrackPortNames`, `SwitchConfig`, `SwitchEntryRule` | The value types that model a pose (position + integer heading step 0..15), a part's ports, and how a point is thrown |
+| `Enums/*` | `HubType`, `DeviceType`, `LedColorType`, `TrackPartKind`, `CurveDirection`, `SwitchRoute`, `SensorType`, `SensorActionType`, `SpeedFunctionType`, `TrackDirection`, `TrainFilterType` — one file each |
 | `SpeedFunction` | `Evaluate(type, x)` for the built-in curves; `TryCompile` for user formulas (validated at x = 0, 0.5, 1 — rejects NaN/∞); `ResolvePhaseFunction` falls back to identity when a custom formula is invalid |
 | `ExpressionParser` | Recursive-descent parser for user-entered `f(x)` over `+ - * / ^`, `sin/cos/sqrt/exp`, `pi` |
 
@@ -97,6 +101,7 @@ graph TB
 | `IBaseRepository<T>` / `ITrainRepository` | Generic CRUD contract (`GetById/GetAll/Find/Add/AddRange/Update/Delete`); the per-entity port adds nothing yet |
 | `TrainDto` + `TrainMapping` | The front-end-facing shape and its entity mapping — the DTO boundary ([ADR-07](09-architecture-decisions.md#adr-07-front-ends-see-traindto-never-domain-entities)) |
 | `Catalog/LegoinoCatalog` + `*Option` | The LEGO reference tables: hubs, devices, colours (with hex), directions, sensors, speed functions. One file per option record |
+| `TrackPlans/` | The versioned `trackplan.v1.json` exchange format (`TrackPlanDocument` + its part/connection/behaviour/switch documents, `TrackPlanSerializer`) and `TrackPlanExchangeService` behind `ITrackPlanExchangeService`, so a plan moves between the app and the CLI as the same graph — never as coordinates |
 | `Lego/LwpAddressingMapping` | The genuinely pure LWP bits: RGB-LED port table, MAC format/parse |
 | `Remote/` | The network contract shared by server and client: `ApiRoutes`, `TrainHubMethods`, `TrainSpeedState` |
 | `Services/DirectLegoService` | Android/iOS transport over SharpBrick `.Mobile` / Plugin.BLE |
@@ -113,8 +118,11 @@ back to the transport-free TFMs, or NuGet would try to restore a nonexistent Mon
 
 | Element | Purpose |
 |---|---|
-| `Persistence/TrackifyDbContext` | EF Core context; enums are stored as readable names; schema created via `EnsureCreated()` (no migrations) |
+| `Persistence/TrackifyDbContext` | EF Core context over `Trains`, `TrackParts` and `TrackLinks`; enums are stored as readable names; a point's `SwitchConfig` is an owned JSON document rather than a second table |
 | `Persistence/BaseRepository<T>` | Default EF CRUD over an `IDbContextFactory` |
+| `Persistence/SqliteTrackPlanRepository` | `ITrackPlanRepository` implementation — loads and replaces the whole parts+links graph as one snapshot |
+| `Persistence/Migrations/` | EF Core migrations; the schema is applied with `Database.Migrate()`, not `EnsureCreated()` — [ADR-18](09-architecture-decisions.md#adr-18-ef-core-migrations-instead-of-ensurecreated) |
+| `Persistence/TrackifySchema`, `TrackifyDesignTimeDbContextFactory` | The first-use migration gate, and the design-time context `dotnet ef` needs from a class library |
 | `Persistence/SqliteTrainRepository` | `ITrainRepository` implementation; adds only `DefaultDatabasePath()` (`~/.config/Trackify/trackify.db` / `%APPDATA%\Trackify\trackify.db`) |
 | `Ble/BlueZLegoService` | The Linux `ILegoService`. Awaits `adapter.EnsureReadyAsync()` **before** starting a scan, because SharpBrick's `Discover()` is fire-and-forget and would swallow a radio-off error |
 | `Ble/BlueZPoweredUpBluetoothAdapter` | The SharpBrick adapter over `Linux.Bluetooth`: powers the radio on, sets an **LE** discovery filter, and enumerates already-cached devices at scan start |

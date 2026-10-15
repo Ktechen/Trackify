@@ -10,8 +10,6 @@ public sealed class TrackifyDbContext(DbContextOptions<TrackifyDbContext> option
 {
     public DbSet<Train> Trains => Set<Train>();
 
-    public DbSet<TrackSegment> TrackSegments => Set<TrackSegment>();
-
     public DbSet<TrackPart> TrackParts => Set<TrackPart>();
 
     public DbSet<TrackLink> TrackLinks => Set<TrackLink>();
@@ -19,7 +17,6 @@ public sealed class TrackifyDbContext(DbContextOptions<TrackifyDbContext> option
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Train>().HasKey(train => train.Id);
-        modelBuilder.Entity<TrackSegment>().HasKey(segment => segment.Id);
 
         modelBuilder.Entity<TrackPart>(part =>
         {

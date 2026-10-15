@@ -331,6 +331,11 @@ model stores.
   the CLI without ever carrying a coordinate. An optional measured `pose` per part is the hook for a
   later reconstruction from a photograph: that path can supply poses and have the importer pair up
   ports that coincide.
+- The old chain model is **fully replaced**, not left standing alongside this one:
+  `Domain/Trains/TrackSegment` (with its `StrandId`/`Order` chain and `BranchStrandId` points),
+  `TrackSegmentDto`, `TrackPlanService`, `ITrackSegmentRepository`, `TemplateType`, the `SegmentType`
+  enum and the `TrackSegments` table are deleted — the table by its own `DropTrackSegments` migration,
+  so an already-migrated database drops it instead of being rebuilt. There is one track model in the code.
 - Sources for the dimensions: the [L-Gauge track geometry
   reference](https://l-gauge.org/wiki/index.php/Track_Geometry) and Brick Model Railroader's
   [curved-track survey](https://brickmodelrailroader.com/index.php/2017/03/03/curved-track-whats-available-and-what-to-expect/).

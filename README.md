@@ -78,7 +78,7 @@ Full architecture documentation lives in **[docs/arc42/](docs/arc42/)**, followi
 
 | Project | Layer | Notes |
 |---|---|---|
-| `Source/Trackify.Domain` | Domain | Entities (`Train`, `TrackSegment`), enums, `SpeedFunction` |
+| `Source/Trackify.Domain` | Domain | Entities (`Train`, `TrackPart`, `TrackLink`), enums, `Tracks/` geometry, `SpeedFunction` |
 | `Source/Trackify.Application` | Application | Ports, `TrainControlService`, `LegoinoCatalog`; hosts the mobile/WinRT `ILegoService` impls (multi-targeted per build host) |
 | `Source/Trackify.Infrastructure` | Infrastructure | EF Core + SQLite store, BlueZ (Linux) transport |
 | `Source/Trackify` | Front-end | Uno app — heads: android, ios, browserwasm (**Web**), desktop, windows |
@@ -180,7 +180,7 @@ Die vollständige Architekturdokumentation liegt in **[docs/arc42/](docs/arc42/)
 
 | Projekt | Schicht | Hinweise |
 |---|---|---|
-| `Source/Trackify.Domain` | Domain | Entities (`Train`, `TrackSegment`), Enums, `SpeedFunction` |
+| `Source/Trackify.Domain` | Domain | Entities (`Train`, `TrackPart`, `TrackLink`), Enums, `Tracks/` geometry, `SpeedFunction` |
 | `Source/Trackify.Application` | Application | Ports, `TrainControlService`, `LegoinoCatalog`; enthält die Mobile-/WinRT-`ILegoService`-Impls (multi-targeted je nach Build-Host) |
 | `Source/Trackify.Infrastructure` | Infrastructure | EF-Core-+-SQLite-Store, BlueZ-Transport (Linux) |
 | `Source/Trackify` | Front-End | Uno-App — Heads: android, ios, browserwasm (**Web**), desktop, windows |

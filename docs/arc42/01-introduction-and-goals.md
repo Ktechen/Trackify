@@ -19,7 +19,7 @@ UI is also the device that owns the radio.
 | R3 | Connect to a train's hub and drive its motor at a signed percentage speed | `ITrainControlService.SetSpeedAsync` |
 | R4 | Set the hub's built-in RGB LED to the train's configured colour | `ITrainControlService.SetLedAsync` |
 | R5 | Model acceleration/braking as a function `f(x)` over `x ∈ [0,1]`, including user-entered formulas | `Domain/SpeedFunction.cs`, `Domain/ExpressionParser.cs` |
-| R6 | Plan a track layout from segments with per-segment speed, direction and sensor action | `Domain/Trains/TrackSegment.cs`, `TrackCanvas` |
+| R6 | Plan a track layout from real catalogue parts, with per-part speed, direction and sensor action | `Domain/Tracks/TrackPart.cs`, `TrackCanvas` |
 | R7 | Run the whole fleet unattended, reconnecting hubs that drop | `trackify auto` |
 | R8 | Drive hubs attached to *another* machine over the LAN | `trackify server` + the app's Server mode |
 | R9 | Stop every motor cleanly on shutdown (Ctrl+C / SIGINT / systemd stop) | `ConsoleCancellation`, `stop_signal: SIGINT` |

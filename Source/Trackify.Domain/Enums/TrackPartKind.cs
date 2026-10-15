@@ -1,9 +1,8 @@
 namespace Trackify.Domain.Enums;
 
 /// <summary>
-/// A physical LEGO track part the planner can lay. Distinct from <see cref="SegmentType"/>, which
-/// describes a segment's *role* in the old strand chain — this names the actual moulded piece, so
-/// its geometry (length, radius, sweep, number of ports) is fixed by LEGO and not by us.
+/// A physical LEGO track part the planner can lay — the actual moulded piece, so its geometry
+/// (length, radius, sweep, number of ports) is fixed by LEGO and not by us.
 /// </summary>
 public enum TrackPartKind
 {
