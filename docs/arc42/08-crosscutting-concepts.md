@@ -27,15 +27,23 @@ classDiagram
         +string AccelExpression / BrakeExpression
         +bool IsActive
     }
-    class TrackSegment {
-        +string Id / Name
-        +SegmentType Type
+    class TrackPart {
+        +string SpecKey
+        +string Name
+        +int PlanOrder
         +int MaxSpeed
         +TrackDirection Direction
         +SpeedFunctionType AccelFn / BrakeFn
         +SensorType Sensor
         +SensorActionType Action
         +int SlowTarget
+        +SwitchConfig? Switch
+    }
+    class TrackLink {
+        +Guid FromPartId
+        +string FromPort
+        +Guid ToPartId
+        +string ToPort
     }
     class SpeedFunction {
         <<static>>
@@ -44,6 +52,9 @@ classDiagram
         +ResolvePhaseFunction(fn, expression)
     }
     BaseEntity <|-- Train
+    BaseEntity <|-- TrackPart
+    BaseEntity <|-- TrackLink
+    TrackPart "1" --> "0..*" TrackLink : plugged into
 ```
 
 Two rules give this model its shape:
@@ -52,8 +63,10 @@ Two rules give this model its shape:
    speed. Connection state belongs to the control/presentation layer, which is why the same entity
    can be shared by a phone and a headless daemon.
 2. **Presentation output is not domain output.** `SpeedFunction` computes `f(x)`; the SVG path that
-   draws it (`Helpers/SpeedCurve` → `SpeedProfileGraph`) lives in the app. Likewise `TrackSegment`
-   carries no geometry and no German labels.
+   draws it (`Helpers/SpeedCurve` → `SpeedProfileGraph`) lives in the app. Likewise `TrackPart`
+   carries no coordinates: a plan stores which parts are plugged into which ports, and every pose is
+   derived by walking that graph (`TrackPlanWalker`) — see
+   [ADR-17](09-architecture-decisions.md#adr-17-a-track-plan-is-a-graph-of-port-connections-not-coordinates).
 
 `SpeedFunction.TryCompile` validates a user formula by probing it at x = 0, 0.5 and 1 and rejecting
 NaN/∞; `ResolvePhaseFunction` falls back to the identity function when a custom expression is

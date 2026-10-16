@@ -11,7 +11,7 @@
 
   <!-- Selected-segment inspector (drive behaviour + sensor). Binds to the hosting SecondViewModel. -->
   <Grid Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="1,0,0,0">
-    <ScrollViewer Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}}"
+    <ScrollViewer Visibility="{Binding SelectedPiece, Converter={StaticResource NullToVisibilityConverter}}"
                   HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto" ZoomMode="Disabled">
       <Grid Margin="24,24,24,40">
@@ -26,7 +26,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Spacing="12">
-        <!-- Grid, not a horizontal StackPanel: the GUID has to trim to the pane width, and a
+        <!-- Grid, not a horizontal StackPanel: the id has to trim to the pane width, and a
              StackPanel would measure it with infinite width and let it overflow the pane. -->
         <Grid ColumnSpacing="11">
           <Grid.ColumnDefinitions>
@@ -35,15 +35,15 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <Border Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center"
-                  Background="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+                  Background="{Binding SelectedPiece.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
           <Border Grid.Column="1" Style="{StaticResource TagAccentStyle}" Padding="10,3">
-            <TextBlock Text="{Binding SelectedSegment.TypeLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OnPrimaryContainerBrush}" />
+            <TextBlock Text="{Binding SelectedPiece.TypeLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource OnPrimaryContainerBrush}" />
           </Border>
-          <TextBlock Grid.Column="2" Text="{Binding SelectedSegment.Id}" FontFamily="{StaticResource MonoFontFamily}" FontSize="11"
+          <TextBlock Grid.Column="2" Text="{Binding SelectedPiece.Id}" FontFamily="{StaticResource MonoFontFamily}" FontSize="11"
                      Foreground="{ThemeResource MutedTextBrush}" VerticalAlignment="Center" TextAlignment="Right"
                      TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
         </Grid>
-        <TextBox Text="{Binding SelectedSegment.Name, Mode=TwoWay}" FontFamily="{StaticResource HeadingFontFamily}" FontSize="22" FontWeight="SemiBold"
+        <TextBox Text="{Binding SelectedPiece.Name, Mode=TwoWay}" FontFamily="{StaticResource HeadingFontFamily}" FontSize="22" FontWeight="SemiBold"
                  Background="Transparent" BorderThickness="0" Padding="0" />
         </StackPanel>
 
@@ -62,12 +62,12 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Max. Geschwindigkeit" Style="{StaticResource LabelTextBlockStyle}" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                  <TextBlock Text="{Binding SelectedSegment.MaxSpeed}" FontFamily="{StaticResource MonoFontFamily}" FontSize="17" FontWeight="ExtraBold"
-                             Foreground="{Binding SelectedSegment.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
+                  <TextBlock Text="{Binding SelectedPiece.MaxSpeed}" FontFamily="{StaticResource MonoFontFamily}" FontSize="17" FontWeight="ExtraBold"
+                             Foreground="{Binding SelectedPiece.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
                   <TextBlock Text="%" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource MutedTextBrush}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
                 </StackPanel>
               </Grid>
-              <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedSegment.MaxSpeed, Mode=TwoWay}" />
+              <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedPiece.MaxSpeed, Mode=TwoWay}" />
             </StackPanel>
 
             <StackPanel Spacing="10">
@@ -78,19 +78,19 @@
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0" Content="Vorwärts" Style="{StaticResource SegmentPillButtonStyle}"
-                        Background="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Forward}"
-                        Foreground="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Forward}"
+                        Background="{Binding SelectedPiece.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Forward}"
+                        Foreground="{Binding SelectedPiece.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Forward}"
                         Command="{Binding SetDirectionCommand}" CommandParameter="Forward" />
                 <Button Grid.Column="1" Content="Rückwärts" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
-                        Background="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Reverse}"
-                        Foreground="{Binding SelectedSegment.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Reverse}"
+                        Background="{Binding SelectedPiece.Direction, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Reverse}"
+                        Foreground="{Binding SelectedPiece.Direction, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Reverse}"
                         Command="{Binding SetDirectionCommand}" CommandParameter="Reverse" />
               </Grid>
             </StackPanel>
 
             <StackPanel Spacing="10">
               <TextBlock Text="Geschwindigkeitsprofil f(x)" Style="{StaticResource LabelTextBlockStyle}" />
-              <local:SpeedProfileWidget Graph="{Binding SelectedSegment.Graph}" />
+              <local:SpeedProfileWidget Graph="{Binding SelectedPiece.Graph}" />
 
               <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -100,14 +100,14 @@
                 <StackPanel Grid.Column="0" Spacing="7">
                   <TextBlock Text="Beschleunigung" FontSize="11.5" FontWeight="Medium" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedSegment.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
-                  <TextBlock Text="{Binding SelectedSegment.AccelFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
+                            SelectedValue="{Binding SelectedPiece.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                  <TextBlock Text="{Binding SelectedPiece.AccelFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="7">
                   <TextBlock Text="Bremsen" FontSize="11.5" FontWeight="Medium" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedSegment.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
-                  <TextBlock Text="{Binding SelectedSegment.BrakeFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
+                            SelectedValue="{Binding SelectedPiece.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                  <TextBlock Text="{Binding SelectedPiece.BrakeFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
                 </StackPanel>
               </Grid>
             </StackPanel>
@@ -123,29 +123,15 @@
         </Border>
 
         <!-- WEICHE -->
-        <local:BlueprintFrame Grid.Row="3" Visibility="{Binding SelectedSegment.IsWeiche, Converter={StaticResource BoolToVisibilityConverter}}">
+        <local:BlueprintFrame Grid.Row="3" Visibility="{Binding SelectedPiece.IsSwitch, Converter={StaticResource BoolToVisibilityConverter}}">
         <Border Style="{StaticResource SectionCardStyle}" Padding="20">
           <StackPanel Spacing="14">
             <TextBlock Text="Weiche" Style="{StaticResource SectionTitleTextBlockStyle}" FontWeight="Bold" />
 
-            <StackPanel Spacing="10">
-              <TextBlock Text="Zweig" Style="{StaticResource LabelTextBlockStyle}" />
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Nach links" Style="{StaticResource SegmentPillButtonStyle}"
-                        Background="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Left}"
-                        Foreground="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Left}"
-                        Command="{Binding SetBranchDirectionCommand}" CommandParameter="Left" />
-                <Button Grid.Column="1" Content="Nach rechts" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
-                        Background="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Right}"
-                        Foreground="{Binding SelectedSegment.BranchDirection, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Right}"
-                        Command="{Binding SetBranchDirectionCommand}" CommandParameter="Right" />
-              </Grid>
-            </StackPanel>
-
+            <!-- Which way the branch peels off is the part itself now ("Weiche links" vs "Weiche
+                 rechts"), and where the branch leads is whatever is plugged into its branch port —
+                 both are the plan's geometry, not settings. What is left to decide here is how the
+                 point stands. -->
             <StackPanel Spacing="10">
               <TextBlock Text="Gestellt auf" Style="{StaticResource LabelTextBlockStyle}" />
               <Grid>
@@ -154,35 +140,18 @@
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0" Content="Stammgleis" Style="{StaticResource SegmentPillButtonStyle}"
-                        Background="{Binding SelectedSegment.Route, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Main}"
-                        Foreground="{Binding SelectedSegment.Route, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Main}"
+                        Background="{Binding SelectedPiece.DefaultRoute, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Main}"
+                        Foreground="{Binding SelectedPiece.DefaultRoute, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Main}"
                         Command="{Binding SetRouteCommand}" CommandParameter="Main" />
                 <Button Grid.Column="1" Content="Zweig" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
-                        Background="{Binding SelectedSegment.Route, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Branch}"
-                        Foreground="{Binding SelectedSegment.Route, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Branch}"
+                        Background="{Binding SelectedPiece.DefaultRoute, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Branch}"
+                        Foreground="{Binding SelectedPiece.DefaultRoute, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Branch}"
                         Command="{Binding SetRouteCommand}" CommandParameter="Branch" />
               </Grid>
             </StackPanel>
 
-            <Grid ColumnSpacing="9" Margin="0,4,0,0">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-              </Grid.ColumnDefinitions>
-              <StackPanel Grid.Column="0">
-                <TextBlock Text="{Binding SelectedBranchName}" FontFamily="{StaticResource HeadingFontFamily}" FontSize="14" FontWeight="SemiBold" />
-                <TextBlock Text="{Binding SelectedBranchCount}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
-              </StackPanel>
-              <Button Grid.Column="1" Content="Im Zweig bauen" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="36" Padding="12,0"
-                      Command="{Binding GotoBranchCommand}" />
-            </Grid>
-
-            <StackPanel Spacing="7">
-              <TextBlock Text="Zweig-Ende anschließen an" Style="{StaticResource LabelTextBlockStyle}" />
-              <ComboBox ItemsSource="{Binding BranchLinkOptions}" DisplayMemberPath="Name" SelectedValuePath="Id"
-                        SelectedValue="{Binding SelectedSegment.BranchLinkSegmentId, Mode=TwoWay}"
-                        PlaceholderText="— offen lassen —" HorizontalAlignment="Stretch" />
-            </StackPanel>
+            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       Text="Welcher Motor diese Weiche stellt und wo ihr Sensor hängt, trägt der Streckenplan schon mit und wandert beim Export mit. Einstellbar wird es hier, wenn die Ansteuerung kommt." />
           </StackPanel>
         </Border>
         </local:BlueprintFrame>
@@ -201,8 +170,8 @@
             <StackPanel Orientation="Horizontal" Spacing="9">
               <TextBlock Text="Sensor" Style="{StaticResource SectionTitleTextBlockStyle}" FontWeight="Bold" />
               <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                       Fill="{Binding SelectedSegment.SensorColor, Converter={StaticResource HexToBrushConverter}}"
-                       Visibility="{Binding SelectedSegment.HasSensor, Converter={StaticResource BoolToVisibilityConverter}}" />
+                       Fill="{Binding SelectedPiece.SensorColor, Converter={StaticResource HexToBrushConverter}}"
+                       Visibility="{Binding SelectedPiece.HasSensor, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
 
             <StackPanel Spacing="10">
@@ -214,28 +183,28 @@
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0" Content="Kein" Style="{StaticResource SegmentPillButtonStyle}"
-                        Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=None}"
-                        Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=None}"
+                        Background="{Binding SelectedPiece.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=None}"
+                        Foreground="{Binding SelectedPiece.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=None}"
                         Command="{Binding SetSensorCommand}" CommandParameter="None" />
                 <Button Grid.Column="1" Content="Farbe" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
-                        Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Color}"
-                        Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Color}"
+                        Background="{Binding SelectedPiece.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Color}"
+                        Foreground="{Binding SelectedPiece.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Color}"
                         Command="{Binding SetSensorCommand}" CommandParameter="Color" />
                 <Button Grid.Column="2" Content="Abstand" Style="{StaticResource SegmentPillButtonStyle}" Margin="-1,0,0,0"
-                        Background="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Distance}"
-                        Foreground="{Binding SelectedSegment.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Distance}"
+                        Background="{Binding SelectedPiece.Sensor, Converter={StaticResource SegmentBackgroundConverter}, ConverterParameter=Distance}"
+                        Foreground="{Binding SelectedPiece.Sensor, Converter={StaticResource SegmentForegroundConverter}, ConverterParameter=Distance}"
                         Command="{Binding SetSensorCommand}" CommandParameter="Distance" />
               </Grid>
             </StackPanel>
 
-            <StackPanel Spacing="18" Visibility="{Binding SelectedSegment.HasSensor, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel Spacing="18" Visibility="{Binding SelectedPiece.HasSensor, Converter={StaticResource BoolToVisibilityConverter}}">
               <StackPanel Spacing="8">
                 <TextBlock Text="Aktion beim Auslösen" Style="{StaticResource LabelTextBlockStyle}" />
                 <ComboBox ItemsSource="{Binding SensorActionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                          SelectedValue="{Binding SelectedSegment.Action, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                          SelectedValue="{Binding SelectedPiece.Action, Mode=TwoWay}" HorizontalAlignment="Stretch" />
               </StackPanel>
 
-              <StackPanel Spacing="10" Visibility="{Binding SelectedSegment.ShowSlowTarget, Converter={StaticResource BoolToVisibilityConverter}}">
+              <StackPanel Spacing="10" Visibility="{Binding SelectedPiece.ShowSlowTarget, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Grid>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -243,14 +212,14 @@
                   </Grid.ColumnDefinitions>
                   <TextBlock Grid.Column="0" Text="Ziel-Tempo" Style="{StaticResource LabelTextBlockStyle}" VerticalAlignment="Center" />
                   <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                    <TextBlock Text="{Binding SelectedSegment.SlowTarget}" FontFamily="{StaticResource MonoFontFamily}" FontSize="15" FontWeight="Bold" />
+                    <TextBlock Text="{Binding SelectedPiece.SlowTarget}" FontFamily="{StaticResource MonoFontFamily}" FontSize="15" FontWeight="Bold" />
                     <TextBlock Text="%" FontFamily="{StaticResource MonoFontFamily}" FontSize="15" FontWeight="Bold" />
                   </StackPanel>
                 </Grid>
-                <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedSegment.SlowTarget, Mode=TwoWay}" />
+                <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedPiece.SlowTarget, Mode=TwoWay}" />
               </StackPanel>
 
-              <TextBlock Text="{Binding SelectedSegment.SensorToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+              <TextBlock Text="{Binding SelectedPiece.SensorToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
             </StackPanel>
           </StackPanel>
         </Border>
@@ -264,24 +233,18 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <Button Grid.Column="0" Content="Duplizieren" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="40"
-                  Command="{Binding DuplicateSegmentCommand}" CommandParameter="{Binding SelectedSegment}" />
-          <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}" ToolTipService.ToolTip="Nach oben"
-                  Command="{Binding MoveUpCommand}" CommandParameter="{Binding SelectedSegment}">
-            <FontIcon Glyph="&#xE74A;" FontSize="13" />
-          </Button>
-          <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" ToolTipService.ToolTip="Nach unten"
-                  Command="{Binding MoveDownCommand}" CommandParameter="{Binding SelectedSegment}">
-            <FontIcon Glyph="&#xE74B;" FontSize="13" />
-          </Button>
-          <Button Grid.Column="3" Content="Löschen" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="40" Foreground="{ThemeResource ErrorBrush}"
-                  Command="{Binding DeleteSegmentCommand}" CommandParameter="{Binding SelectedSegment}" />
+          <!-- Reorder and duplicate are gone with the chain: in a graph a part has no "position in
+               the list", it has ports. Building happens on the canvas; what is left here is
+               removing the selected part. -->
+          <Button Grid.Column="0" Grid.ColumnSpan="4" Content="Teil löschen" Style="{StaticResource IconButtonStyle}"
+                  Width="Auto" Height="40" Foreground="{ThemeResource ErrorBrush}"
+                  Command="{Binding DeletePieceCommand}" CommandParameter="{Binding SelectedPiece}" />
         </Grid>
 
       </Grid>
     </ScrollViewer>
 
-    <StackPanel Visibility="{Binding SelectedSegment, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"
+    <StackPanel Visibility="{Binding SelectedPiece, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"
                 HorizontalAlignment="Center" VerticalAlignment="Center" Padding="40">
       <TextBlock Text="Kein Segment ausgewählt." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}"
                  HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />

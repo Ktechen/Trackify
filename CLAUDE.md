@@ -47,19 +47,30 @@ belongs, `09-architecture-decisions.md` for settled decisions (don't re-open the
 `11-risks-and-technical-debt.md` for what is knowingly unfinished. Update the affected section in the
 same PR when the architecture changes.
 
+**`docs/editor-view.md`** (English) and **`docs/editor-view.de.md`** (German) are the
+operator-facing counterpart: what each page and every control does, screen by screen. Both quote
+the app's German labels verbatim, since that is what is on screen; the English one glosses each.
+**Keep the two in step** — a control or label change edits both. Their screenshot slots under
+`docs/images/` are deliberately empty: the renderer can't be captured here (see "Build & verify"),
+so they are filled from a real device.
+
 ## What this is
 
 **Trackify** configures and controls **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — there is **no server/backend**. BLE talks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/) via [SharpBrick.PoweredUp](https://github.com/sharpbrick/powered-up).
 
 It's a **Clean Architecture** solution with two front-ends over one shared core. All projects live under `Source/` (the "Source" solution folder):
 
-- `Trackify.Domain` — pure entities (`Train`, `TrackSegment`), enums, `SpeedFunction` math. Only dependency is the DI abstractions (contract-only), for its `AddTrackifyDomain()` entry point.
+- `Trackify.Domain` — pure entities (`Train`, `TrackPart`, `TrackLink`), enums, the track-part catalogue + plan geometry (`Tracks/`), `SpeedFunction` math. Only dependency is the DI abstractions (contract-only), for its `AddTrackifyDomain()` entry point.
 - `Trackify.Application` — ports + use-cases (`ILegoService`/`ITrainControlService`/`ITrainService`/`ITrainRepository` + `DiscoveredHubDto`, `LegoinoCatalog`, `TrainControlService`, `TrainService`, `TrainDto`/`TrainMapping`, `LwpAddressingMapping`) **plus the per-platform `ILegoService` transports under `Services/`** (`DirectLegoService` android/ios, `WindowsLegoService`) wired by per-head `Add{Android,Ios,Windows}Lego` extensions (mirroring the CLI's `AddLinuxLego`). **Multi-targeted per BUILD host** (Windows: `+net10.0-android;net10.0-windows`; macOS: `+net10.0-android;net10.0-ios`; Linux: plain `net10.0` only). The plain `net10.0` flavor is transport-free (CLI/Pi carries BlueZ instead).
 - `Trackify.Infrastructure` — `SqliteTrainRepository` (EF Core + **SQLite** persistence, `trackify.db`; enums stored as names) **plus** the BlueZ onboard-radio `ILegoService` under `Ble/` (`Linux.Bluetooth` + SharpBrick). Referenced **only by the CLI** — it carries the Linux BLE stack, so the Uno app must not reference it.
-  - **Repository pattern**: entities derive from `Domain/Common/BaseEntity` (Guid `Id` + `DateCreated`/`DateUpdated`); repositories derive from the generic `Infrastructure/Persistence/BaseRepository<T>` (default EF CRUD — `GetById/GetAll/Find/Add/AddRange/Update/Delete` over an `IDbContextFactory`) and implement a per-entity port that extends `Application/Common/IBaseRepository<T>` (e.g. `ITrainRepository : IBaseRepository<Train>`; `SqliteTrainRepository` adds only the default-db-path helper). Schema is created with `EnsureCreated()` (no migrations) — **changing an entity's shape means deleting the dev `trackify.db`** (or adding EF migrations), since `EnsureCreated` won't migrate an existing file.
+  - **Repository pattern**: entities derive from `Domain/Common/BaseEntity` (Guid `Id` + `DateCreated`/`DateUpdated`); repositories derive from the generic `Infrastructure/Persistence/BaseRepository<T>` (default EF CRUD — `GetById/GetAll/Find/Add/AddRange/Update/Delete` over an `IDbContextFactory`) and implement a per-entity port that extends `Application/Common/IBaseRepository<T>` (e.g. `ITrainRepository : IBaseRepository<Train>`; `SqliteTrainRepository` adds only the default-db-path helper). Schema is applied with EF Core **migrations** (`Database.Migrate()` on first use; `dotnet-ef` is a local tool in `.config/dotnet-tools.json`), so changing an entity’s shape means **adding a migration** rather than deleting the dev `trackify.db`. A database created by the older `EnsureCreated()` has no `__EFMigrationsHistory` and has to be moved aside once — see arc42 ADR-18.
 - `Trackify` — the [Uno Platform](https://platform.uno) app (single project, multi-head = App / HMI / **Web = WASM head**). References **Domain + Application only**; the BLE transports flow from Application per head (`AddTrackifyApplication` calls the right `Add{Android,Ios,Windows}Lego`). The app's own `Services/` holds only `AndroidBluetoothPermissionService` (needs the `Activity`) + the desktop/wasm no-op registration.
 - `Trackify.Cli` — a **Spectre.Console.Cli** console app to deploy on a Linux server / Raspberry Pi (plain `net10.0` → BlueZ via `AddLinuxLego`'s runtime check). On a Windows dev box it additionally targets `net10.0-windows10.0.19041.0`, where the `WINDOWS` symbol makes Application compile in `AddWindowsLego` (WinRT) — so `discover`/`drive` work on Windows too (run that TFM; the plain `net10.0` flavor has no Windows transport). `RuntimeIdentifiers=linux-arm64` (on the net10.0 flavor) so arm64 restore/publish works from Rider.
-- `Trackify.Tests` — xUnit (pure-logic + store round-trip).
+- `Trackify.Tests` — xUnit (pure-logic + store round-trip), plain `net10.0`, the CI gate.
+- `Trackify.Ui.Tests` — xUnit against the **app head's own code** (`SecondViewModel` drawing gestures,
+  `TrackPlanFitter`). Uses `Uno.Sdk` and targets `net10.0-windows10.0.19041.0`, because the app head has
+  no plain `net10.0` target to reference and the desktop head drags in WPF (`NETSDK1136`). **Windows
+  only, not in CI** — see arc42 ADR-13.
 
 - .NET 10, Uno.Sdk `6.5.36` (pinned in `global.json`; SDK pinned to `10.0.0` + `rollForward: latestMajor` → uses the newest installed major, net10 heads require the .NET 10 SDK). Update Uno in `global.json`, not in package props.
 - **CI** (GitHub Actions, `.github/workflows/`): `ci.yml` is the pre-merge gate on PRs to `master` — an ubuntu job builds the CLI + shared core and runs the tests. The Uno app is deliberately not built in CI (its 5 heads need workloads + macOS/Windows even with `-f <head>`, because restore imports workloads for all TFMs); the Android head is covered by `android-apk.yml`. `android-apk.yml` builds the Android APK on windows-latest (JDK 17 + `android` workload, `-f net10.0-android`) on tag `v*` or manual dispatch; artifact `trackify-apk`. Both provision the .NET 8/9/10 SDKs.
@@ -82,6 +93,10 @@ dotnet run --project Source/Trackify/Trackify.csproj -f net10.0-desktop
 # Shared core / CLI / tests
 dotnet build Source/Trackify.Cli/Trackify.Cli.csproj      # CLI compiles here; real BLE only on a Pi
 dotnet test  Test/Trackify.Tests/Trackify.Tests.csproj
+
+# App-head tests (SecondViewModel + TrackPlanFitter). Windows only: it references Source/Trackify,
+# so it targets net10.0-windows10.0.19041.0 and is deliberately NOT in ci.yml (arc42 ADR-13).
+dotnet test  Test/Trackify.Ui.Tests/Trackify.Ui.Tests.csproj
 dotnet run --project Source/Trackify.Cli -- --help        # trackify discover | list | connect | drive | stop | color
 ```
 
@@ -102,7 +117,7 @@ CLI deployment (Pi publish — no build flags; `trains.json`/store schema, syste
 - **Two selection styles, deliberately.** `AddLinuxLego` is a **runtime** check (`if (OperatingSystem.IsLinux())`) because the BlueZ types compile on every TFM. `AddAndroidLego`/`AddIosLego`/`AddWindowsLego` are **compile-time `#if`** per head, because `DirectLegoService`/`WindowsLegoService` reference SDK packages (Plugin.BLE, SharpBrick `.WinRT`) that only exist on those TFMs — they don't compile elsewhere, so a runtime check is impossible there.
 
 - **`SharpBrick` command building is NOT pure** — `LwpCommands.cs` (`Trackify.Infrastructure/Ble/`) builds SharpBrick typed messages (StartPower, SetRgbColor, connect-with-retry) for the BlueZ transport. The genuinely pure bits (RGB-LED port table, MAC format/parse) live once in `Application/Lego/LwpAddressing.cs`.
-- **Uno app** (`Source/Trackify/`): `Presentation/` (MVVM, folder-per-concern, no business logic in pages), `Services/` (the platform `ILegoService` impls + `NativeBluetooth` permission glue), `Helpers/SpeedCurve.cs` (builds the presentation-only `SpeedProfileGraph` path data), `Models/Trains/` (`Train`/`TrackSegment` — currently `ObservableObject`; **Phase 4 will make them thin wrappers over the Domain configs**).
+- **Uno app** (`Source/Trackify/`): `Presentation/` (MVVM, folder-per-concern, no business logic in pages), `Services/` (the platform `ILegoService` impls + `NativeBluetooth` permission glue), `Helpers/SpeedCurve.cs` (builds the presentation-only `SpeedProfileGraph` path data), `Models/Trains/` (`Train`/`TrackPiece`/`TrackAnchor` — currently `ObservableObject`; **Phase 4 will make them thin wrappers over the Domain configs**).
 - **Navigation & DI** — Uno.Extensions Hosting/Navigation. Routes/ViewMaps in `App.xaml.cs` → `RegisterRoutes`.
 - **CLI** (`Source/Trackify.Cli/`): Spectre.Console.Cli; `Program.cs` composes the layers (`AddTrackifyDomain/Application/Infrastructure` + Serilog) bridged to Spectre via the `Spectre.Console.Cli.Extensions.DependencyInjection` package (`DependencyInjectionRegistrar` — no hand-written registrar). Commands under `Commands/`, settings under `Commands/Settings/`. Store (SQLite) path overridable with `TRACKIFY_STORE`. Single `net10.0`; hub control only on Linux/Pi (BlueZ), a no-op elsewhere.
 
@@ -131,3 +146,53 @@ CLI deployment (Pi publish — no build flags; `trains.json`/store schema, syste
 - Mobile safe-area (status bar / gesture nav / notch) is handled with the Uno `Toolkit` feature: `utu:SafeArea.Insets` on the page header (`Top`) and content (`Bottom`). Adding a mobile screen? Apply the same so system bars don't overlap.
 - **BlueZ (Pi) discovery/connect must mirror the mobile stack or hubs never appear** (`BlueZPoweredUpBluetoothAdapter`): (1) **power the radio on first** — a soft-`rfkill`/`Powered=false` adapter silently scans/connects nothing; `GetReadyAdapterAsync` calls `SetPoweredAsync(true)` and otherwise throws an actionable message. (2) **Scan on the LE transport** (`SetDiscoveryFilterAsync{Transport=le}`) — BlueZ's default "auto" (BR/EDR+LE) routinely misses BLE-only hubs and their manufacturer data. (3) **Also enumerate `GetDevicesAsync()`** at scan start — a fresh `StartDiscovery` never re-fires `DeviceFound` for devices BlueZ already cached (mobile sees them from live advertisements). (4) After connect, **wait for `ServicesResolved=true`, not just `Connected`** (`BlueZDevice`) — GATT lookups race and return null otherwise.
 - **`Discover()` is fire-and-forget** (`void`, `_ = DiscoverLoopAsync(...)` per SharpBrick's `IPoweredUpBluetoothAdapter`) so exceptions inside it are swallowed — a radio-off error can't surface through it. `BlueZLegoService.DiscoverAsync` therefore awaits `adapter.EnsureReadyAsync()` **before** starting the scan. That preflight is why the service depends on the concrete `BlueZPoweredUpBluetoothAdapter` (a method not on SharpBrick's interface), wired via a **forwarding singleton registration** (concrete singleton + `IPoweredUpBluetoothAdapter` factory → same instance) so the SharpBrick host and the service share one radio.
+
+## ECC plugin — what applies to this repo
+
+`ecc@ecc` (v2.2.3, user scope) ships **408 skills, 71 agents, 97 commands** covering every stack under
+the sun. A *plugin* install is **all-or-nothing** — `plugin.json` declares `skills: ["./skills/"]`, so
+there is no per-skill enable and nothing to "install" selectively. (The `--modules` / install-profile
+machinery in `manifests/` belongs to the standalone `ecc setup` installer, a different install path;
+the `lean@1` context profile is marked "proposed" and does not activate anything.) The useful act is
+therefore **knowing which handful applies here**. Everything not listed below — Swift/Apple, Flutter,
+Go, Rust, Python/Django/FastAPI, React/Vue/Next, Kotlin, healthcare, supply-chain, prediction-market,
+social/media — is noise for Trackify.
+
+**Use these**
+
+| ECC piece | Why it fits Trackify |
+| --- | --- |
+| `ecc:dotnet-patterns` (skill) | Idiomatic C#: DI, async/await, Result pattern, **Repository + EF Core** — maps onto `BaseRepository<T>` / `IDbContextFactory` |
+| `ecc:csharp-reviewer` (agent) | The only C# reviewer ECC has — .NET conventions, async, nullable reference types |
+| `ecc:hexagonal-architecture` (skill) | Ports/adapters *is* the `ILegoService` seam and the layer rule `Architecture/LayerDependencyTests.cs` enforces |
+| `ecc:error-handling` (skill) + `ecc:silent-failure-hunter` (agent) | Matches the standing rule: no silent empty catches — log + return failure, or rethrow |
+| `ecc:architecture-decision-records` (skill) | Feeds `docs/arc42/09-architecture-decisions.md` |
+| `ecc:database-migrations` (skill) | The EF Core migrations under `Infrastructure/Persistence/Migrations` (arc42 ADR-18) |
+| `ecc:docker-patterns` (skill) | `Source/Trackify.Cli/Dockerfile` + root `docker-compose.yml` |
+| `ecc:type-design-analyzer`, `ecc:comment-analyzer` (agents) | Read-only and language-agnostic, so they work here unchanged |
+| `/ecc:code-review`, `/ecc:test-coverage`, `/ecc:security-scan`, `/ecc:quality-gate` | Stack-agnostic commands |
+
+**Use with a caveat**
+
+- **`ecc:csharp-testing`** — right framework (xUnit) but it prescribes **FluentAssertions, NSubstitute
+  and Testcontainers**, none of which this repo uses. Tests here are plain xUnit with hand-written
+  doubles in `Test/Trackify.Tests/Fakes/`. Take its structure advice (AAA, `[Theory]`, data builders);
+  **do not add those packages** to `Directory.Packages.props`.
+- **`ecc:mcp-server-patterns`** — **Node/TypeScript only, zero C# content.** For the
+  `ModelContextProtocol` 2.2.0 work in `Trackify.Infrastructure/Mcp/` it is worth reading on transport
+  choice (stdio vs Streamable HTTP) and tool shape, but it has no C# SDK API. Do not treat it as a
+  reference for `[McpServerTool]` / `AddMcpServer`.
+
+**Gaps — ECC has nothing for these**
+
+- **No C#/.NET build resolver.** `/ecc:build-fix` delegates to the cpp/dart/django/go/java/kotlin/
+  pytorch/react/rust/swift resolvers; for a failed `dotnet build` there is nothing to delegate to
+  (`ecc:build-error-resolver` is the TypeScript one). Use this file's own build-and-verify loop.
+- **No Uno / XAML / MAUI / WinUI skill at all.** The entire app head — `Presentation/`,
+  Components/Widgets, converters, design tokens, the German UI — is uncovered.
+  `ecc:windows-desktop-e2e` is Windows-app E2E, not Uno.
+
+**Hooks.** Installed at `hook_profile=standard`, so ECC's `GateGuard` demands a stated reason before
+the first Bash call of a session, and other hooks fire on tool use. Lighten it permanently by
+reinstalling with `--config hook_profile=minimal`, or per session with `ECC_GATEGUARD=off` /
+`ECC_DISABLED_HOOKS=pre:bash:gateguard-fact-force`.

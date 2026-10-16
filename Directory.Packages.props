@@ -29,6 +29,9 @@
     <!-- Persistence: EF Core + SQLite train store. EF Core 9.x targets net8/net9 and is consumable
          from net10, so it works across the whole net8–net10 range the libs multi-target. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+    <!-- Design-time only, for generating migrations. Referenced with PrivateAssets="all", so it
+         ships with nothing. -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0" />
 
     <!-- Remote backend client (app's Server mode): Refit for the REST one-shot actions, the SignalR
          .NET client for real-time speed/LED. The server side is the CLI's Microsoft.AspNetCore.App. -->

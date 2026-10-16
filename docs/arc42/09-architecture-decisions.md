@@ -243,6 +243,13 @@ change that breaks only the desktop, WASM or iOS head **can merge**. Mitigation 
 local check (build the four buildable heads + a desktop launch smoke test). Closing this properly
 needs a per-OS + workload CI matrix. → [§11](11-risks-and-technical-debt.md)
 
+The same gap now covers `Test/Trackify.Ui.Tests`, which tests the app head's own code
+(`SecondViewModel`, `TrackPlanFitter`). It references `Source/Trackify`, so it inherits the head's
+constraints and targets `net10.0-windows10.0.19041.0`: the desktop head pulls in WPF transitively, and
+`NETSDK1136` then requires a Windows-targeted consumer. It therefore **runs on Windows only and is not
+in `ci.yml`** — the plain `net10.0` `Trackify.Tests` stays the CI gate. Run it locally with
+`dotnet test Test/Trackify.Ui.Tests/Trackify.Ui.Tests.csproj`.
+
 ---
 
 ### ADR-14: Bounded connect retry around a SharpBrick null-deref
@@ -297,3 +304,68 @@ host as the composition root. Whoever implements this should either accept that 
 or move the MCP tools to a front-end project. Runtime verification will need an MCP client plus a Pi.
 The existing backend ([ADR-08](#adr-08-rest-for-one-shot-actions-signalr-for-real-time-control))
 already demonstrates the "same use-cases over the network" pattern this would follow.
+
+### ADR-17: A track plan is a graph of port connections, not coordinates
+
+**Context.** The Streckenplaner's geometry was invented: 90-unit straights, radius-70 curves, 90°
+turns, a 30° branch peel-off. None of those numbers exist in the LEGO system, so a plan built with
+them could not be plugged together out of real track. Replacing them with the real dimensions —
+16-stud straights, R40 curves sweeping 22.5°, 32-stud points diverging 22.5° — raised the question of
+how a drawn line should snap onto them.
+
+**Decision.** A plan is stored as **parts plus port-to-port connections**. World coordinates are
+*derived* by walking that graph (`TrackPlanWalker`) and are never stored or entered. Headings are
+stored as an integer step 0..15 and compared exactly; positions are compared against a tolerance.
+
+The reason is arithmetic, not taste. A curve ends at `40·sin(22.5°) = 15.3073…` studs, so after a
+handful of parts no coordinate sits on a round number. Snapping positions to a grid — the obvious
+first design — produces a plan that looks tidy on screen and comes apart in plastic. The only
+invariant that survives is "every part is plugged into a port of another part", and that is what the
+model stores.
+
+**Consequences.**
+- Everything the editor produces is buildable by construction: a free gesture becomes whole catalogue
+  parts (`TrackSnapper`), never a free-form curve.
+- Closing a loop becomes a *search* (`TrackLoopCloser`), not a fit, because it has to land on the
+  target pose exactly. Iterative deepening, pruned by "no part advances further than a straight" and
+  "no part turns more than one step".
+- When the user's own connections contradict the geometry, the walk reports a `TrackJoinMismatch`
+  ("one curve short") instead of letting the last write win. That is the single most useful thing the
+  planner can say.
+- The catalogue holds only parts LEGO makes (straight 53401, curve 53400, points 53407/53404, the 9V
+  crossing 32087, plus a station). Community radii R56–R104 are each one more catalogue entry.
+- The exchange format (`trackplan.v1.json`) stores the same graph, so a plan moves between the app and
+  the CLI without ever carrying a coordinate. An optional measured `pose` per part is the hook for a
+  later reconstruction from a photograph: that path can supply poses and have the importer pair up
+  ports that coincide.
+- The old chain model is **fully replaced**, not left standing alongside this one:
+  `Domain/Trains/TrackSegment` (with its `StrandId`/`Order` chain and `BranchStrandId` points),
+  `TrackSegmentDto`, `TrackPlanService`, `ITrackSegmentRepository`, `TemplateType`, the `SegmentType`
+  enum and the `TrackSegments` table are deleted — the table by its own `DropTrackSegments` migration,
+  so an already-migrated database drops it instead of being rebuilt. There is one track model in the code.
+- Sources for the dimensions: the [L-Gauge track geometry
+  reference](https://l-gauge.org/wiki/index.php/Track_Geometry) and Brick Model Railroader's
+  [curved-track survey](https://brickmodelrailroader.com/index.php/2017/03/03/curved-track-whats-available-and-what-to-expect/).
+  The one number worth measuring against a physical point is the diverging route, modelled here as a
+  16-stud straight followed by one R40 curve.
+
+### ADR-18: EF Core migrations instead of `EnsureCreated()`
+
+**Context.** [ADR-06](#adr-06-sqlite--ef-core-with-ensurecreated-instead-of-a-json-file) chose
+`EnsureCreated()` and accepted that any entity-shape change means deleting the development database.
+ADR-17 changes the shape substantially (new `TrackParts` and `TrackLinks` tables), which forced the
+question.
+
+**Decision.** Switch to EF Core migrations. `BaseRepository` and `SqliteTrackPlanRepository` call
+`Database.Migrate()` on first use; `dotnet-ef` is pinned as a **local** tool in
+`.config/dotnet-tools.json` so CI and every machine generate the same migrations.
+`TrackifyDesignTimeDbContextFactory` lets `dotnet ef` build the model without a startup project,
+which a class library otherwise cannot provide.
+
+**Consequences.** Future schema changes migrate instead of requiring a wipe — the debt recorded in
+[§11](11-risks-and-technical-debt.md) is paid. Generated migrations are marked `generated_code` in
+`.editorconfig`, because `dotnet ef` emits block-scoped namespaces that `IDE0161` rejects as an error
+here. **One-time cost:** a database created by `EnsureCreated()` has no `__EFMigrationsHistory`, so
+`Migrate()` fails against it. Such a file has to be moved aside once (it holds saved trains, so moving
+beats deleting); baselining it instead would need the initial migration split in two so the existing
+schema can be marked applied while only the new tables run.

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Trackify.Application.TrackPlans;
 using Trackify.Application.Trains;
 #if __ANDROID__ || __IOS__ || WINDOWS
 using Trackify.Application.Services;
@@ -11,7 +12,7 @@ public static class DependencyInjection
 {
     /// <summary>
     /// Registers the Application use-case services (<see cref="ITrainControlService"/>,
-    /// <see cref="ITrainService"/>, <see cref="ITrackPlanService"/>) and — filtered per platform right here in DI — the matching
+    /// <see cref="ITrainService"/>, <see cref="ITrackPlanExchangeService"/>) and — filtered per platform right here in DI — the matching
     /// <see cref="ILegoService"/> transport via its <c>Add…Lego</c> helper (mirroring the CLI's
     /// <c>AddLinuxLego</c>): Android → <c>AddAndroidLego</c>, iOS → <c>AddIosLego</c>, Windows →
     /// <c>AddWindowsLego</c>. The plain net10.0 flavor registers none — the composition root decides
@@ -21,7 +22,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<ITrainControlService, TrainControlService>();
         services.AddSingleton<ITrainService, TrainService>();
-        services.AddSingleton<ITrackPlanService, TrackPlanService>();
+        services.AddSingleton<ITrackPlanExchangeService, TrackPlanExchangeService>();
 
 #if __ANDROID__
         services.AddAndroidLego();

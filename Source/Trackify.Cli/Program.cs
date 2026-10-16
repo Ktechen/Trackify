@@ -52,7 +52,13 @@ app.Configure(config =>
     config.SetExceptionHandler((ex, _) =>
     {
         Log.Unhandled(hostLogger, ex);
-        AnsiConsole.MarkupLineInterpolated($"[red]✗ Error:[/] {ex.Message}");
+
+        // Report the innermost message: commands are built by DI, so a failure in a repository's
+        // constructor arrives wrapped in "Could not resolve type ...", which tells the user nothing.
+        var cause = ex;
+        while (cause.InnerException is { } inner) cause = inner;
+
+        AnsiConsole.MarkupLineInterpolated($"[red]✗ Error:[/] {cause.Message}");
         return 1;
     });
 
@@ -63,6 +69,21 @@ app.Configure(config =>
     config.AddCommand<StopCommand>("stop").WithDescription("Stop a train's motor.");
     config.AddCommand<ColorCommand>("color").WithDescription("Set a train's hub LED colour.").WithExample("color", "\"Blauer Zug\"", "Blue");
     config.AddCommand<AutoCommand>("auto").WithDescription("Auto-pilot: keep all saved trains running, re-scanning on an interval.").WithExample("auto", "--interval", "60");
+
+    // The track plan built in the app arrives here as a file: "I generate it in the UI and import it
+    // into the CLI, and the rest no longer interests me."
+    config.AddBranch("track", track =>
+    {
+        track.SetDescription("Work with the track plan built in the app.");
+        track.AddCommand<TrackImportCommand>("import")
+            .WithDescription("Read a track plan file into this machine's store.")
+            .WithExample("track", "import", "kellerbahn.json", "--replace");
+        track.AddCommand<TrackExportCommand>("export")
+            .WithDescription("Write the saved track plan out as a file.")
+            .WithExample("track", "export", "kellerbahn.json");
+        track.AddCommand<TrackShowCommand>("show")
+            .WithDescription("Describe the saved track plan: parts needed, open ends, problems.");
+    });
     // S5332: this is --help example text for the documented LAN deployment (a Pi has no cert), not a
     // client dialling out over http. The bind address itself comes from appsettings/--urls.
 #pragma warning disable S5332 // Using http protocol is insecure

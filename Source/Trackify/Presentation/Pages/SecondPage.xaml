@@ -51,16 +51,16 @@
 
       <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
         <TextBlock Text="Streckenplaner" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold" />
-        <TextBlock Text="2D · Segmente &amp; Sensoren" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+        <TextBlock Text="Zeichnen · echte LEGO-Teile" Style="{StaticResource MonoCaptionTextBlockStyle}" />
       </StackPanel>
 
       <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,16,0">
-        <TextBlock Text="{Binding SegmentCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
-        <TextBlock Text="Segmente" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+        <TextBlock Text="{Binding PieceCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
+        <TextBlock Text="Teile" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
         <TextBlock Text="{Binding SensorCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" Margin="10,0,0,0" />
         <TextBlock Text="Sensoren" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-        <TextBlock Text="Ø" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" Margin="10,0,0,0" />
-        <TextBlock Text="{Binding AverageSpeed}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding OpenEndCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" Margin="10,0,0,0" />
+        <TextBlock Text="offen" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
       </StackPanel>
 
       <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="36" Padding="14,0"
@@ -92,7 +92,7 @@
               behaviors:ColumnSplitterBehavior.MinWidth="240" behaviors:ColumnSplitterBehavior.MaxWidth="420">
         <Rectangle Width="1" Fill="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
       </Border>
-      <local:StrandList x:Name="ListHost" Grid.Column="2" Grid.Row="0" />
+      <local:PieceList x:Name="ListHost" Grid.Column="2" Grid.Row="0" />
 
       <Border x:Name="Splitter2Handle" Grid.Column="3" Grid.Row="0" Background="Transparent" HorizontalAlignment="Stretch"
               behaviors:ColumnSplitterBehavior.Target="{Binding ElementName=InspectorColumn}" behaviors:ColumnSplitterBehavior.Invert="True"

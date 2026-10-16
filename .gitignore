@@ -8,3 +8,7 @@ riderModule.iml
 # Sonar scanner working dir + the coverlet report sonar.yml feeds it.
 /.sonarqube/
 /coverage/
+# Coverlet writes its report next to the test project on every -p:CollectCoverage run.
+coverage.cobertura.xml
+coverage.json
+coverage.opencover.xml

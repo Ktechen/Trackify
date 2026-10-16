@@ -10,7 +10,8 @@ namespace Trackify.Infrastructure.Persistence;
 /// <c>: BaseRepository&lt;TContext, TEntity&gt;, ITEntityRepository</c>. Generic over the
 /// <typeparamref name="TContext"/> too, so the base type never depends on a concrete
 /// <see cref="DbContext"/>. A context is created per operation via <see cref="IDbContextFactory{TContext}"/>
-/// (thread-safe); the database is created on first use. Writes run inside a database transaction
+/// (thread-safe); the database is created and brought up to the latest migration on first use.
+/// Writes run inside a database transaction
 /// (committed on success, rolled back on error) whenever the provider is relational (SQLite here);
 /// a non-relational provider skips it.
 /// </summary>
@@ -25,7 +26,7 @@ public abstract class BaseRepository<TContext, T> : IBaseRepository<T>
         DbContextFactory = dbContextFactory;
 
         using var database = DbContextFactory.CreateDbContext();
-        database.Database.EnsureCreated();
+        TrackifySchema.BringUpToDate(database);
     }
 
     public async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

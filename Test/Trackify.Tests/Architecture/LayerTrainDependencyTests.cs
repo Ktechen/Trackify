@@ -26,6 +26,11 @@ public class LayerTrainDependencyTests
     // The Domain ENTITY namespace specifically (not the enums, which are shared value types).
     private const string DomainEntities = "Trackify.Domain.Trains";
 
+    // The track-plan half of the same boundary. A front-end works with TrackPlanDocument and the
+    // summary/result DTOs; the geometry types and the catalogue stay behind the use-case layer, so a
+    // convenience like "just read TrackMetrics to print metres" cannot quietly creep in.
+    private const string DomainTracks = "Trackify.Domain.Tracks";
+
     // Frameworks that belong to the outer layers only.
     private const string EntityFramework = "Microsoft.EntityFrameworkCore";
     private const string SharpBrick = "SharpBrick";
@@ -57,7 +62,7 @@ public class LayerTrainDependencyTests
 
     [Fact]
     public void Cli_never_touches_the_domain_entity_namespace()
-        => AssertNoDependency(CliAssembly, DomainEntities);
+        => AssertNoDependency(CliAssembly, DomainEntities, DomainTracks);
 
     private static void AssertNoDependency(Assembly assembly, params string[] forbiddenNamespaces)
     {

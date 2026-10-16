@@ -40,14 +40,14 @@ public sealed partial class SecondPage : Page
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(SecondViewModel.SelectedSegment))
+        if (e.PropertyName == nameof(SecondViewModel.SelectedPiece))
             ApplyResponsiveLayout();
     }
 
     private void ApplyResponsiveLayout()
     {
         var isWide = ActualWidth >= WideThreshold;
-        var hasSelection = _viewModel?.SelectedSegment is not null;
+        var hasSelection = _viewModel?.SelectedPiece is not null;
 
         if (isWide)
         {
