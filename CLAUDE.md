@@ -47,10 +47,12 @@ belongs, `09-architecture-decisions.md` for settled decisions (don't re-open the
 `11-risks-and-technical-debt.md` for what is knowingly unfinished. Update the affected section in the
 same PR when the architecture changes.
 
-**`docs/editor-view.md`** is the operator-facing counterpart (German, since it quotes the German UI):
-what each page and every control does, screen by screen. Its screenshot slots under `docs/images/`
-are deliberately empty — the renderer can't be captured here (see "Build & verify"), so they are
-filled from a real device. Update it when a control or label changes.
+**`docs/editor-view.md`** (English) and **`docs/editor-view.de.md`** (German) are the
+operator-facing counterpart: what each page and every control does, screen by screen. Both quote
+the app's German labels verbatim, since that is what is on screen; the English one glosses each.
+**Keep the two in step** — a control or label change edits both. Their screenshot slots under
+`docs/images/` are deliberately empty: the renderer can't be captured here (see "Build & verify"),
+so they are filled from a real device.
 
 ## What this is
 

@@ -1,159 +1,173 @@
-# Die Oberfläche: welche Seite wofür, und was jede Einstellung tut
+# The UI: which page is for what, and what every setting does
 
-Bedienungsorientiert, nicht architektonisch. Wo Code hingehört, steht in
-[arc42 §05](arc42/05-building-block-view.md); warum ein Streckenplan ein Graph aus Teilen und
-Ports ist und keine Koordinatenliste, in [ADR-17](arc42/09-architecture-decisions.md).
+[Deutsch](editor-view.de.md) · **English**
 
-> **Zu den Screenshots.** Die Bilder sind **noch nicht aufgenommen** — die Plätze unten sind leer.
-> Die Skia-gerenderte Oberfläche lässt sich in der Entwicklungsumgebung nicht abgreifen: die
-> GPU-Fläche kommt leer zurück, und der WASM-Canvas treibt das Browser-Werkzeug in Timeouts
-> (`CLAUDE.md` hält genau das fest). Die Aufnahmen müssen daher **von einem echten Gerät**
-> kommen. Jeder Platz nennt den erwarteten Dateinamen; leg das Bild nach `docs/images/` und es
-> erscheint hier automatisch. Aufnahme-Anleitung am Ende.
+Operator-facing, not architectural. Where code belongs is in
+[arc42 §05](arc42/05-building-block-view.md); why a track plan is a graph of parts and ports
+rather than a list of coordinates is [ADR-17](arc42/09-architecture-decisions.md).
+
+**The labels quoted below are German, because the app's UI is German** (that is the repo
+convention — the CLI speaks English, the app speaks German). Each one is followed by what it
+means, so this file is usable without reading German.
+
+> **About the screenshots.** They are **not taken yet** — the slots below are empty. The
+> Skia-rendered UI cannot be captured in the dev environment: the GPU surface comes back blank and
+> the WASM canvas times out the browser tool (`CLAUDE.md` records exactly this). So the captures
+> have to come from **a real device**. Each slot names the file it expects; drop the image into
+> `docs/images/` and it appears here. Capture instructions at the end.
 
 ---
 
-## Die zwei Seiten
+## The two pages
 
-| Seite | Wofür | Kurz |
+| Page | For | In short |
 |---|---|---|
-| **Train-Konfiguration** (`MainPage`) | Züge anlegen, Hubs suchen und verbinden, Fahrverhalten pro Zug | *Was* fährt |
-| **Streckenplaner** (`SecondPage`) | Die Strecke zeichnen, Teile konfigurieren, Sensoren setzen | *Wo* es fährt |
+| **Train-Konfiguration** — train configuration (`MainPage`) | Creating trains, discovering and connecting hubs, per-train driving behaviour | *What* drives |
+| **Streckenplaner** — track planner (`SecondPage`) | Drawing the layout, configuring parts, placing sensors | *Where* it drives |
 
-Hin und zurück: im Kopf der Train-Seite der Knopf mit dem Gleis-Symbol
-(„Streckenplaner öffnen"), im Streckenplaner der Zurück-Pfeil („Zurück zur Train-Konfiguration").
+Getting between them: the track-icon button in the train page's header
+("Streckenplaner öffnen" — open the track planner), and the back arrow in the planner
+("Zurück zur Train-Konfiguration" — back to train configuration).
 
-Beide Seiten sind **responsiv**. Im Breiten-Layout stehen die Bereiche nebeneinander, im schmalen
-stapeln sie sich und das Detail-Panel erscheint nur, während etwas ausgewählt ist.
+Both pages are **responsive**. In the wide layout the areas sit side by side; in the narrow one
+they stack and the detail panel appears only while something is selected.
 
 ---
 
-## Streckenplaner
+## Track planner (Streckenplaner)
 
-![Streckenplaner, Gesamtansicht](images/streckenplaner-uebersicht.png)
+![Track planner, overview](images/streckenplaner-uebersicht.png)
 
-*Erwartet: `docs/images/streckenplaner-uebersicht.png` — breites Layout, Oval geladen, ein Teil gewählt.*
+*Expected: `docs/images/streckenplaner-uebersicht.png` — wide layout, oval loaded, one part selected.*
 
-### Das Prinzip in einem Satz
+### The principle in one sentence
 
-Der Hinweis auf der Fläche sagt es selbst: **„Zieh von einem leuchtenden Punkt — die Strecke
-entsteht aus echten LEGO-Teilen."** Während des Ziehens folgt eine gestrichelte Vorschau aus
-echten Teilen dem Finger; Loslassen legt sie hin. Bauen braucht **keine einzige Einstellung** —
-Tempo, Richtung und Sensoren kommen erst, wenn du ein gelegtes Teil antippst.
+The hint on the canvas says it itself: **"Zieh von einem leuchtenden Punkt — die Strecke entsteht
+aus echten LEGO-Teilen."** — *drag from a glowing dot; the track is made of real LEGO parts.*
+While you drag, a dashed preview built from real parts follows your finger; releasing commits it.
+Building needs **no setting at all** — speed, direction and sensors come later, when you tap a
+part that is already down.
 
-### Die Andockpunkte
+### The anchor dots
 
-Jedes offene Gleisende ist ein großer Punkt, und er kann zweierlei:
+Every open track end is a large dot, and it does two things:
 
-- **Von ihm wegziehen** baut Strecke.
-- **Antippen** macht ihn zum Ziel der Knöpfe unter „Am gewählten Punkt anhängen".
+- **Dragging away from it** builds track.
+- **Tapping it** makes it the target of the buttons under "Am gewählten Punkt anhängen"
+  (*append at the selected point*).
 
-Ziehst du in die Nähe eines *anderen* offenen Endes, sucht der Planer die Teilefolge, die es
-wirklich erreicht, und schließt die Lücke. Ein leerer Plan setzt automatisch eine Gerade, damit
-überhaupt zwei Punkte zum Ziehen da sind.
+Drag near *another* open end and the planner searches for the run of parts that actually reaches
+it, and closes the gap. An empty plan places a straight automatically, so there are two dots to
+drag from in the first place.
 
-### Die Werkzeugleiste
+### The toolbar
 
-![Werkzeugleiste](images/streckenplaner-werkzeugleiste.png)
+![Toolbar](images/streckenplaner-werkzeugleiste.png)
 
-*Erwartet: `docs/images/streckenplaner-werkzeugleiste.png` — die drei Knopfreihen unter der Fläche.*
+*Expected: `docs/images/streckenplaner-werkzeugleiste.png` — the three button rows below the canvas.*
 
-**Erste Reihe — was einen Fehlgriff rettet**
+**First row — what rescues a misstep**
 
-| Knopf | Wirkung |
+| Button | Effect |
 |---|---|
-| **Zurück** | Nimmt den letzten Bau-Schritt zurück: Legen, Löschen, Vorlagen. **Nicht** die Schieberegler im Inspector — die stellt man einfach zurück. |
-| *(Pfeil, „Wiederholen")* | Macht das Zurückgenommene wieder. |
-| **Kreis schließen** | „Die fehlenden Teile einsetzen, bis der Kreis zu ist." Nur aktiv, wenn zwei offene Enden erreichbar nah sind — das Suchbudget liegt bei zehn Teilen. |
-| **Teil löschen** | Entfernt das gewählte Teil samt seinen Verbindungen. |
+| **Zurück** (*undo*) | Takes back the last building step: placing, deleting, templates. **Not** the inspector's sliders — those you simply set back. |
+| *(arrow, "Wiederholen" — redo)* | Redoes what was undone. |
+| **Kreis schließen** (*close the loop*) | Tooltip: "Die fehlenden Teile einsetzen, bis der Kreis zu ist" — *insert the missing parts until the loop is closed*. Only enabled when two open ends are reachably close; the search budget is ten parts. |
+| **Teil löschen** (*delete part*) | Removes the selected part along with its connections. |
 
-**Zweite Reihe — „Am gewählten Punkt anhängen"**
+**Second row — "Am gewählten Punkt anhängen" (append at the selected point)**
 
-`Gerade` · `Kurve links` · `Kurve rechts` · `Weiche links` · `Weiche rechts` · `Kreuzung` · `Bahnhof`
+`Gerade` (straight) · `Kurve links` / `Kurve rechts` (curve left / right) ·
+`Weiche links` / `Weiche rechts` (point/switch left / right) · `Kreuzung` (crossing) ·
+`Bahnhof` (station)
 
-Gerade und Kurven lassen sich auch ziehen. **Weiche und Kreuzung bewusst nicht**: eine Wischgeste
-darf keine Weiche erraten — die setzt man absichtlich.
+Straights and curves can also be drawn. **Points and crossings deliberately cannot**: a swipe must
+not guess a switch — you place those on purpose.
 
-**Dritte Reihe — Vorlagen**
+**Third row — templates**
 
-`Oval` (geschlossene Schleife aus echten Teilen) · `Strecke` (Punkt zu Punkt zwischen zwei
-Bahnhöfen) · `Leeren`.
+`Oval` (a closed loop of real parts) · `Strecke` (*line* — point to point between two stations) ·
+`Leeren` (*clear*).
 
-### Was die Fläche dir sagt
+### What the canvas tells you
 
-| Anzeige | Bedeutung |
+| Indication | Meaning |
 |---|---|
-| **Farbe des Gleises** | Das Tempo. Legende „Tempo" unten links: rot = Stop bis grün = schnell. |
-| **Zahl am Gleis** | Das Höchsttempo dieses Teils in Prozent. |
-| **Gestrichelte Linie** | Vorschau während des Ziehens — noch nicht gelegt, zählt noch nicht mit. |
-| **Marke mit „F"** | Farbsensor auf diesem Teil. |
-| **Marke mit „A"** | Abstandssensor. |
-| **Rote Meldung** | Eine Verbindung passt geometrisch nicht, mit der Lücke in Stud. Erscheint nur im Fehlerfall — auch ein Store-Fehler landet hier statt zu verschwinden. |
-| **Kopfzeile** | `n Teile · n Sensoren · n offen`. |
+| **Track colour** | The speed. The "Tempo" (*speed*) legend bottom-left runs red = stop to green = fast. |
+| **Number on the track** | That part's maximum speed, in percent. |
+| **Dashed line** | The preview while dragging — not committed, not counted yet. |
+| **Marker "F"** | Colour sensor on this part (*Farbe* = colour). |
+| **Marker "A"** | Distance sensor (*Abstand* = distance). |
+| **Red message** | A connection does not fit geometrically, with the gap in studs. Shown only on failure — a store error surfaces here too, rather than vanishing. |
+| **Header** | `n Teile · n Sensoren · n offen` — parts, sensors, open ends. |
 
-Rechts oben **Vergrößern / Verkleinern / Einpassen**. Der Zoom ist ein Wert, den das ViewModel
-hält (eine `Viewbox`), kein `ScrollViewer`-Zoom — deshalb verhält er sich auf allen Zielen gleich.
+Top right: **Vergrößern / Verkleinern / Einpassen** (zoom in / out / fit). The zoom is a value the
+ViewModel owns driving a `Viewbox`, not a `ScrollViewer` zoom — which is why it behaves the same on
+every target.
 
-### Der Inspector — die Einstellungen pro Teil
+### The inspector — the per-part settings
 
 ![Inspector](images/streckenplaner-inspector.png)
 
-*Erwartet: `docs/images/streckenplaner-inspector.png` — ein gewähltes Teil mit gesetztem Sensor.*
+*Expected: `docs/images/streckenplaner-inspector.png` — a selected part with a sensor set.*
 
-Ohne Auswahl steht hier **„Kein Segment ausgewählt."** Angetippt erscheinen drei Blöcke:
+With nothing selected it reads **"Kein Segment ausgewählt."** — *no segment selected*. Tap a part
+and three blocks appear:
 
-**Fahrverhalten**
+**Fahrverhalten — driving behaviour**
 
-| Einstellung | Was sie tut |
+| Setting | What it does |
 |---|---|
-| **Max. Geschwindigkeit** (0–100 %) | Höchsttempo über dieses Teil. Färbt gleichzeitig das Gleis auf der Fläche. |
-| **Fahrtrichtung** — `Vorwärts` / `Rückwärts` | Die Richtung, in der dieses Teil durchfahren wird. |
-| **Geschwindigkeitsprofil f(x)** | Zwei Auswahlen, **Beschleunigung** und **Bremsen**: linear, EaseIn, EaseOut, SCurve, Exponential, Custom. Die Kurve darunter zeigt das Ergebnis, der Text darunter die Formel. `Custom` trägt absichtlich keine feste Formel. |
+| **Max. Geschwindigkeit** (0–100 %) — maximum speed | Top speed across this part. Also colours the track on the canvas. |
+| **Fahrtrichtung** — direction of travel: `Vorwärts` / `Rückwärts` (forward / reverse) | The direction this part is traversed in. |
+| **Geschwindigkeitsprofil f(x)** — speed profile | Two pickers, **Beschleunigung** (acceleration) and **Bremsen** (braking): linear, EaseIn, EaseOut, SCurve, Exponential, Custom. The curve below shows the result, the text below it the formula. `Custom` deliberately carries no fixed formula. |
 
-**Weiche** *(nur bei Weichen-Teilen)*
+**Weiche — point/switch** *(only on switch parts)*
 
-| Einstellung | Was sie tut |
+| Setting | What it does |
 |---|---|
-| **Gestellt auf** — `Stammgleis` / `Zweig` | Die Stellung, die diese Weiche im Plan einnimmt. |
+| **Gestellt auf** — set to: `Stammgleis` / `Zweig` (main route / diverging route) | The position this switch holds in the plan. |
 
-Dort steht auch der Satz, der die Grenze benennt: *„Welcher Motor diese Weiche stellt und wo ihr
-Sensor hängt, trägt der Streckenplan schon mit und wandert beim Export mit. Einstellbar wird es
-hier, wenn die Ansteuerung kommt."* **Wohin** der Zweig führt, ist keine Einstellung, sondern
-Geometrie: ob „Weiche links" oder „Weiche rechts" liegt, und was an ihrem Zweig-Port steckt.
+That block also carries the sentence that names the boundary: *"Welcher Motor diese Weiche stellt
+und wo ihr Sensor hängt, trägt der Streckenplan schon mit und wandert beim Export mit. Einstellbar
+wird es hier, wenn die Ansteuerung kommt."* — **which motor throws this switch and where its
+sensor sits is already carried by the track plan and travels with the export; it becomes editable
+here once actuation lands.** **Where** the branch leads is not a setting but geometry: whether a
+`Weiche links` or `Weiche rechts` is placed, and what is plugged into its branch port.
 
 **Sensor**
 
-| Einstellung | Was sie tut |
+| Setting | What it does |
 |---|---|
-| **Typ** — `Kein` / `Farbe` / `Abstand` | Welcher Sensor an diesem Teil sitzt. |
-| **Aktion beim Auslösen** | Was passiert, wenn er auslöst. |
-| **Ziel-Tempo** (%) | Nur sichtbar, wenn die Aktion ein Abbremsen ist: worauf heruntergefahren wird. |
+| **Typ** — type: `Kein` / `Farbe` / `Abstand` (none / colour / distance) | Which sensor sits on this part. |
+| **Aktion beim Auslösen** — action on trigger | What happens when it fires. |
+| **Ziel-Tempo** (%) — target speed | Shown only when the action slows the train down: what it slows to. |
 
-Unten schließt **Teil löschen** den Block ab — dasselbe wie in der Werkzeugleiste, nur in
-Reichweite der Hand, die gerade im Inspector ist.
+**Teil löschen** (*delete part*) closes the block — the same command as in the toolbar, but within
+reach of the hand that is already in the inspector.
 
-### Die Teileliste
+### The parts list
 
-Kopf: `n Teile · n offene Enden`. Darunter jedes gelegte Teil mit Tempo-Farbfleck, Name, Typ und
-Löschknopf. Antippen wählt es aus und füllt den Inspector.
+Header: `n Teile · n offene Enden` — parts, open ends. Below it every placed part with its speed
+colour chip, name, type and a delete button. Tapping one selects it and fills the inspector.
 
-**Keine Sortierung, kein Verschieben, kein Duplizieren.** In einem Graphen hat ein Teil Ports,
-keine Position in einer Kette — die Datei sagt das so: *„in a graph a part has no position in a
-chain, so there is nothing to reorder — this is a parts list, not a sequence."*
+**No sorting, no reordering, no duplicating.** In a graph a part has ports, not a position in a
+chain — the file says so itself: *"in a graph a part has no position in a chain, so there is
+nothing to reorder — this is a parts list, not a sequence."*
 
-### Layout in Textform
+### Layout as text
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │ ← │ 🚆 │ Streckenplaner       12 Teile 2 Sensoren 3 offen │Speichern│
 ├──────────────────────────────┬──────────────┬────────────────────────┤
 │                              │ n Teile      │ Fahrverhalten          │
-│   Zeichenfläche              │ n offen      │  Max. Geschw. ───○──   │
-│   • Andockpunkte             ├──────────────┤  Fahrtrichtung         │
-│   • Gleise, nach Tempo       │ ■ Gerade 1   │   [Vorwärts][Rückw.]   │
-│     gefärbt, mit Tempo-Zahl  │ ■ Kurve r. 1 │  Profil f(x)  ╱▔▔╲     │
-│   • gestrichelte Vorschau    │ ■ Weiche 1   │ Weiche                 │
-│   • F / A — Sensormarken     │ ■ Bahnhof 1  │  [Stammgleis][Zweig]   │
+│   drawing canvas             │ n offen      │  Max. Geschw. ───○──   │
+│   • anchor dots              ├──────────────┤  Fahrtrichtung         │
+│   • track, coloured by       │ ■ Gerade 1   │   [Vorwärts][Rückw.]   │
+│     speed, with its number   │ ■ Kurve r. 1 │  Profil f(x)  ╱▔▔╲     │
+│   • dashed preview           │ ■ Weiche 1   │ Weiche                 │
+│   • F / A — sensor markers   │ ■ Bahnhof 1  │  [Stammgleis][Zweig]   │
 │                              │              │ Sensor                 │
 │  ┌ Tempo ─────┐    [+][-][⤢] │              │  [Kein][Farbe][Abst.]  │
 ├──────────────────────────────┴──────────────┴────────────────────────┤
@@ -164,58 +178,60 @@ chain, so there is nothing to reorder — this is a parts list, not a sequence."
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-Die Trennlinien zwischen Fläche, Liste und Inspector sind **ziehbar** (240–420 px für die Liste,
-320–560 px für den Inspector).
+The dividers between canvas, list and inspector are **draggable** (240–420 px for the list,
+320–560 px for the inspector).
 
 ---
 
-## Train-Konfiguration
+## Train configuration (Train-Konfiguration)
 
-![Train-Konfiguration](images/train-konfiguration.png)
+![Train configuration](images/train-konfiguration.png)
 
-*Erwartet: `docs/images/train-konfiguration.png` — Zugliste links, Zug-Editor rechts.*
+*Expected: `docs/images/train-konfiguration.png` — train list left, train editor right.*
 
-Kopfzeile: **„Train-Konfiguration"** mit dem Untertitel **„Powered Up · Legoino-Schnittstelle"**
-und der Zählung `n aktiv · n gesamt`.
+Header: **"Train-Konfiguration"** with the subtitle **"Powered Up · Legoino-Schnittstelle"**
+(*Legoino interface*) and the count `n aktiv · n gesamt` (active, total).
 
-| Bereich | Wofür |
+| Area | For |
 |---|---|
-| **Zugliste** | Alle Züge; „Zurück zur Liste" führt im schmalen Layout dorthin zurück. Das Suchfeld filtert nach Name und Hub-Typ. |
-| **Zug-Editor** | Name, Hub-Modell, BLE-Adresse, Ports, Tempo, Farbe, Beschleunigungs- und Bremsfunktion, aktiv ja/nein. |
-| **Hub suchen** | Scannt nach Hubs. Gefundene werden **zur Bestätigung** angeboten, nicht still übernommen; kennt ein Zug die Adresse schon, bindet sich der Hub an ihn statt einen zweiten Zug anzulegen. |
-| **Verbinden / Trennen** | Baut die BLE-Verbindung auf — über die Geräte-ID aus der Suche, sonst über die eingetippte BLE-Adresse. |
+| **Train list** | Every train; "Zurück zur Liste" (*back to the list*) returns there in the narrow layout. The search box filters by name and hub type. |
+| **Train editor** | Name, hub model, BLE address, ports, speed, colour, acceleration and braking function, active yes/no. |
+| **Hub suchen** (*discover hubs*) | Scans for hubs. Found ones are offered **for confirmation**, not adopted silently; if a train already knows the address, the hub binds to it instead of creating a second train. |
+| **Verbinden / Trennen** (*connect / disconnect*) | Opens the BLE connection — by the device id from discovery, otherwise by the typed-in BLE address. |
 
-![Verbindungspanel](images/verbindung-panel.png)
+![Connection panel](images/verbindung-panel.png)
 
-*Erwartet: `docs/images/verbindung-panel.png` — das Panel offen, Servermodus gewählt.*
+*Expected: `docs/images/verbindung-panel.png` — the panel open, server mode selected.*
 
-Der Knopf **„Verbindung (Direkt/Server)"** öffnet das Panel **„Verbindung"**. Dort steht der
-Unterschied im Klartext: *„Servermodus: Steuerung über einen Trackify-Backend (Raspberry Pi).
-Aus = Direktmodus über das Bluetooth dieses Geräts."* Das Adressfeld zeigt als Beispiel
-`http://192.168.1.50:5000`. Das Umschalten wirkt **sofort**, ohne Neustart.
+The **"Verbindung (Direkt/Server)"** button (*connection, direct/server*) opens the **"Verbindung"**
+panel. It states the difference plainly: *"Servermodus: Steuerung über einen Trackify-Backend
+(Raspberry Pi). Aus = Direktmodus über das Bluetooth dieses Geräts."* — **server mode drives through
+a Trackify backend on a Raspberry Pi; off means direct mode over this device's own Bluetooth.** The
+address field shows `http://192.168.1.50:5000` as its example. Switching takes effect
+**immediately**, with no restart.
 
 ---
 
-## Screenshots aufnehmen
+## Taking the screenshots
 
-Fünf Bilder, nach `docs/images/`:
+Five images, into `docs/images/`:
 
-| Datei | Inhalt |
+| File | Content |
 |---|---|
-| `streckenplaner-uebersicht.png` | Breites Layout, Oval geladen, ein Teil gewählt |
-| `streckenplaner-werkzeugleiste.png` | Nur die drei Knopfreihen |
-| `streckenplaner-inspector.png` | Inspector mit gesetztem Sensor, Weichen-Block sichtbar |
-| `train-konfiguration.png` | Zugliste und Zug-Editor |
-| `verbindung-panel.png` | Verbindungspanel offen, Servermodus |
+| `streckenplaner-uebersicht.png` | Wide layout, oval loaded, one part selected |
+| `streckenplaner-werkzeugleiste.png` | The three button rows only |
+| `streckenplaner-inspector.png` | Inspector with a sensor set and the switch block visible |
+| `train-konfiguration.png` | Train list and train editor |
+| `verbindung-panel.png` | Connection panel open, server mode |
 
-Desktop-Head starten:
+Start the desktop head:
 
 ```bash
 dotnet run --project Source/Trackify/Trackify.csproj -f net10.0-desktop
 ```
 
-Aufnehmen mit dem Snipping Tool (`Win`+`Shift`+`S`).
+Capture with the Snipping Tool (`Win`+`Shift`+`S`).
 
-Für das schmale Layout — gestapelte Bereiche, Detail-Panel nur bei Auswahl — das Desktop-Fenster
-schmal ziehen, oder die APK aus `android-apk.yml` nehmen und am Gerät aufnehmen. Dort sieht man
-außerdem, wie die Systemleisten über `utu:SafeArea` ausgespart werden.
+For the narrow layout — stacked areas, detail panel only while something is selected — drag the
+desktop window narrow, or take the APK from `android-apk.yml` and capture on the device. There you
+also see how the system bars are kept clear via `utu:SafeArea`.
