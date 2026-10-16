@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<coverage line-rate="0.7746" branch-rate="0.6535" version="1.9" timestamp="1792132090" lines-covered="2306" lines-valid="2977" branches-covered="398" branches-valid="609">
+<coverage line-rate="0.789" branch-rate="0.6683" version="1.9" timestamp="1792132779" lines-covered="2349" lines-valid="2977" branches-covered="407" branches-valid="609">
   <sources>
     <source>C:/Users/kevin/RiderProjects/Trackify/.claude/worktrees/update-hmi-track-editor/Source/</source>
   </sources>
   <packages>
-    <package name="Trackify.Application" line-rate="0.8665999999999999" branch-rate="0.7461" complexity="242">
+    <package name="Trackify.Application" line-rate="0.9401" branch-rate="0.8153" complexity="242">
       <classes>
         <class name="Trackify.Application.DependencyInjection" filename="Trackify.Application/DependencyInjection.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
@@ -28,344 +28,344 @@
             <line number="36" hits="0" branch="False" />
           </lines>
         </class>
-        <class name="Trackify.Application.Trains.TrainControlService" filename="Trackify.Application/Trains/TrainControlService.cs" line-rate="0.2857" branch-rate="0.38880000000000003" complexity="22">
+        <class name="Trackify.Application.Trains.TrainControlService" filename="Trackify.Application/Trains/TrainControlService.cs" line-rate="0.9642000000000001" branch-rate="0.8887999999999999" complexity="22">
           <methods>
-            <method name="get_IsSupported" signature="()" line-rate="0" branch-rate="1" complexity="1">
+            <method name="get_IsSupported" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="26" hits="0" branch="False" />
+                <line number="26" hits="1" branch="False" />
               </lines>
             </method>
-            <method name="DiscoverAsync" signature="(System.Threading.CancellationToken)" line-rate="0" branch-rate="1" complexity="1">
+            <method name="DiscoverAsync" signature="(System.Threading.CancellationToken)" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="30" hits="0" branch="False" />
-                <line number="31" hits="0" branch="False" />
-                <line number="32" hits="0" branch="False" />
-                <line number="33" hits="0" branch="False" />
+                <line number="30" hits="1" branch="False" />
+                <line number="31" hits="1" branch="False" />
+                <line number="32" hits="1" branch="False" />
+                <line number="33" hits="1" branch="False" />
               </lines>
             </method>
-            <method name="ConnectAsync" signature="(Trackify.Application.Trains.TrainDto,System.Threading.CancellationToken)" line-rate="0.5714" branch-rate="0.5" complexity="2">
+            <method name="ConnectAsync" signature="(Trackify.Application.Trains.TrainDto,System.Threading.CancellationToken)" line-rate="1" branch-rate="1" complexity="2">
               <lines>
-                <line number="37" hits="1" branch="False" />
-                <line number="38" hits="1" branch="False" />
-                <line number="39" hits="1" branch="True" condition-coverage="50% (1/2)">
+                <line number="37" hits="4" branch="False" />
+                <line number="38" hits="4" branch="False" />
+                <line number="39" hits="4" branch="True" condition-coverage="100% (2/2)">
                   <conditions>
-                    <condition number="16" type="jump" coverage="50%" />
+                    <condition number="16" type="jump" coverage="100%" />
                   </conditions>
                 </line>
-                <line number="40" hits="1" branch="False" />
-                <line number="41" hits="0" branch="False" />
-                <line number="42" hits="0" branch="False" />
-                <line number="43" hits="0" branch="False" />
+                <line number="40" hits="2" branch="False" />
+                <line number="41" hits="2" branch="False" />
+                <line number="42" hits="2" branch="False" />
+                <line number="43" hits="2" branch="False" />
               </lines>
             </method>
-            <method name="DisconnectAsync" signature="(Trackify.Application.Trains.TrainDto,System.Threading.CancellationToken)" line-rate="0" branch-rate="0" complexity="2">
+            <method name="DisconnectAsync" signature="(Trackify.Application.Trains.TrainDto,System.Threading.CancellationToken)" line-rate="0.6666" branch-rate="0.5" complexity="2">
               <lines>
-                <line number="47" hits="0" branch="False" />
-                <line number="48" hits="0" branch="False" />
-                <line number="49" hits="0" branch="True" condition-coverage="0% (0/2)">
+                <line number="47" hits="1" branch="False" />
+                <line number="48" hits="1" branch="False" />
+                <line number="49" hits="2" branch="True" condition-coverage="50% (1/2)">
                   <conditions>
-                    <condition number="16" type="jump" coverage="0%" />
+                    <condition number="16" type="jump" coverage="50%" />
                   </conditions>
                 </line>
                 <line number="50" hits="0" branch="False" />
                 <line number="51" hits="0" branch="False" />
-                <line number="52" hits="0" branch="False" />
+                <line number="52" hits="1" branch="False" />
               </lines>
             </method>
-            <method name="SetSpeedAsync" signature="(Trackify.Application.Trains.TrainDto,System.Int32,System.Threading.CancellationToken)" line-rate="1" branch-rate="0.5" complexity="2">
+            <method name="SetSpeedAsync" signature="(Trackify.Application.Trains.TrainDto,System.Int32,System.Threading.CancellationToken)" line-rate="1" branch-rate="1" complexity="2">
               <lines>
-                <line number="56" hits="1" branch="False" />
-                <line number="57" hits="1" branch="False" />
-                <line number="58" hits="1" branch="True" condition-coverage="50% (1/2)">
+                <line number="56" hits="9" branch="False" />
+                <line number="57" hits="9" branch="False" />
+                <line number="58" hits="10" branch="True" condition-coverage="100% (2/2)">
                   <conditions>
-                    <condition number="16" type="jump" coverage="50%" />
+                    <condition number="16" type="jump" coverage="100%" />
                   </conditions>
                 </line>
-                <line number="59" hits="1" branch="False" />
-                <line number="60" hits="1" branch="False" />
-                <line number="61" hits="1" branch="False" />
+                <line number="59" hits="8" branch="False" />
+                <line number="60" hits="8" branch="False" />
+                <line number="61" hits="9" branch="False" />
               </lines>
             </method>
-            <method name="SetSpeedDebounced" signature="(Trackify.Application.Trains.TrainDto,System.Int32)" line-rate="0" branch-rate="0" complexity="4">
+            <method name="SetSpeedDebounced" signature="(Trackify.Application.Trains.TrainDto,System.Int32)" line-rate="1" branch-rate="1" complexity="4">
               <lines>
-                <line number="68" hits="0" branch="False" />
-                <line number="69" hits="0" branch="False" />
-                <line number="70" hits="0" branch="True" condition-coverage="0% (0/2)">
+                <line number="68" hits="5" branch="False" />
+                <line number="69" hits="5" branch="False" />
+                <line number="70" hits="6" branch="True" condition-coverage="100% (2/2)">
                   <conditions>
-                    <condition number="16" type="jump" coverage="0%" />
+                    <condition number="16" type="jump" coverage="100%" />
                   </conditions>
                 </line>
-                <line number="72" hits="0" branch="False" />
-                <line number="73" hits="0" branch="True" condition-coverage="0% (0/2)">
+                <line number="72" hits="4" branch="False" />
+                <line number="73" hits="4" branch="True" condition-coverage="100% (2/2)">
                   <conditions>
-                    <condition number="44" type="jump" coverage="0%" />
+                    <condition number="44" type="jump" coverage="100%" />
                   </conditions>
                 </line>
-                <line number="74" hits="0" branch="False" />
-                <line number="75" hits="0" branch="False" />
-                <line number="76" hits="0" branch="False" />
-                <line number="77" hits="0" branch="False" />
-                <line number="78" hits="0" branch="False" />
-                <line number="79" hits="0" branch="False" />
-                <line number="80" hits="0" branch="False" />
+                <line number="74" hits="2" branch="False" />
+                <line number="75" hits="2" branch="False" />
+                <line number="76" hits="2" branch="False" />
+                <line number="77" hits="2" branch="False" />
+                <line number="78" hits="4" branch="False" />
+                <line number="79" hits="4" branch="False" />
+                <line number="80" hits="5" branch="False" />
               </lines>
             </method>
-            <method name="SetLedAsync" signature="(Trackify.Application.Trains.TrainDto,System.Threading.CancellationToken)" line-rate="0" branch-rate="0" complexity="2">
+            <method name="SetLedAsync" signature="(Trackify.Application.Trains.TrainDto,System.Threading.CancellationToken)" line-rate="1" branch-rate="1" complexity="2">
               <lines>
-                <line number="93" hits="0" branch="False" />
-                <line number="94" hits="0" branch="False" />
-                <line number="95" hits="0" branch="True" condition-coverage="0% (0/2)">
+                <line number="93" hits="2" branch="False" />
+                <line number="94" hits="2" branch="False" />
+                <line number="95" hits="3" branch="True" condition-coverage="100% (2/2)">
                   <conditions>
-                    <condition number="18" type="jump" coverage="0%" />
+                    <condition number="18" type="jump" coverage="100%" />
                   </conditions>
                 </line>
-                <line number="97" hits="0" branch="False" />
-                <line number="98" hits="0" branch="False" />
-                <line number="99" hits="0" branch="False" />
-                <line number="100" hits="0" branch="False" />
+                <line number="97" hits="1" branch="False" />
+                <line number="98" hits="1" branch="False" />
+                <line number="99" hits="1" branch="False" />
+                <line number="100" hits="2" branch="False" />
               </lines>
             </method>
             <method name="IsSameDevice" signature="(Trackify.Application.Trains.TrainDto,Trackify.Application.Lego.DiscoveredHubDto)" line-rate="1" branch-rate="0.75" complexity="4">
               <lines>
-                <line number="104" hits="3" branch="True" condition-coverage="75% (3/4)">
+                <line number="104" hits="6" branch="True" condition-coverage="75% (3/4)">
                   <conditions>
                     <condition number="18" type="jump" coverage="100%" />
                     <condition number="26" type="jump" coverage="50%" />
                   </conditions>
                 </line>
-                <line number="105" hits="3" branch="False" />
+                <line number="105" hits="6" branch="False" />
               </lines>
             </method>
             <method name="HubKey" signature="(Trackify.Application.Trains.TrainDto)" line-rate="1" branch-rate="1" complexity="2">
               <lines>
-                <line number="112" hits="4" branch="True" condition-coverage="100% (2/2)">
+                <line number="112" hits="26" branch="True" condition-coverage="100% (2/2)">
                   <conditions>
                     <condition number="11" type="jump" coverage="100%" />
                   </conditions>
                 </line>
               </lines>
             </method>
-            <method name="ParseHexColor" signature="(System.String)" line-rate="0" branch-rate="1" complexity="1">
+            <method name="ParseHexColor" signature="(System.String)" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="115" hits="0" branch="False" />
-                <line number="116" hits="0" branch="False" />
-                <line number="117" hits="0" branch="False" />
-                <line number="118" hits="0" branch="False" />
-                <line number="119" hits="0" branch="False" />
-                <line number="120" hits="0" branch="False" />
-                <line number="121" hits="0" branch="False" />
+                <line number="115" hits="1" branch="False" />
+                <line number="116" hits="1" branch="False" />
+                <line number="117" hits="1" branch="False" />
+                <line number="118" hits="1" branch="False" />
+                <line number="119" hits="1" branch="False" />
+                <line number="120" hits="1" branch="False" />
+                <line number="121" hits="1" branch="False" />
               </lines>
             </method>
             <method name=".ctor" signature="(Trackify.Application.Lego.ILegoService,Microsoft.Extensions.Logging.ILogger`1&lt;Trackify.Application.Trains.TrainControlService&gt;)" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="14" hits="2" branch="False" />
-                <line number="22" hits="2" branch="False" />
-                <line number="23" hits="2" branch="False" />
+                <line number="14" hits="19" branch="False" />
+                <line number="22" hits="19" branch="False" />
+                <line number="23" hits="19" branch="False" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="26" hits="0" branch="False" />
-            <line number="30" hits="0" branch="False" />
-            <line number="31" hits="0" branch="False" />
-            <line number="32" hits="0" branch="False" />
-            <line number="33" hits="0" branch="False" />
-            <line number="37" hits="1" branch="False" />
-            <line number="38" hits="1" branch="False" />
-            <line number="39" hits="1" branch="True" condition-coverage="50% (1/2)">
+            <line number="26" hits="1" branch="False" />
+            <line number="30" hits="1" branch="False" />
+            <line number="31" hits="1" branch="False" />
+            <line number="32" hits="1" branch="False" />
+            <line number="33" hits="1" branch="False" />
+            <line number="37" hits="4" branch="False" />
+            <line number="38" hits="4" branch="False" />
+            <line number="39" hits="4" branch="True" condition-coverage="100% (2/2)">
               <conditions>
-                <condition number="16" type="jump" coverage="50%" />
+                <condition number="16" type="jump" coverage="100%" />
               </conditions>
             </line>
-            <line number="40" hits="1" branch="False" />
-            <line number="41" hits="0" branch="False" />
-            <line number="42" hits="0" branch="False" />
-            <line number="43" hits="0" branch="False" />
-            <line number="47" hits="0" branch="False" />
-            <line number="48" hits="0" branch="False" />
-            <line number="49" hits="0" branch="True" condition-coverage="0% (0/2)">
+            <line number="40" hits="2" branch="False" />
+            <line number="41" hits="2" branch="False" />
+            <line number="42" hits="2" branch="False" />
+            <line number="43" hits="2" branch="False" />
+            <line number="47" hits="1" branch="False" />
+            <line number="48" hits="1" branch="False" />
+            <line number="49" hits="2" branch="True" condition-coverage="50% (1/2)">
               <conditions>
-                <condition number="16" type="jump" coverage="0%" />
+                <condition number="16" type="jump" coverage="50%" />
               </conditions>
             </line>
             <line number="50" hits="0" branch="False" />
             <line number="51" hits="0" branch="False" />
-            <line number="52" hits="0" branch="False" />
-            <line number="56" hits="1" branch="False" />
-            <line number="57" hits="1" branch="False" />
-            <line number="58" hits="1" branch="True" condition-coverage="50% (1/2)">
+            <line number="52" hits="1" branch="False" />
+            <line number="56" hits="9" branch="False" />
+            <line number="57" hits="9" branch="False" />
+            <line number="58" hits="10" branch="True" condition-coverage="100% (2/2)">
               <conditions>
-                <condition number="16" type="jump" coverage="50%" />
+                <condition number="16" type="jump" coverage="100%" />
               </conditions>
             </line>
-            <line number="59" hits="1" branch="False" />
-            <line number="60" hits="1" branch="False" />
-            <line number="61" hits="1" branch="False" />
-            <line number="68" hits="0" branch="False" />
-            <line number="69" hits="0" branch="False" />
-            <line number="70" hits="0" branch="True" condition-coverage="0% (0/2)">
+            <line number="59" hits="8" branch="False" />
+            <line number="60" hits="8" branch="False" />
+            <line number="61" hits="9" branch="False" />
+            <line number="68" hits="5" branch="False" />
+            <line number="69" hits="5" branch="False" />
+            <line number="70" hits="6" branch="True" condition-coverage="100% (2/2)">
               <conditions>
-                <condition number="16" type="jump" coverage="0%" />
+                <condition number="16" type="jump" coverage="100%" />
               </conditions>
             </line>
-            <line number="72" hits="0" branch="False" />
-            <line number="73" hits="0" branch="True" condition-coverage="0% (0/2)">
+            <line number="72" hits="4" branch="False" />
+            <line number="73" hits="4" branch="True" condition-coverage="100% (2/2)">
               <conditions>
-                <condition number="44" type="jump" coverage="0%" />
+                <condition number="44" type="jump" coverage="100%" />
               </conditions>
             </line>
-            <line number="74" hits="0" branch="False" />
-            <line number="75" hits="0" branch="False" />
-            <line number="76" hits="0" branch="False" />
-            <line number="77" hits="0" branch="False" />
-            <line number="78" hits="0" branch="False" />
-            <line number="79" hits="0" branch="False" />
-            <line number="80" hits="0" branch="False" />
-            <line number="93" hits="0" branch="False" />
-            <line number="94" hits="0" branch="False" />
-            <line number="95" hits="0" branch="True" condition-coverage="0% (0/2)">
+            <line number="74" hits="2" branch="False" />
+            <line number="75" hits="2" branch="False" />
+            <line number="76" hits="2" branch="False" />
+            <line number="77" hits="2" branch="False" />
+            <line number="78" hits="4" branch="False" />
+            <line number="79" hits="4" branch="False" />
+            <line number="80" hits="5" branch="False" />
+            <line number="93" hits="2" branch="False" />
+            <line number="94" hits="2" branch="False" />
+            <line number="95" hits="3" branch="True" condition-coverage="100% (2/2)">
               <conditions>
-                <condition number="18" type="jump" coverage="0%" />
+                <condition number="18" type="jump" coverage="100%" />
               </conditions>
             </line>
-            <line number="97" hits="0" branch="False" />
-            <line number="98" hits="0" branch="False" />
-            <line number="99" hits="0" branch="False" />
-            <line number="100" hits="0" branch="False" />
-            <line number="104" hits="3" branch="True" condition-coverage="75% (3/4)">
+            <line number="97" hits="1" branch="False" />
+            <line number="98" hits="1" branch="False" />
+            <line number="99" hits="1" branch="False" />
+            <line number="100" hits="2" branch="False" />
+            <line number="104" hits="6" branch="True" condition-coverage="75% (3/4)">
               <conditions>
                 <condition number="18" type="jump" coverage="100%" />
                 <condition number="26" type="jump" coverage="50%" />
               </conditions>
             </line>
-            <line number="105" hits="3" branch="False" />
-            <line number="112" hits="4" branch="True" condition-coverage="100% (2/2)">
+            <line number="105" hits="6" branch="False" />
+            <line number="112" hits="26" branch="True" condition-coverage="100% (2/2)">
               <conditions>
                 <condition number="11" type="jump" coverage="100%" />
               </conditions>
             </line>
-            <line number="115" hits="0" branch="False" />
-            <line number="116" hits="0" branch="False" />
-            <line number="117" hits="0" branch="False" />
-            <line number="118" hits="0" branch="False" />
-            <line number="119" hits="0" branch="False" />
-            <line number="120" hits="0" branch="False" />
-            <line number="121" hits="0" branch="False" />
-            <line number="14" hits="2" branch="False" />
-            <line number="22" hits="2" branch="False" />
-            <line number="23" hits="2" branch="False" />
+            <line number="115" hits="1" branch="False" />
+            <line number="116" hits="1" branch="False" />
+            <line number="117" hits="1" branch="False" />
+            <line number="118" hits="1" branch="False" />
+            <line number="119" hits="1" branch="False" />
+            <line number="120" hits="1" branch="False" />
+            <line number="121" hits="1" branch="False" />
+            <line number="14" hits="19" branch="False" />
+            <line number="22" hits="19" branch="False" />
+            <line number="23" hits="19" branch="False" />
           </lines>
         </class>
-        <class name="Trackify.Application.Trains.TrainControlService/&lt;SendSpeedAfterDelayAsync&gt;d__13" filename="Trackify.Application/Trains/TrainControlService.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Trackify.Application.Trains.TrainControlService/&lt;SendSpeedAfterDelayAsync&gt;d__13" filename="Trackify.Application/Trains/TrainControlService.cs" line-rate="0.8332999999999999" branch-rate="1" complexity="1">
           <methods>
-            <method name="MoveNext" signature="()" line-rate="0" branch-rate="1" complexity="1">
+            <method name="MoveNext" signature="()" line-rate="0.8332999999999999" branch-rate="1" complexity="1">
               <lines>
-                <line number="83" hits="0" branch="False" />
-                <line number="84" hits="0" branch="False" />
-                <line number="85" hits="0" branch="False" />
-                <line number="87" hits="0" branch="False" />
+                <line number="83" hits="4" branch="False" />
+                <line number="84" hits="10" branch="False" />
+                <line number="85" hits="6" branch="False" />
+                <line number="87" hits="6" branch="False" />
                 <line number="88" hits="0" branch="False" />
-                <line number="89" hits="0" branch="False" />
+                <line number="89" hits="4" branch="False" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="83" hits="0" branch="False" />
-            <line number="84" hits="0" branch="False" />
-            <line number="85" hits="0" branch="False" />
-            <line number="87" hits="0" branch="False" />
+            <line number="83" hits="4" branch="False" />
+            <line number="84" hits="10" branch="False" />
+            <line number="85" hits="6" branch="False" />
+            <line number="87" hits="6" branch="False" />
             <line number="88" hits="0" branch="False" />
-            <line number="89" hits="0" branch="False" />
+            <line number="89" hits="4" branch="False" />
           </lines>
         </class>
         <class name="Trackify.Application.Trains.TrainDto" filename="Trackify.Application/Trains/TrainDto.cs" line-rate="1" branch-rate="1" complexity="14">
           <methods>
             <method name="get_Id" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="12" hits="17" branch="False" />
+                <line number="12" hits="48" branch="False" />
               </lines>
             </method>
             <method name="get_Name" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="13" hits="39" branch="False" />
+                <line number="13" hits="81" branch="False" />
               </lines>
             </method>
             <method name="get_Hub" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="14" hits="34" branch="False" />
+                <line number="14" hits="78" branch="False" />
               </lines>
             </method>
             <method name="get_BleAddress" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="17" hits="40" branch="False" />
+                <line number="17" hits="92" branch="False" />
               </lines>
             </method>
             <method name="get_HubId" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="20" hits="47" branch="False" />
+                <line number="20" hits="128" branch="False" />
               </lines>
             </method>
             <method name="get_Color" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="22" hits="33" branch="False" />
+                <line number="22" hits="78" branch="False" />
               </lines>
             </method>
             <method name="get_PortA" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="23" hits="33" branch="False" />
+                <line number="23" hits="54" branch="False" />
               </lines>
             </method>
             <method name="get_PortB" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="24" hits="33" branch="False" />
+                <line number="24" hits="54" branch="False" />
               </lines>
             </method>
             <method name="get_Speed" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="25" hits="33" branch="False" />
+                <line number="25" hits="54" branch="False" />
               </lines>
             </method>
             <method name="get_AccelFn" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="26" hits="33" branch="False" />
+                <line number="26" hits="54" branch="False" />
               </lines>
             </method>
             <method name="get_AccelExpression" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="27" hits="33" branch="False" />
+                <line number="27" hits="54" branch="False" />
               </lines>
             </method>
             <method name="get_BrakeFn" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="28" hits="33" branch="False" />
+                <line number="28" hits="54" branch="False" />
               </lines>
             </method>
             <method name="get_BrakeExpression" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="29" hits="33" branch="False" />
+                <line number="29" hits="54" branch="False" />
               </lines>
             </method>
             <method name="get_IsActive" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="30" hits="33" branch="False" />
+                <line number="30" hits="54" branch="False" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="12" hits="17" branch="False" />
-            <line number="13" hits="39" branch="False" />
-            <line number="14" hits="34" branch="False" />
-            <line number="17" hits="40" branch="False" />
-            <line number="20" hits="47" branch="False" />
-            <line number="22" hits="33" branch="False" />
-            <line number="23" hits="33" branch="False" />
-            <line number="24" hits="33" branch="False" />
-            <line number="25" hits="33" branch="False" />
-            <line number="26" hits="33" branch="False" />
-            <line number="27" hits="33" branch="False" />
-            <line number="28" hits="33" branch="False" />
-            <line number="29" hits="33" branch="False" />
-            <line number="30" hits="33" branch="False" />
+            <line number="12" hits="48" branch="False" />
+            <line number="13" hits="81" branch="False" />
+            <line number="14" hits="78" branch="False" />
+            <line number="17" hits="92" branch="False" />
+            <line number="20" hits="128" branch="False" />
+            <line number="22" hits="78" branch="False" />
+            <line number="23" hits="54" branch="False" />
+            <line number="24" hits="54" branch="False" />
+            <line number="25" hits="54" branch="False" />
+            <line number="26" hits="54" branch="False" />
+            <line number="27" hits="54" branch="False" />
+            <line number="28" hits="54" branch="False" />
+            <line number="29" hits="54" branch="False" />
+            <line number="30" hits="54" branch="False" />
           </lines>
         </class>
         <class name="Trackify.Application.Trains.TrainMapping" filename="Trackify.Application/Trains/TrainMapping.cs" line-rate="1" branch-rate="1" complexity="2">
@@ -2128,12 +2128,12 @@
           <methods>
             <method name="get_Id" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="9" hits="30" branch="False" />
+                <line number="9" hits="40" branch="False" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="9" hits="30" branch="False" />
+            <line number="9" hits="40" branch="False" />
           </lines>
         </class>
         <class name="Trackify.Application.Lego.LwpAddressingMapping" filename="Trackify.Application/Lego/LwpAddressingMapping.cs" line-rate="0.75" branch-rate="0.5" complexity="8">
@@ -2190,12 +2190,12 @@
           <methods>
             <method name="get_Value" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="5" hits="162" branch="False" />
+                <line number="5" hits="166" branch="False" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="5" hits="162" branch="False" />
+            <line number="5" hits="166" branch="False" />
           </lines>
         </class>
         <class name="Trackify.Application.Catalog.DeviceOption" filename="Trackify.Application/Catalog/DeviceOption.cs" line-rate="1" branch-rate="1" complexity="1">
@@ -2248,7 +2248,7 @@
             </method>
             <method name="Color" signature="(Trackify.Domain.Enums.LedColorType)" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="75" hits="90" branch="False" />
+                <line number="75" hits="94" branch="False" />
               </lines>
             </method>
             <method name="SpeedFunction" signature="(Trackify.Domain.Enums.SpeedFunctionType)" line-rate="1" branch-rate="1" complexity="1">
@@ -2323,7 +2323,7 @@
           <lines>
             <line number="73" hits="34" branch="False" />
             <line number="74" hits="20" branch="False" />
-            <line number="75" hits="90" branch="False" />
+            <line number="75" hits="94" branch="False" />
             <line number="76" hits="27" branch="False" />
             <line number="7" hits="1" branch="False" />
             <line number="8" hits="1" branch="False" />
