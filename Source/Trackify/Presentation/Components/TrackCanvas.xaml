@@ -169,24 +169,34 @@
           </StackPanel>
 
           <!-- How to use it, in one sentence, while the plan is still tiny. -->
-          <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,14,0,0"
+          <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="12,14,12,0" MaxWidth="340"
                   Background="{ThemeResource PrimaryContainerBrush}" Padding="16,9"
                   Visibility="{Binding IsPlanTiny, Converter={StaticResource BoolToVisibilityConverter}}">
+            <!-- Wraps, and is bounded: as one line this sentence measures ~430px and a centred
+                 overlay that wide is cut off on both sides of a phone — the one instruction the
+                 editor gives would be the thing you cannot read. -->
             <TextBlock Text="Zieh von einem leuchtenden Punkt — die Strecke entsteht aus echten LEGO-Teilen."
-                       FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource OnPrimaryContainerBrush}" />
+                       FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"
+                       Foreground="{ThemeResource OnPrimaryContainerBrush}" />
           </Border>
 
           <!-- Only ever shown when the user's own connections contradict the geometry. -->
-          <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,56"
+          <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="12,0,12,56" MaxWidth="340"
                   Background="#E5484D" Padding="16,9"
                   Visibility="{Binding HasProblem, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock Text="{Binding Problem}" FontSize="13" FontWeight="SemiBold" Foreground="White" />
+            <!-- Wraps for the same reason as the hint, and more so: a mismatch message names the gap
+                 in studs, so it is the longest text the canvas ever shows. -->
+            <TextBlock Text="{Binding Problem}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"
+                       Foreground="White" />
           </Border>
 
-          <!-- Legend -->
+          <!-- Legend. Hidden when the width is tight: it measures ~300px, which on a phone is most of
+               the drawing area's bottom edge, and the track's own colour plus its printed number
+               carry the same information. -->
           <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,10"
                   Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" Padding="14,9">
+                  BorderThickness="1" Padding="14,9"
+                  Visibility="{Binding IsRoomy, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="14">
               <TextBlock Text="Tempo" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
               <ItemsControl ItemsSource="{Binding Legend}">
@@ -213,12 +223,16 @@
     <!-- TOOLBAR — undo/redo and closing the loop first, because they are what rescue a wrong turn;
          then the parts a gesture never guesses, then whole starting layouts. -->
     <StackPanel Grid.Row="1" Margin="24,0,24,18" Spacing="10">
+      <!-- Every button keeps its icon and drops its word when the width is tight, so the row shrinks
+           from ~390px to ~190px and fits a phone. Each therefore carries a tooltip: in the compact
+           state the glyph is all there is to go on. -->
       <StackPanel Orientation="Horizontal" Spacing="8">
         <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0"
                 Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}" ToolTipService.ToolTip="Zurücknehmen">
           <StackPanel Orientation="Horizontal" Spacing="7">
             <FontIcon Glyph="&#xE7A7;" FontSize="13" />
-            <TextBlock Text="Zurück" FontSize="12.5" />
+            <TextBlock Text="Zurück" FontSize="12.5"
+                       Visibility="{Binding IsRoomy, Converter={StaticResource BoolToVisibilityConverter}}" />
           </StackPanel>
         </Button>
         <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0"
@@ -228,31 +242,48 @@
         <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="14,0"
                 Command="{Binding CloseLoopCommand}" IsEnabled="{Binding CanCloseLoop}"
                 ToolTipService.ToolTip="Die fehlenden Teile einsetzen, bis der Kreis zu ist">
-          <TextBlock Text="Kreis schließen" FontSize="12.5" />
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <FontIcon Glyph="&#xE72C;" FontSize="13" />
+            <TextBlock Text="Kreis schließen" FontSize="12.5"
+                       Visibility="{Binding IsRoomy, Converter={StaticResource BoolToVisibilityConverter}}" />
+          </StackPanel>
         </Button>
         <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="14,0"
-                Command="{Binding DeletePieceCommand}" IsEnabled="{Binding HasSelection}">
-          <TextBlock Text="Teil löschen" FontSize="12.5" />
+                Command="{Binding DeletePieceCommand}" IsEnabled="{Binding HasSelection}"
+                ToolTipService.ToolTip="Das gewählte Teil samt seinen Verbindungen entfernen">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <FontIcon Glyph="&#xE74D;" FontSize="13" />
+            <TextBlock Text="Teil löschen" FontSize="12.5"
+                       Visibility="{Binding IsRoomy, Converter={StaticResource BoolToVisibilityConverter}}" />
+          </StackPanel>
         </Button>
       </StackPanel>
 
       <TextBlock Text="Am gewählten Punkt anhängen" Style="{StaticResource LabelTextBlockStyle}" Margin="0,4,0,0" />
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0" Content="Gerade"
-                Command="{Binding AddStraightCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0" Content="Kurve links"
-                Command="{Binding AddCurveLeftCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0" Content="Kurve rechts"
-                Command="{Binding AddCurveRightCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0" Content="Weiche links"
-                Command="{Binding AddSwitchLeftCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0" Content="Weiche rechts"
-                Command="{Binding AddSwitchRightCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0" Content="Kreuzung"
-                Command="{Binding AddCrossingCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0" Content="Bahnhof"
-                Command="{Binding AddStationCommand}" />
-      </StackPanel>
+
+      <!-- The palette is bound, not seven hand-written buttons, and it scrolls sideways. Laid out as a
+           fixed row it measures ~755px and everything past the second button is unreachable on a
+           phone; wrapping instead would cost four rows of a screen whose point is the canvas. So: one
+           swipeable strip, all seven reachable at any width, ordered most-used first. -->
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                    HorizontalScrollMode="Auto" VerticalScrollMode="Disabled">
+        <ItemsControl ItemsSource="{Binding Palette}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Button d:DataContext="{d:DesignInstance Type=vm:PaletteItem}"
+                      Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0"
+                      Content="{Binding Label}"
+                      Command="{Binding ElementName=Root, Path=DataContext.AddPartCommand}"
+                      CommandParameter="{Binding}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
 
       <StackPanel Orientation="Horizontal" Spacing="8">
         <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="34" Padding="12,0" Content="Oval"
