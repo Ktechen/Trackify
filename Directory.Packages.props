@@ -6,6 +6,13 @@
     See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
   -->
   <ItemGroup>
+    <!-- Pinned above the version the Uno package graph pulls in (10.0.7), which carries advisory
+         GHSA-2fmv-rv2c-59x7 and therefore fails restore of the app head outright (NU1902 + the
+         repo-wide TreatWarningsAsErrors). Pinned rather than suppressed: the advisory is real, a
+         patched version exists, and the CI APK build restores exactly this graph. Referenced
+         directly from Source/Trackify so the pin actually overrides the transitive version. -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+
     <!-- LEGO Powered Up: protocol layer (CLI BlueZ transport) + per-head app transports:
          .Mobile (Plugin.BLE) on android/ios, .WinRT on the Windows head. -->
     <PackageVersion Include="SharpBrick.PoweredUp" Version="5.0.2" />

@@ -55,6 +55,13 @@
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     </ItemGroup>
 
+    <!-- Not used from code: a direct reference is the only way a central PackageVersion overrides a
+         transitive one, and the Uno graph otherwise pulls 10.0.7, which fails restore on advisory
+         GHSA-2fmv-rv2c-59x7. See the note in Directory.Packages.props. -->
+    <ItemGroup>
+        <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    </ItemGroup>
+
     <!-- Clean Architecture shared core. The app composes the SAME layers as the CLI (Domain +
          Application + Infrastructure) so both share the SQLite store; AddLinuxLego inside
          AddTrackifyInfrastructure only wires BlueZ at runtime on Linux (a no-op on the app heads). -->
