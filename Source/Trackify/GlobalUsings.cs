@@ -15,6 +15,7 @@ global using Trackify.Application.Catalog;
 global using Trackify.Application.Services;
 global using Trackify.Application.TrackPlans;
 global using Trackify.Application.Trains;
+global using Trackify.Presentation.Layout;
 global using Trackify.Presentation.Pages;
 global using Trackify.Presentation.ViewModels;
 global using ApplicationExecutionState = Windows.ApplicationModel.Activation.ApplicationExecutionState;
