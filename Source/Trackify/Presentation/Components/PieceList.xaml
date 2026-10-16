@@ -46,7 +46,10 @@
 
               <StackPanel Grid.Column="1" VerticalAlignment="Center"
                           behaviors:TappedCommandBehavior.Command="{Binding ElementName=Root, Path=DataContext.SelectPieceCommand}">
-                <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                <!-- Trim rather than wrap or overflow: the pane's ScrollViewer has no horizontal
+                     scrolling, so anything wider than the pane would simply be cut off. -->
+                <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold"
+                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                 <TextBlock Text="{Binding TypeLabel}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
               </StackPanel>
 

@@ -53,8 +53,11 @@ public sealed partial class SecondPage : Page
         {
             // Three columns side by side: canvas + toolbar, strand-list sidebar (drag-resizable via
             // Splitter1Handle), inspector (drag-resizable via Splitter2Handle).
-            if (ListColumn.Width.Value == 0) ListColumn.Width = new GridLength(236);
-            if (InspectorColumn.Width.Value == 0) InspectorColumn.Width = new GridLength(318);
+            // Defaults mirror SecondPage.xaml and the splitters' MinWidth: both panes carry content
+            // with a real intrinsic width (segment rows, two-up pill buttons), so a smaller default
+            // would clip rather than shrink.
+            if (ListColumn.Width.Value == 0) ListColumn.Width = new GridLength(260);
+            if (InspectorColumn.Width.Value == 0) InspectorColumn.Width = new GridLength(340);
             Splitter1Column.Width = new GridLength(6);
             Splitter2Column.Width = new GridLength(6);
             CanvasRow.Height = new GridLength(1, GridUnitType.Star);
