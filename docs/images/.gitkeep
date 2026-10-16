@@ -1,0 +1,3 @@
+Screenshots for docs/editor-view.md belong here; that file's last section lists the five
+expected filenames and how to capture them. They cannot be produced in the dev environment —
+the Skia surface comes back blank and the WASM canvas times out the browser tool.

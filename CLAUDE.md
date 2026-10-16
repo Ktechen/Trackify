@@ -47,6 +47,11 @@ belongs, `09-architecture-decisions.md` for settled decisions (don't re-open the
 `11-risks-and-technical-debt.md` for what is knowingly unfinished. Update the affected section in the
 same PR when the architecture changes.
 
+**`docs/editor-view.md`** is the operator-facing counterpart (German, since it quotes the German UI):
+what each page and every control does, screen by screen. Its screenshot slots under `docs/images/`
+are deliberately empty — the renderer can't be captured here (see "Build & verify"), so they are
+filled from a real device. Update it when a control or label changes.
+
 ## What this is
 
 **Trackify** configures and controls **LEGO Powered Up** train hubs over **Bluetooth LE**, directly on-device — there is **no server/backend**. BLE talks the [LEGO Wireless Protocol (LWP) v3](https://lego.github.io/lego-ble-wireless-protocol-docs/) via [SharpBrick.PoweredUp](https://github.com/sharpbrick/powered-up).
