@@ -17,8 +17,6 @@ namespace Trackify.Presentation.Pages;
 /// </summary>
 public sealed partial class SecondPage : Page
 {
-    private const double WideThreshold = 720;
-
     private SecondViewModel? _viewModel;
 
     public SecondPage()
@@ -52,81 +50,48 @@ public sealed partial class SecondPage : Page
 
     private void ApplyResponsiveLayout()
     {
-        var isWide = ActualWidth >= WideThreshold;
         var hasSelection = _viewModel?.SelectedPiece is not null;
 
-        // Width is only known here, so this is where it is published. Everything that merely *reacts*
-        // to being narrow — the header emblem, the subtitle, the counts, the speed legend, the words
-        // on the toolbar buttons — then binds to IsCompact instead of being poked from code, which
-        // also makes those rules unit-testable rather than only observable on a device.
+        // The rules live in EditorPageLayout, which is a pure value and therefore testable; this
+        // method only applies them. Everything that merely *reacts* to being narrow — the header
+        // emblem, the subtitle, the counts, the speed legend, the words on the toolbar buttons —
+        // binds to IsCompact instead of being poked from here.
+        var layout = EditorPageLayout.Resolve(
+            ActualWidth,
+            hasSelection,
+            _viewModel?.IsPieceListOpen == true,
+            ListColumn.Width.Value,
+            InspectorColumn.Width.Value);
+
         if (_viewModel is not null)
-            _viewModel.IsCompact = !isWide;
+            _viewModel.IsCompact = !layout.IsWide;
 
-        if (isWide)
-        {
-            // Three columns side by side: canvas + toolbar, strand-list sidebar (drag-resizable via
-            // Splitter1Handle), inspector (drag-resizable via Splitter2Handle).
-            // Defaults mirror SecondPage.xaml and the splitters' MinWidth: both panes carry content
-            // with a real intrinsic width (segment rows, two-up pill buttons), so a smaller default
-            // would clip rather than shrink.
-            if (ListColumn.Width.Value == 0) ListColumn.Width = new GridLength(260);
-            if (InspectorColumn.Width.Value == 0) InspectorColumn.Width = new GridLength(340);
-            Splitter1Column.Width = new GridLength(6);
-            Splitter2Column.Width = new GridLength(6);
-            CanvasRow.Height = new GridLength(1, GridUnitType.Star);
-            ListRow.Height = new GridLength(0);
+        ListColumn.Width = Length(layout.ListColumn);
+        InspectorColumn.Width = Length(layout.InspectorColumn);
+        Splitter1Column.Width = Length(layout.SplitterColumns);
+        Splitter2Column.Width = Length(layout.SplitterColumns);
+        CanvasRow.Height = new GridLength(layout.CanvasRowStars, GridUnitType.Star);
+        ListRow.Height = new GridLength(layout.ListRowStars);
 
-            Grid.SetColumn(ListHost, 2);
-            Grid.SetRow(ListHost, 0);
-            Grid.SetRowSpan(ListHost, 1);
-            ListHost.VerticalAlignment = VerticalAlignment.Stretch;
-            ListHost.MaxHeight = double.PositiveInfinity;
-            ListHost.Visibility = Visibility.Visible;
+        Place(ListHost, layout.List);
+        Place(InspectorHost, layout.Inspector);
 
-            Grid.SetColumn(InspectorHost, 4);
-            Grid.SetRow(InspectorHost, 0);
-            Grid.SetRowSpan(InspectorHost, 1);
+        var handles = layout.ShowSplitters ? Visibility.Visible : Visibility.Collapsed;
+        Splitter1Handle.Visibility = handles;
+        Splitter2Handle.Visibility = handles;
+    }
 
-            Splitter1Handle.Visibility = Visibility.Visible;
-            Splitter2Handle.Visibility = Visibility.Visible;
-            InspectorHost.VerticalAlignment = VerticalAlignment.Stretch;
-            InspectorHost.MaxHeight = double.PositiveInfinity;
-            InspectorHost.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            // The canvas gets the whole content area, and BOTH panes dock over it as bottom sheets:
-            // the parts list when the header's list button opens it, the inspector while a part is
-            // selected. Stacking the list permanently (it used to take 2 of 5 rows) left a phone with
-            // a drawing area of roughly 240px once the header and toolbar had taken their share —
-            // and the drawing area is the point of the screen.
-            ListColumn.Width = new GridLength(0);
-            InspectorColumn.Width = new GridLength(0);
-            Splitter1Column.Width = new GridLength(0);
-            Splitter2Column.Width = new GridLength(0);
-            CanvasRow.Height = new GridLength(1, GridUnitType.Star);
-            ListRow.Height = new GridLength(0);
+    private static GridLength Length(ColumnWidth width)
+        => width.IsStar ? new GridLength(width.Value, GridUnitType.Star) : new GridLength(width.Value);
 
-            Grid.SetColumn(ListHost, 0);
-            Grid.SetRow(ListHost, 0);
-            Grid.SetRowSpan(ListHost, 2);
-            ListHost.VerticalAlignment = VerticalAlignment.Bottom;
-            ListHost.MaxHeight = 420;
-            // One sheet at a time: a selection is the more specific thing to be looking at, so the
-            // inspector wins and the list steps aside rather than stacking two sheets.
-            ListHost.Visibility = _viewModel?.IsPieceListOpen == true && !hasSelection
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+    private static void Place(FrameworkElement pane, PaneSlot slot)
+    {
+        Grid.SetColumn(pane, slot.Column);
+        Grid.SetRow(pane, slot.Row);
+        Grid.SetRowSpan(pane, slot.RowSpan);
 
-            Grid.SetColumn(InspectorHost, 0);
-            Grid.SetRow(InspectorHost, 0);
-            Grid.SetRowSpan(InspectorHost, 2);
-
-            Splitter1Handle.Visibility = Visibility.Collapsed;
-            Splitter2Handle.Visibility = Visibility.Collapsed;
-            InspectorHost.VerticalAlignment = VerticalAlignment.Bottom;
-            InspectorHost.MaxHeight = 520;
-            InspectorHost.Visibility = hasSelection ? Visibility.Visible : Visibility.Collapsed;
-        }
+        pane.VerticalAlignment = slot.IsSheet ? VerticalAlignment.Bottom : VerticalAlignment.Stretch;
+        pane.MaxHeight = slot.MaxHeight;
+        pane.Visibility = slot.IsVisible ? Visibility.Visible : Visibility.Collapsed;
     }
 }

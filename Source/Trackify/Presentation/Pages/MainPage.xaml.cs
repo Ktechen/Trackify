@@ -8,7 +8,6 @@ public sealed partial class MainPage : Page
 {
     // Below this width (in effective pixels) the two-column layout collapses to a single
     // column that shows the list OR the editor (master-detail) - the phone/portrait case.
-    private const double WideThreshold = 720;
 
     private MainViewModel? _viewModel;
 
@@ -43,46 +42,29 @@ public sealed partial class MainPage : Page
 
     private void ApplyResponsiveLayout()
     {
-        var isWide = ActualWidth >= WideThreshold;
-        var hasSelection = _viewModel?.SelectedTrain is not null;
+        // The rules live in TrainPageLayout, which is a pure value and therefore testable; this method
+        // only applies them.
+        var layout = TrainPageLayout.Resolve(
+            ActualWidth,
+            _viewModel?.SelectedTrain is not null,
+            ListColumn.Width.Value);
 
-        if (isWide)
-        {
-            // Two columns side by side: list rail (drag-resizable via SplitterHandle) + editor.
-            if (ListColumn.Width.Value == 0) ListColumn.Width = new GridLength(346);
-            SplitterColumn.Width = new GridLength(6);
-            EditorColumn.Width = new GridLength(1, GridUnitType.Star);
-            ListPanel.Visibility = Visibility.Visible;
-            SplitterHandle.Visibility = Visibility.Visible;
-            EditorHost.Visibility = Visibility.Visible;
-        }
-        else if (hasSelection)
-        {
-            // Narrow + a train selected: show the editor full width.
-            ListColumn.Width = new GridLength(0);
-            SplitterColumn.Width = new GridLength(0);
-            EditorColumn.Width = new GridLength(1, GridUnitType.Star);
-            ListPanel.Visibility = Visibility.Collapsed;
-            SplitterHandle.Visibility = Visibility.Collapsed;
-            EditorHost.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            // Narrow + nothing selected: show the list full width (the "home" pane).
-            ListColumn.Width = new GridLength(1, GridUnitType.Star);
-            SplitterColumn.Width = new GridLength(0);
-            EditorColumn.Width = new GridLength(0);
-            ListPanel.Visibility = Visibility.Visible;
-            SplitterHandle.Visibility = Visibility.Collapsed;
-            EditorHost.Visibility = Visibility.Collapsed;
-        }
+        ListColumn.Width = Length(layout.ListColumn);
+        SplitterColumn.Width = Length(layout.SplitterColumn);
+        EditorColumn.Width = Length(layout.EditorColumn);
 
-        // The back arrow only makes sense in the narrow layout while viewing the editor.
-        BackButton.Visibility = (!isWide && hasSelection) ? Visibility.Visible : Visibility.Collapsed;
+        ListPanel.Visibility = Show(layout.ShowList);
+        SplitterHandle.Visibility = Show(layout.ShowSplitter);
+        EditorHost.Visibility = Show(layout.ShowEditor);
 
-        // The header stats/connection chip get cramped on a phone - hide them when narrow.
-        HeaderEmblem.Visibility = isWide ? Visibility.Visible : Visibility.Collapsed;
-        HeaderStats.Visibility = isWide ? Visibility.Visible : Visibility.Collapsed;
-        HeaderChip.Visibility = (isWide && hasSelection) ? Visibility.Visible : Visibility.Collapsed;
+        BackButton.Visibility = Show(layout.ShowBackButton);
+        HeaderEmblem.Visibility = Show(layout.ShowHeaderEmblem);
+        HeaderStats.Visibility = Show(layout.ShowHeaderStats);
+        HeaderChip.Visibility = Show(layout.ShowConnectionChip);
     }
+
+    private static GridLength Length(ColumnWidth width)
+        => width.IsStar ? new GridLength(width.Value, GridUnitType.Star) : new GridLength(width.Value);
+
+    private static Visibility Show(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
 }
