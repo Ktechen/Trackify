@@ -42,7 +42,9 @@
         <FontIcon Glyph="&#xE72B;" FontSize="16" />
       </Button>
 
-      <Border Grid.Column="1" Width="42" Height="42" Background="{ThemeResource PrimaryContainerBrush}"
+      <!-- Visibility owned by ApplyResponsiveLayout, like the stats and the chip: with the back button
+           showing, the emblem's 56px is what pushes this header past a 360dp phone. -->
+      <Border x:Name="HeaderEmblem" Grid.Column="1" Width="42" Height="42" Background="{ThemeResource PrimaryContainerBrush}"
               BorderBrush="{ThemeResource PrimaryBrush}" BorderThickness="1" Margin="0,0,14,0">
         <Grid Width="24" Height="24">
           <Path Data="M5 4h11a3 3 0 0 1 3 3v8H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" Fill="{ThemeResource OnPrimaryContainerBrush}" />
@@ -52,7 +54,8 @@
       </Border>
 
       <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
-        <TextBlock Text="Train-Konfiguration" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold" />
+        <TextBlock Text="Train-Konfiguration" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold"
+                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="Powered Up · Legoino-Schnittstelle" Style="{StaticResource MonoCaptionTextBlockStyle}" />
       </StackPanel>
 

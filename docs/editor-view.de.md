@@ -71,7 +71,11 @@ wirklich erreicht, und schließt die Lücke. Ein leerer Plan setzt automatisch e
 
 **Zweite Reihe — „Am gewählten Punkt anhängen"**
 
-`Gerade` · `Kurve links` · `Kurve rechts` · `Weiche links` · `Weiche rechts` · `Kreuzung` · `Bahnhof`
+`Gerade` · `Kurve links` · `Kurve rechts` · `Bahnhof` · `Weiche links` · `Weiche rechts` · `Kreuzung`
+
+Eine **seitlich wischbare Leiste**, keine feste Reihe: als feste Reihe misst sie rund 755 px, und auf
+dem Handy wäre alles ab dem zweiten Knopf unerreichbar. Die Reihenfolge ist deshalb
+„häufigstes zuerst" — was du selten brauchst, liegt rechts außen.
 
 Gerade und Kurven lassen sich auch ziehen. **Weiche und Kreuzung bewusst nicht**: eine Wischgeste
 darf keine Weiche erraten — die setzt man absichtlich.
@@ -85,7 +89,7 @@ Bahnhöfen) · `Leeren`.
 
 | Anzeige | Bedeutung |
 |---|---|
-| **Farbe des Gleises** | Das Tempo. Legende „Tempo" unten links: rot = Stop bis grün = schnell. |
+| **Farbe des Gleises** | Das Tempo. Legende „Tempo" unten links: rot = Stop bis grün = schnell — im Schmal-Layout ausgeblendet. |
 | **Zahl am Gleis** | Das Höchsttempo dieses Teils in Prozent. |
 | **Gestrichelte Linie** | Vorschau während des Ziehens — noch nicht gelegt, zählt noch nicht mit. |
 | **Marke mit „F"** | Farbsensor auf diesem Teil. |
@@ -168,6 +172,26 @@ chain, so there is nothing to reorder — this is a parts list, not a sequence."
 
 Die Trennlinien zwischen Fläche, Liste und Inspector sind **ziehbar** (240–420 px für die Liste,
 320–560 px für den Inspector).
+
+### Auf dem Handy
+
+Unter 720 px Breite — Handy, oder ein schmal gezogenes Fenster — schaltet die Seite um. Die
+Zeichenfläche behält die **ganze** Fläche, und beide Seitenbereiche legen sich als Laschen darüber:
+
+| | Breit | Schmal |
+|---|---|---|
+| **Teileliste** | Spalte rechts der Fläche | Lasche von unten, über den Knopf mit der Teilezahl im Kopf |
+| **Inspector** | Eigene Spalte | Lasche von unten, solange ein Teil gewählt ist |
+| **Knöpfe erste Reihe** | Icon **und** Wort | nur Icon (~190 statt ~390 px) — die Beschriftung steht im Tooltip |
+| **Palette** | alle sieben sichtbar | dieselbe Leiste, seitlich gewischt |
+| **Kopf** | Symbol, Untertitel, drei Zähler | nur Titel und Speichern, dazu der Teile-Knopf |
+| **Tempo-Legende** | unten links | ausgeblendet — Gleisfarbe und Zahl sagen dasselbe |
+
+**Immer nur eine Lasche**: wählst du ein Teil, gewinnt der Inspector und die Teileliste tritt
+zurück. Die Teileliste startet geschlossen — erst bauen, dann prüfen.
+
+Gestapelt nahm die Teileliste früher zwei von fünf Zeilen; nach Kopf und Werkzeugleiste blieben für
+die Zeichenfläche noch etwa 240 px. Deshalb ist sie jetzt eine Lasche.
 
 ---
 

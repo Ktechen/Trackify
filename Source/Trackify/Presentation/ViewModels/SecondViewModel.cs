@@ -62,6 +62,7 @@ public partial class SecondViewModel : ObservableObject
         SelectAnchorCommand = new RelayCommand<TrackAnchor>(SelectAnchor);
         SetDirectionCommand = new RelayCommand<string>(SetDirection);
         SetSensorCommand = new RelayCommand<string>(SetSensor);
+        AddPartCommand = new RelayCommand<PaletteItem>(AddPart);
         GoBackCommand = new AsyncRelayCommand(async () => await _navigator.NavigateBackAsync(this));
 
         _ = LoadAsync();
@@ -97,6 +98,22 @@ public partial class SecondViewModel : ObservableObject
         new("#16A34A", "schnell"),
     ];
 
+    /// <summary>
+    /// The parts a deliberate tap appends, in the order they are offered: the ones a gesture can also
+    /// draw first, then the three it must never guess. Bound rather than hand-written in XAML so the
+    /// palette can wrap — seven fixed buttons in one row are unreachable on a phone.
+    /// </summary>
+    public IReadOnlyList<PaletteItem> Palette { get; } =
+    [
+        new("Gerade", TrackPartCatalog.StraightKey, TrackPortNames.Start),
+        new("Kurve links", TrackPartCatalog.CurveLeftKey, TrackPortNames.Start),
+        new("Kurve rechts", TrackPartCatalog.CurveRightKey, TrackPortNames.Start),
+        new("Bahnhof", TrackPartCatalog.StationKey, TrackPortNames.Start),
+        new("Weiche links", TrackPartCatalog.SwitchLeftKey, TrackPortNames.Toe),
+        new("Weiche rechts", TrackPartCatalog.SwitchRightKey, TrackPortNames.Toe),
+        new("Kreuzung", TrackPartCatalog.CrossingKey, TrackPortNames.CrossA1),
+    ];
+
     public IRelayCommand<TrackPiece> SelectPieceCommand { get; }
 
     public IRelayCommand<TrackAnchor> SelectAnchorCommand { get; }
@@ -105,7 +122,32 @@ public partial class SecondViewModel : ObservableObject
 
     public IRelayCommand<string> SetSensorCommand { get; }
 
+    /// <summary>Appends one <see cref="PaletteItem"/>; the palette's seven buttons all come through here.</summary>
+    public IRelayCommand<PaletteItem> AddPartCommand { get; }
+
     public IAsyncRelayCommand GoBackCommand { get; }
+
+    /// <summary>
+    /// Whether the window is too narrow to show everything at once — a phone, or a desktop window
+    /// dragged narrow. Set by the page's responsive code-behind, which is the one place that knows the
+    /// actual width. It lives here rather than in the view so the compact rules are bindable *and*
+    /// unit-testable, which matters because the rendered UI cannot be verified in this environment.
+    /// </summary>
+    [ObservableProperty] private bool isCompact;
+
+    /// <summary>
+    /// The inverse of <see cref="IsCompact"/>, for the parts that only a wide layout has room for
+    /// (the header counts, the subtitle, the speed legend). A property rather than an inverting
+    /// visibility converter, matching how <see cref="HasProblem"/> avoids one.
+    /// </summary>
+    public bool IsRoomy => !IsCompact;
+
+    /// <summary>
+    /// Whether the parts list is open. Only consulted in the compact layout, where the list is a sheet
+    /// rather than a permanent pane: stacked under the canvas it takes 40% of a phone screen whose
+    /// whole point is the drawing area. Closed by default — you build first and inspect afterwards.
+    /// </summary>
+    [ObservableProperty] private bool isPieceListOpen;
 
     public bool CanUndo => _undoStack.Count > 0;
 
@@ -232,6 +274,18 @@ public partial class SecondViewModel : ObservableObject
 
     [RelayCommand] private void AddCurveRight() => Append(TrackPartCatalog.CurveRightKey, TrackPortNames.Start);
 
+    /// <summary>
+    /// The palette's way in. The named Add* commands above stay because they read better from a
+    /// hand-written button and the tests name them; both end in the same <see cref="Append"/>.
+    /// </summary>
+    private void AddPart(PaletteItem? item)
+    {
+        if (item is null)
+            return;
+
+        Append(item.PartKey, item.EntryPort);
+    }
+
     // A point or crossing is never guessed from a gesture — the snapper only lays straights and
     // curves — so these are placed on purpose, at the active open end.
     private void Append(string specKey, string entryPort)
@@ -333,6 +387,9 @@ public partial class SecondViewModel : ObservableObject
     [RelayCommand] private void ZoomOut() => ZoomFactor = Math.Max(MinZoom, ZoomFactor - ZoomStep);
 
     [RelayCommand] private void ZoomFit() => ZoomFactor = 1;
+
+    /// <summary>Opens or closes the parts-list sheet. Only reachable in the compact layout.</summary>
+    [RelayCommand] private void TogglePieceList() => IsPieceListOpen = !IsPieceListOpen;
 
     [RelayCommand]
     private void SetAccelFn(string value)
@@ -773,6 +830,8 @@ public partial class SecondViewModel : ObservableObject
     }
 
     partial void OnSelectedPieceChanged(TrackPiece? value) => OnPropertyChanged(nameof(HasSelection));
+
+    partial void OnIsCompactChanged(bool value) => OnPropertyChanged(nameof(IsRoomy));
 
     /// <summary>A point the undo stack can return to: the graph plus a copy of every part's settings.</summary>
     private readonly record struct PlanState(TrackPlanTopology Topology, IReadOnlyList<TrackPart> Parts);

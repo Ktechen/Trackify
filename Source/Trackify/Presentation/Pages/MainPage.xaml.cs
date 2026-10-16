@@ -81,6 +81,7 @@ public sealed partial class MainPage : Page
         BackButton.Visibility = (!isWide && hasSelection) ? Visibility.Visible : Visibility.Collapsed;
 
         // The header stats/connection chip get cramped on a phone - hide them when narrow.
+        HeaderEmblem.Visibility = isWide ? Visibility.Visible : Visibility.Collapsed;
         HeaderStats.Visibility = isWide ? Visibility.Visible : Visibility.Collapsed;
         HeaderChip.Visibility = (isWide && hasSelection) ? Visibility.Visible : Visibility.Collapsed;
     }

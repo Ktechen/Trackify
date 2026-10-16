@@ -77,9 +77,12 @@ drag from in the first place.
 
 **Second row — "Am gewählten Punkt anhängen" (append at the selected point)**
 
-`Gerade` (straight) · `Kurve links` / `Kurve rechts` (curve left / right) ·
-`Weiche links` / `Weiche rechts` (point/switch left / right) · `Kreuzung` (crossing) ·
-`Bahnhof` (station)
+`Gerade` (straight) · `Kurve links` / `Kurve rechts` (curve left / right) · `Bahnhof` (station) ·
+`Weiche links` / `Weiche rechts` (point/switch left / right) · `Kreuzung` (crossing)
+
+A **strip that scrolls sideways**, not a fixed row: as a fixed row it measures some 755 px, and on a
+phone everything past the second button would be unreachable. The order is therefore most-used
+first — what you rarely need sits at the far right.
 
 Straights and curves can also be drawn. **Points and crossings deliberately cannot**: a swipe must
 not guess a switch — you place those on purpose.
@@ -93,7 +96,7 @@ not guess a switch — you place those on purpose.
 
 | Indication | Meaning |
 |---|---|
-| **Track colour** | The speed. The "Tempo" (*speed*) legend bottom-left runs red = stop to green = fast. |
+| **Track colour** | The speed. The "Tempo" (*speed*) legend bottom-left runs red = stop to green = fast — hidden in the narrow layout. |
 | **Number on the track** | That part's maximum speed, in percent. |
 | **Dashed line** | The preview while dragging — not committed, not counted yet. |
 | **Marker "F"** | Colour sensor on this part (*Farbe* = colour). |
@@ -180,6 +183,26 @@ nothing to reorder — this is a parts list, not a sequence."*
 
 The dividers between canvas, list and inspector are **draggable** (240–420 px for the list,
 320–560 px for the inspector).
+
+### On a phone
+
+Below 720 px of width — a phone, or a window dragged narrow — the page switches over. The canvas
+keeps the **whole** area and both side panes dock over it as sheets:
+
+| | Wide | Narrow |
+|---|---|---|
+| **Parts list** | Column beside the canvas | Bottom sheet, opened by the header button showing the part count |
+| **Inspector** | Its own column | Bottom sheet, while a part is selected |
+| **First-row buttons** | Icon **and** word | Icon only (~190 px instead of ~390) — the wording moves into the tooltip |
+| **Palette** | All seven visible | The same strip, scrolled sideways |
+| **Header** | Emblem, subtitle, three counts | Title and Speichern only, plus the parts button |
+| **Speed legend** | Bottom left | Hidden — the track's colour and number say the same thing |
+
+**One sheet at a time**: select a part and the inspector wins, the parts list steps aside. The parts
+list starts closed — you build first and inspect afterwards.
+
+Stacked, the parts list used to take two of five rows, which left the canvas roughly 240 px once the
+header and toolbar had taken their share. That is why it is a sheet now.
 
 ---
 
