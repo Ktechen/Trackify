@@ -7,11 +7,24 @@ Docker image or `.deb`, see `Source/Trackify.Cli/ReadMe.md`.
 Status: **2026-10-21**. Store rules change every year, so check the dates in the
 [requirements table](#store-requirements-checked-on-2026-10-21) before you upload.
 
-**Not decided yet: which store comes first.** The recommendation is to start the **Google Play
-closed test now**, because a new personal Play account has to run 12 testers for 14 days before
-production unlocks, and that clock is the longest lead time of all. Do the **Microsoft Store in
-parallel**: registration is free and the Windows head builds here. Leave the **App Store for last**,
-because it needs a Mac, Xcode 26 and the paid developer programme.
+**Order, decided 2026-10-21:** **Google Play first.** Start the closed test now, because a new
+personal Play account has to run 12 testers for 14 days before production unlocks, and that clock
+is the longest lead time of all. Run the **Microsoft Store in parallel**: registration is free and
+the Windows head builds here. The **App Store comes last**, because it needs a Mac, Xcode 26 and
+the paid developer programme.
+
+### Next steps for Google Play + Microsoft Store
+
+1. Play Console account → upload key → privacy policy online ([Google Play](#google-play-android),
+   steps 1–3).
+2. The release pipeline produces a signed `.aab` from a `vX.Y.Z` tag
+   ([what CI needs](#what-ci-needs-for-the-release-pipeline-task-not-built-here)) → closed-testing
+   track → recruit 12 testers. The 14 days start once they have opted in.
+3. In parallel: Partner Center account → reserve the name → copy the identity into
+   `Package.appxmanifest` ([Microsoft Store](#microsoft-store-windows), steps 1–2). The release
+   pipeline then builds the Store `.msixupload`.
+4. Fill in the store listings from the [drafts](#store-listing-drafts) and capture the
+   screenshots.
 
 ---
 
@@ -20,8 +33,9 @@ because it needs a Mac, Xcode 26 and the paid developer programme.
 | | Google Play | App Store | Microsoft Store |
 |---|---|---|---|
 | App identity | ✅ `com.ktechen.trackify` | ✅ same bundle id | ⚠️ Name/Publisher must come from Partner Center |
-| Version | ✅ versionCode/versionName from the csproj | ✅ CFBundleVersion/ShortVersionString from the csproj | ✅ fixed: revision forced to 0 |
+| Version | ⏳ from the `vX.Y.Z` tag (release pipeline) | ⏳ same | ⏳ same, with revision 0 (release pipeline) |
 | Release build | ✅ fixed: AAB restore error on SDK 10.0.2xx | ❓ needs a Mac | ✅ builds here |
+| Store package | ⏳ `.aab` from the release pipeline | ❓ `.ipa` on a Mac | ⏳ `.msixupload` from the release pipeline |
 | Permissions / usage texts | ✅ BLE correct; INTERNET added | ✅ Bluetooth + local network texts | ✅ Bluetooth + network capabilities added |
 | Privacy | ✅ nothing collected; Data safety answers below | ✅ privacy manifest repaired | ✅ |
 | Export compliance | n/a | ✅ `ITSAppUsesNonExemptEncryption = false` | n/a |
@@ -55,15 +69,11 @@ under 30 characters). Reserve it early, in App Store Connect and in Partner Cent
 
 ### Version
 
-**Before this branch there was no single source of truth.** `Trackify.csproj` hard-codes
-`ApplicationDisplayVersion 1.0` and `ApplicationVersion 1`, the CLI has no version, and the Windows
-package came out as `1.0.0.1`, which the Microsoft Store rejects (see below).
-
-The unmerged WIP commit `1ed2118` on `feat/release-pipeline` fixes this. It adds `TrackifyVersion`
-(`X.Y.Z`) in `Directory.Build.props`, and derives `ApplicationDisplayVersion = TrackifyVersion` and
-`ApplicationVersion = TrackifyVersionCode` (`major·10000 + minor·100 + patch`, so 1.2.3 → 10203)
-from it. **Adopt that branch, don't build a second one.** This branch deliberately leaves the two
-version lines alone so the merge stays clean.
+**The release pipeline owns the version.** Trackify uses Semantic Versioning: a Git tag `vX.Y.Z`
+creates a release, and the pipeline passes the version into the build. The Android versionCode is
+derived from the SemVer. This branch does not touch any version property. On master, the csproj
+still hard-codes `ApplicationDisplayVersion 1.0` and `ApplicationVersion 1`, which makes the Windows
+package `1.0.0.1`, and the Microsoft Store rejects that (see the last row).
 
 What each store does with the two values, and the rule each one enforces:
 
@@ -71,15 +81,14 @@ What each store does with the two values, and the rule each one enforces:
 |---|---|---|---|
 | Google Play | `versionName` (shown) | `versionCode` | versionCode must be higher than every earlier upload, including test tracks |
 | App Store | `CFBundleShortVersionString` | `CFBundleVersion` | ShortVersion is `X.Y.Z`; the build number must grow within one version |
-| Microsoft Store | MSIX `Major.Minor.Build` | **nothing (forced to 0)** | The 4th part (revision) is reserved for the Store and **must be 0**. Each part ≤ 65535, and every upload must be higher |
+| Microsoft Store | MSIX `Major.Minor.Build` | **must not reach it**: revision 0 | The 4th part (revision) is reserved for the Store and **must be 0**. Each part ≤ 65535, and every upload must be higher |
 
-The last row is fixed here. Uno.Resizetizer writes `ApplicationVersion` into the MSIX revision, so
-`Trackify.csproj` now sets `ApplicationVersion=0` for the Windows head only. That leaves the
-version as `ApplicationDisplayVersion.0`, so **every Store upload needs a higher
-`TrackifyVersion`**. The WIP commit message still says "MSIX revision derives from it". When it
-merges, that sentence is wrong for the Store. (It is harmless for its side-load MSIX, which only
-passes `-p:TrackifyVersion`.) **Never pass `-p:ApplicationVersion=…` to a Windows build**: a
-command-line value overrides the csproj.
+**The last row is implemented by the release pipeline.** Uno.Resizetizer writes
+`ApplicationVersion` into the MSIX revision (`1.0` + `1` → `1.0.0.1`). So the Windows build has to
+end up with `ApplicationVersion` = 0, and the MSIX version is then `X.Y.Z.0`. Two consequences:
+every Store upload needs a higher `X.Y.Z`, and a derived versionCode such as 10203 must not land in
+the revision. It would be rejected, and it exceeds 65535 from major version 7 on. This was found
+here, but it is implemented in one place only, the release pipeline.
 
 ### Trademarks (LEGO®, Powered Up)
 
@@ -198,12 +207,12 @@ reporting or an account system is ever added.
 
 ### What CI needs (for the release-pipeline task, not built here)
 
-- `dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-android
-  -p:AndroidPackageFormats=aab` (or keep `aab;apk` to also get a side-loadable APK).
-  The WIP `android-apk.yml` sets `apk` only, so Play needs the `aab` variant.
-- Signing: `-p:AndroidKeyStore=true -p:AndroidSigningKeyStore=<path>
+- An **`.aab`** from the `vX.Y.Z` tag build: `dotnet publish Source/Trackify/Trackify.csproj -c
+  Release -f net10.0-android -p:AndroidPackageFormats=aab` (or `aab;apk` to also keep a
+  side-loadable APK), with the version from the tag. An APK alone cannot go to Play.
+- Signing with the upload key: `-p:AndroidKeyStore=true -p:AndroidSigningKeyStore=<path>
   -p:AndroidSigningKeyAlias=trackify -p:AndroidSigningStorePass=env:… -p:AndroidSigningKeyPass=env:…`,
-  with the keystore from a secret (the WIP workflow already decodes `ANDROID_KEYSTORE_BASE64`).
+  with the keystore decoded from a repository secret.
 - `dotnet workload install android` on the runner pulls a current workload, so the restore
   workaround is not needed there.
 - Optional: upload to the internal or closed track with the Play Developer API (a service account
@@ -270,7 +279,7 @@ with `xcrun altool --upload-app` or `fastlane pilot`.
 | Identity `Name` | generated from `ApplicationId` → `com.ktechen.trackify` | ⚠️ Partner Center assigns its own (for example `12345YourName.Trackify`), so it must be copied in |
 | Identity `Publisher` | generated `O=Trackify` | ⚠️ must be Partner Center's `CN=…` exactly, or the upload is refused |
 | `PublisherDisplayName` | generated `Trackify` | ⚠️ must match your Partner Center publisher name |
-| Version | `1.0.0.1` (revision = `ApplicationVersion`) | **Fixed:** `1.0.0.0`, revision forced to 0 |
+| Version | `1.0.0.1` (revision = `ApplicationVersion`), rejected by the Store | ⏳ the release pipeline sets revision 0 (see [Version](#version)) |
 | Description | template "Trackify powered by Uno Platform." | **Fixed** (csproj `Description`) |
 | Bluetooth capability | **missing** | **Added** `<DeviceCapability Name="bluetooth" />` |
 | Network capabilities | missing | **Added** `internetClient` + `privateNetworkClientServer` (Server mode) |
@@ -288,11 +297,12 @@ with `xcrun altool --upload-app` or `fastlane pilot`.
    <Identity Name="12345YourName.Trackify" Publisher="CN=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" />
    <Properties><PublisherDisplayName>Your publisher name</PublisherDisplayName></Properties>
    ```
-   Values written there win over the generated ones. Leave `Version` out, because the csproj
-   supplies it.
-3. **Build the Store upload** (`.msixupload`, unsigned is fine because the Store signs it):
+   Values written there win over the generated ones. Leave `Version` out, because the build sets
+   it from the release tag.
+3. **Take the Store upload** (`.msixupload`, unsigned is fine because the Store signs it) from the
+   release pipeline's tag build. For reference, the local equivalent (not run here) is:
    ```bash
-   dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-windows10.0.19041.0 -p:GenerateAppxPackageOnBuild=true -p:UapAppxPackageBuildMode=StoreUpload -p:AppxBundle=Always -p:AppxBundlePlatforms="x64|arm64"
+   dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-windows10.0.19041.0 -p:GenerateAppxPackageOnBuild=true -p:UapAppxPackageBuildMode=StoreUpload -p:AppxBundle=Always -p:AppxBundlePlatforms="x64|arm64" -p:ApplicationDisplayVersion=X.Y.Z -p:ApplicationVersion=0
    ```
 4. **Run the Windows App Certification Kit** (`appcert.exe`, from the Windows SDK) on the
    package, then submit with: privacy policy URL, age rating questionnaire (IARC), category
@@ -300,8 +310,10 @@ with `xcrun altool --upload-app` or `fastlane pilot`.
 
 ### What CI needs
 
-`windows-latest`, the command from step 3, and the Partner Center values. Either commit them to
-the manifest (they are not secret) or inject them with `-p:`. Do not pass `-p:ApplicationVersion`.
+`windows-latest`, the command from step 3 with the version from the tag, and the Partner Center
+values. Either commit them to the manifest (they are not secret) or inject them with `-p:`. The
+Windows build has to get `ApplicationVersion=0`, never the derived versionCode (see
+[Version](#version)).
 Signing is only needed for the side-load MSIX: a `.pfx` whose subject equals the manifest's
 `Publisher`. Store submission can be automated with the Microsoft Store Developer CLI
 (`msstore publish`) and an Entra ID app registration.
@@ -540,9 +552,9 @@ These were found during the audit but belong to other work:
   HTTPS for the Pi backend (a reverse proxy) and change the example, or deliberately allow
   cleartext to local addresses only (Android `network_security_config`, iOS
   `NSAllowsLocalNetworking`).
-- **Release pipeline** (`feat/release-pipeline`, WIP `1ed2118`): add the `aab` variant, the iOS
-  job and the Store-upload MSIX as described in each "What CI needs" section, and correct its
-  "MSIX revision" comment.
+- **Release pipeline** (its own session): version from the `vX.Y.Z` tag, a signed `.aab` for
+  Play, the Store `.msixupload` with MSIX revision 0, and later the iOS job. See each "What CI
+  needs" section.
 - **Android 16 behaviour changes** that come with targetSdk 36: edge-to-edge can no longer be
   turned off, and orientation/resizability locks are ignored on screens ≥ 600 dp. Check both on a
   tablet before the first release.
@@ -559,10 +571,12 @@ Results on 2026-10-21:
 - Android **Release** publish produced `com.ktechen.trackify-Signed.aab` + `.apk`. All 426 native
   libraries (arm64 + x86_64, including e_sqlite3, SkiaSharp and HarfBuzzSharp) have ≥ 16 KB
   `PT_LOAD` alignment.
-- Not run: the Microsoft Store `.msixupload` command above, and anything iOS.
-- Android: the **merged** manifest was checked in the build output (`obj/…/android/AndroidManifest.xml`),
-  not just the source file.
-- Windows: the generated `Package.appxmanifest` (`obj/…/unoresizetizer/m/`) was checked for
-  identity, version and capabilities.
-- iOS: plists parsed only, no build (needs a Mac).
-- `dotnet test Test/Trackify.Tests/Trackify.Tests.csproj`.
+- Android: the **merged** manifest in the build output
+  (`obj/<config>/net10.0-android/android/manifest/AndroidManifest.xml`), not just the source file,
+  in both Debug and Release: minSdk 21, targetSdk 36, the BLE permissions as intended, INTERNET
+  present.
+- Windows: the generated `obj/Debug/net10.0-windows10.0.19041.0/unoresizetizer/m/Package.appxmanifest`
+  has the new capabilities and the real description. Its version is still `1.0.0.1` until the
+  release pipeline sets revision 0.
+- iOS: plists parsed with `plistlib` only, no build (needs a Mac).
+- Not run: the Microsoft Store `.msixupload` command above.

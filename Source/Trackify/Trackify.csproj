@@ -47,17 +47,6 @@
         </UnoFeatures>
     </PropertyGroup>
 
-    <!-- Microsoft Store: the fourth (revision) part of an MSIX version is reserved for the Store and
-         must be 0, but Uno.Resizetizer writes ApplicationVersion into exactly that slot (1.0 + 1 →
-         1.0.0.1, rejected on upload). Zero it for the Windows head, so the package version is
-         ApplicationDisplayVersion.0 — every Store upload therefore needs a higher
-         ApplicationDisplayVersion. Android versionCode and iOS CFBundleVersion keep ApplicationVersion.
-         A -p:ApplicationVersion=… on the command line beats this group, so a Windows release build
-         must pass 0 (or nothing) there. See docs/store-release.md. -->
-    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-        <ApplicationVersion>0</ApplicationVersion>
-    </PropertyGroup>
-
     <!-- Android Release (the AAB for Google Play): .NET SDK 10.0.2xx adds the host RID (win-x64) to
          RuntimeIdentifiers whenever PublishTrimmed is on, and restore then looks for a
          Microsoft.NETCore.App.Runtime.Mono.win-x64 pack that does not exist (NU1102). The Android

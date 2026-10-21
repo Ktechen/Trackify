@@ -6,10 +6,11 @@
   IgnorableNamespaces="uap rescap">
 
   <!-- Uno.Resizetizer fills empty attributes from the csproj: Name ← ApplicationId,
-       Publisher ← "O=" + ApplicationPublisher, Version ← ApplicationDisplayVersion.0 (see the Windows
-       group in Trackify.csproj). For the Microsoft Store, copy Name and Publisher (CN=…) from Partner
-       Center → Product identity onto this element, and PublisherDisplayName into <Properties>: values
-       written here win over the generated ones. Leave Version to the csproj. -->
+       Publisher ← "O=" + ApplicationPublisher, Version ← ApplicationDisplayVersion with
+       ApplicationVersion as the 4th part. For the Microsoft Store, copy Name and Publisher (CN=…) from
+       Partner Center → Product identity onto this element, and PublisherDisplayName into <Properties>:
+       values written here win over the generated ones. Leave Version to the build — the release
+       pipeline sets it from the vX.Y.Z tag, with the 4th part 0 as the Store requires. -->
   <Identity />
   <Properties />
 
