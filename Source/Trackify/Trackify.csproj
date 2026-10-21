@@ -25,11 +25,27 @@
         <!--
           Versions - both derive from TrackifyVersion in Directory.Build.props, the single source of
           truth for a release. ApplicationDisplayVersion is the user-visible string (Android
-          versionName, MSIX package version); ApplicationVersion is the monotonic integer platforms
-          compare when deciding whether something is an update (Android versionCode, MSIX revision).
+          versionName, and the first three parts of the MSIX package version); ApplicationVersion is
+          the monotonic integer platforms compare when deciding whether something is an update
+          (Android versionCode, iOS CFBundleVersion).
         -->
         <ApplicationDisplayVersion>$(TrackifyVersion)</ApplicationDisplayVersion>
         <ApplicationVersion>$(TrackifyVersionCode)</ApplicationVersion>
+        <!--
+          Windows is the exception, and it is not negotiable: the MSIX package version is four parts
+          and Uno builds it as $(ApplicationDisplayVersion).$(ApplicationVersion), so our version
+          code would land in the fourth part. The Microsoft Partner Center reserves that part and
+          rejects any Store package whose fourth part is not 0. So the Windows head gets 0 there,
+          making the package version exactly TrackifyVersion + ".0" (1.2.3 -> 1.2.3.0).
+
+          Ordering within the MSIX is still correct, because the first three parts carry the
+          Semantic Version. Nothing is lost: Windows never needed the integer that Android does.
+
+          Consequence for the pipeline: a Windows build must never be handed
+          -p:ApplicationVersion=..., or it would overwrite this and produce a package the Store
+          refuses. windows-msix.yml passes only -p:TrackifyVersion.
+        -->
+        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">0</ApplicationVersion>
         <!-- Package Publisher -->
         <ApplicationPublisher>Trackify</ApplicationPublisher>
         <!-- Package Description -->

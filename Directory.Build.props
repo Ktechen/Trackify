@@ -30,8 +30,13 @@
     then tag that commit `v<TrackifyVersion>`. Everything downstream derives from this one property:
 
       * Version / assembly + file version        - every project (set below)
-      * ApplicationDisplayVersion                - Uno app: Android versionName, MSIX package version
-      * ApplicationVersion (TrackifyVersionCode) - Uno app: Android versionCode, MSIX revision
+      * ApplicationDisplayVersion                - Uno app: Android versionName, and the first three
+                                                   parts of the MSIX package version
+      * ApplicationVersion (TrackifyVersionCode) - Uno app: Android versionCode, iOS CFBundleVersion.
+                                                   NOT the MSIX fourth part - the Windows head
+                                                   overrides it to 0, because the Microsoft Partner
+                                                   Center reserves that part and rejects anything
+                                                   else. See Source/Trackify/Trackify.csproj.
       * the .deb package version                 - .github/scripts/build-deb.sh, from the tag
       * the GitHub Release name                  - .github/workflows/release.yml
 
@@ -45,10 +50,12 @@
     <Version>$(TrackifyVersion)</Version>
 
     <!--
-      Android's versionCode and the MSIX revision are single integers that MUST increase with every
-      release or the platform refuses the update. Deriving them from TrackifyVersion leaves just one
-      number to maintain: two digits each for minor and patch, so 1.0.0 -> 10000, 1.2.3 -> 10203.
-      (Minor and patch therefore have to stay below 100 - fine for this project.)
+      Android's versionCode is a single integer that MUST increase with every release or the platform
+      refuses the update (iOS CFBundleVersion behaves the same way). Deriving it from TrackifyVersion
+      leaves just one number to maintain: two digits each for minor and patch, so 1.0.0 -> 10000 and
+      1.2.3 -> 10203. Minor and patch therefore have to stay below 100, or the mapping stops being
+      monotonic (1.0.100 would collide with 1.1.0) - bump the minor rather than let a patch number
+      reach three digits. Windows does not use this integer at all; see the note above.
     -->
     <_TrackifyVersionMajor>$(TrackifyVersion.Split('.')[0])</_TrackifyVersionMajor>
     <_TrackifyVersionMinor>$(TrackifyVersion.Split('.')[1])</_TrackifyVersionMinor>

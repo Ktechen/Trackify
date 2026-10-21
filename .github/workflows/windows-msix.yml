@@ -92,6 +92,12 @@ jobs:
       # UapAppxPackageBuildMode=SideloadOnly + AppxBundle=Never: a single .msix for direct install,
       # not a Store bundle. x64 only - Windows-on-arm would need a second run with
       # RuntimeIdentifier=win-arm64.
+      #
+      # Only -p:TrackifyVersion is passed, deliberately. The package version has to come out as
+      # TrackifyVersion + ".0", because the Microsoft Partner Center reserves the fourth part and
+      # rejects a Store package whose fourth part is not 0. Trackify.csproj pins ApplicationVersion
+      # to 0 for the Windows head to achieve that, so passing -p:ApplicationVersion=... here would
+      # override it and produce a package the Store refuses. Do not add it.
       - name: Build MSIX (signed)
         if: steps.signing.outputs.signed == 'true'
         shell: bash

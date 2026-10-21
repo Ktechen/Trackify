@@ -243,18 +243,27 @@ title all come from it, and the builds receive it as `-p:TrackifyVersion=…` ra
 anything up in a file.
 
 **The `versionCode` formula and its limits.** Android refuses an update whose `versionCode` is not a
-strictly larger integer than the installed one, and MSIX compares its revision the same way. Both are
-derived — not maintained — as `major × 10000 + minor × 100 + patch`, so `1.2.3` → `10203`. Two
-consequences worth knowing before they bite:
+strictly larger integer than the installed one, and iOS treats `CFBundleVersion` the same way. That
+integer is derived — not maintained — as `major × 10000 + minor × 100 + patch`, so `1.2.3` → `10203`.
+Two consequences worth knowing before they bite:
 
 - **minor and patch must stay below 100.** `1.0.100` would collide with `1.1.0` (both 10100). Bump
   the minor instead of running a patch number into three digits.
 - The formula is monotonic only while that holds; it is checked nowhere, because the realistic
   failure (a rejected Play Store upload) is loud and this project's numbering is nowhere near 100.
 
-MSIX additionally needs a four-part version, which Uno composes from `ApplicationDisplayVersion` plus
-this integer. The non-SemVer `Alpha` tag predates all of this: every lookup of "the previous release"
-globs `v[0-9]*.[0-9]*.[0-9]*` so it can never be mistaken for one.
+**Windows is the deliberate exception.** An MSIX package version has four parts, and Uno composes it
+as `$(ApplicationDisplayVersion).$(ApplicationVersion)` — which would put the version code in the
+fourth part. The **Microsoft Partner Center reserves that part and rejects any Store package whose
+fourth part is not `0`**, so `Trackify.csproj` pins `ApplicationVersion` to `0` for the Windows head
+alone. The MSIX version is therefore exactly `TrackifyVersion` + `.0` (`1.2.3` → `1.2.3.0`), and
+ordering still works because the first three parts carry the Semantic Version. The practical rule
+this creates: **a Windows build must never be handed `-p:ApplicationVersion=…`**, or it would
+override the `0` and produce a package the Store refuses; `windows-msix.yml` passes only
+`-p:TrackifyVersion`.
+
+The non-SemVer `Alpha` tag predates all of this: every lookup of "the previous release" globs
+`v[0-9]*.[0-9]*.[0-9]*` so it can never be mistaken for one.
 
 **Store formats.** Google Play accepts only an **`.aab`**, which cannot be installed directly, so the
 Android job emits `apk;aab` from one compile — the APK for side-loading, the AAB for Play. The
