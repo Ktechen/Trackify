@@ -36,8 +36,8 @@
       </Grid.ColumnDefinitions>
 
       <Button Grid.Column="0" Style="{StaticResource IconButtonStyle}" Command="{Binding GoBackCommand}"
-              AutomationProperties.AutomationId="BackButton" AutomationProperties.Name="Zurück zur Train-Konfiguration"
-              Margin="0,0,10,0" ToolTipService.ToolTip="Zurück zur Train-Konfiguration">
+              AutomationProperties.AutomationId="BackButton" AutomationProperties.Name="Zurück zur Zugkonfiguration"
+              Margin="0,0,10,0" ToolTipService.ToolTip="Zurück zur Zugkonfiguration">
         <FontIcon Glyph="&#xE72B;" FontSize="16" />
       </Button>
 

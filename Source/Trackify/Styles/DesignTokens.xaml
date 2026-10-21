@@ -6,7 +6,7 @@
     Component tokens for the "Industry" design system (claude.ai/design import
     "Trackify Mobile.dc.html", _ds/industry-.../styles.css): a square, hairline-bordered "blueprint"
     wireframe look — Foundations (typography, corner radius) + the recurring section-card / FAB /
-    icon-button / segmented-pill / tag shapes used across Train-Konfiguration and Streckenplaner.
+    icon-button / segmented-pill / tag shapes used across Zugkonfiguration and Streckenplaner.
   -->
 
   <!-- MutedText carries the small mono captions (ids, tokens, formulas), so it has to clear WCAG AA
@@ -99,7 +99,7 @@
     <Setter Property="BorderThickness" Value="0" />
   </Style>
 
-  <!-- Extended FAB ("+ Neuer Train") — filled accent, square, per .btn-primary -->
+  <!-- Extended FAB ("+ Neuer Zug") — filled accent, square, per .btn-primary -->
   <Style x:Key="FabButtonStyle" TargetType="Button">
     <Setter Property="Background" Value="{ThemeResource PrimaryBrush}" />
     <Setter Property="Foreground" Value="{ThemeResource OnPrimaryBrush}" />

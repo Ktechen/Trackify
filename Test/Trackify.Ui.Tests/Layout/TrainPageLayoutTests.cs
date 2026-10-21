@@ -4,7 +4,7 @@ using Xunit;
 namespace Trackify.Ui.Tests.Layout;
 
 /// <summary>
-/// The Train-Konfiguration page's responsive rules: a list rail beside the editor when there is room,
+/// The Zugkonfiguration page's responsive rules: a list rail beside the editor when there is room,
 /// master-detail when there is not. Testable for the same reason as
 /// <see cref="EditorPageLayoutTests"/> — the page cannot be instantiated here and cannot be looked at.
 /// </summary>

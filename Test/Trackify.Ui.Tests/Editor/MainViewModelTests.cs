@@ -40,6 +40,22 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void The_screen_calls_a_train_a_Zug()
+    {
+        // The UI is German throughout, so a train is a "Zug" wherever the user reads it — the
+        // placeholder name of a new one and the empty-list hints included. Code keeps "Train".
+        var viewModel = Screen();
+
+        Assert.Contains("Noch kein Zug", viewModel.EmptyListMessage, StringComparison.Ordinal);
+
+        viewModel.AddTrainCommand.Execute(null);
+        Assert.Equal("Neuer Zug", viewModel.SelectedTrain!.Name);
+
+        viewModel.Search = "gibt-es-nicht";
+        Assert.StartsWith("Kein Zug passt", viewModel.EmptyListMessage, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Adding_a_train_clears_the_search_so_the_new_one_is_visible()
     {
         var viewModel = Screen();
@@ -130,7 +146,7 @@ public class MainViewModelTests
 
         Assert.True(viewModel.IsListEmpty);
         Assert.Contains("„Hub suchen“", viewModel.EmptyListMessage, StringComparison.Ordinal);
-        Assert.Contains("„Neuer Train“", viewModel.EmptyListMessage, StringComparison.Ordinal);
+        Assert.Contains("„Neuer Zug“", viewModel.EmptyListMessage, StringComparison.Ordinal);
     }
 
     [Fact]

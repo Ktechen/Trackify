@@ -19,14 +19,14 @@ Ports ist und keine Koordinatenliste, in [ADR-17](arc42/09-architecture-decision
 
 | Seite | Wofür | Kurz |
 |---|---|---|
-| **Train-Konfiguration** (`MainPage`) | Züge anlegen, Hubs suchen und verbinden, Fahrverhalten pro Zug | *Was* fährt |
+| **Zugkonfiguration** (`MainPage`) | Züge anlegen, Hubs suchen und verbinden, Fahrverhalten pro Zug | *Was* fährt |
 | **Streckenplaner** (`SecondPage`) | Die Strecke zeichnen, Teile konfigurieren, Sensoren setzen | *Wo* es fährt |
 
-Hin und zurück: im Kopf der Train-Seite der Knopf mit dem Gleis-Symbol
-(„Streckenplaner öffnen"), im Streckenplaner der Zurück-Pfeil („Zurück zur Train-Konfiguration").
+Hin und zurück: im Kopf der Zug-Seite der Knopf mit dem Gleis-Symbol
+(„Streckenplaner öffnen"), im Streckenplaner der Zurück-Pfeil („Zurück zur Zugkonfiguration").
 
 Beide Seiten sind **responsiv**. Im Breiten-Layout stehen die Bereiche nebeneinander. Im schmalen
-zeigt die Train-Seite die Liste *oder* den Editor, und der Streckenplaner legt Teileliste und
+zeigt die Zug-Seite die Liste *oder* den Editor, und der Streckenplaner legt Teileliste und
 Inspector als Laschen über die Zeichenfläche. In beiden Kopfzeilen kürzt sich dann der Titel, damit
 die Knöpfe rechts nie aus dem Bild rutschen.
 
@@ -200,18 +200,18 @@ die Zeichenfläche noch etwa 240 px. Deshalb ist sie jetzt eine Lasche.
 
 ---
 
-## Train-Konfiguration
+## Zugkonfiguration
 
-![Train-Konfiguration](images/train-konfiguration.png)
+![Zugkonfiguration](images/train-konfiguration.png)
 
 *Erwartet: `docs/images/train-konfiguration.png` — Zugliste links, Zug-Editor rechts.*
 
-Kopfzeile: **„Train-Konfiguration"** mit dem Untertitel **„Powered Up · Legoino-Schnittstelle"**
+Kopfzeile: **„Zugkonfiguration"** mit dem Untertitel **„Powered Up · Legoino-Schnittstelle"**
 und der Zählung `n aktiv · n gesamt`.
 
 | Bereich | Wofür |
 |---|---|
-| **Zugliste** | Alle Züge; „Zurück zur Liste" führt im schmalen Layout dorthin zurück. Das Suchfeld filtert nach Name und Hub-Typ. Ist die Liste leer, sagt sie warum: ohne Trains nennt sie die zwei Wege zum ersten („Hub suchen" und „Neuer Train"), bei einer Suche ohne Treffer „Kein Train passt zu …". |
+| **Zugliste** | Alle Züge; „Zurück zur Liste" führt im schmalen Layout dorthin zurück. Das Suchfeld filtert nach Name und Hub-Typ. Ist die Liste leer, sagt sie warum: ohne Züge nennt sie die zwei Wege zum ersten („Hub suchen" und „Neuer Zug"), bei einer Suche ohne Treffer „Kein Zug passt zu …". |
 | **Zug-Editor** | Name, Hub-Modell, BLE-Adresse, Ports, Tempo, Farbe, Beschleunigungs- und Bremsfunktion, aktiv ja/nein. Aktiv-Schalter, Duplizieren und Löschen stehen ab 960 px Fensterbreite neben dem Namen, darunter in einer eigenen Zeile unter ihm. |
 | **Hub suchen** | Scannt nach Hubs. Gefundene werden **zur Bestätigung** angeboten, nicht still übernommen; kennt ein Zug die Adresse schon, bindet sich der Hub an ihn statt einen zweiten Zug anzulegen. |
 | **Verbinden / Trennen** | Baut die BLE-Verbindung auf — über die Geräte-ID aus der Suche, sonst über die eingetippte BLE-Adresse. |

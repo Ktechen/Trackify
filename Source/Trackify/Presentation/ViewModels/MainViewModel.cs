@@ -35,8 +35,8 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>What the empty list says instead: the two ways to a first train, or that the search found none.</summary>
     public string EmptyListMessage => Trains.Count == 0
-        ? "Noch kein Train angelegt. „Hub suchen“ findet deinen Hub, „Neuer Train“ legt einen von Hand an."
-        : $"Kein Train passt zu „{Search.Trim()}“.";
+        ? "Noch kein Zug angelegt. „Hub suchen“ findet deinen Hub, „Neuer Zug“ legt einen von Hand an."
+        : $"Kein Zug passt zu „{Search.Trim()}“.";
 
     public ObservableCollection<ColorSwatchItemViewModel> ColorSwatches { get; }
 
@@ -113,7 +113,7 @@ public partial class MainViewModel : ObservableObject
     {
         var train = new Train
         {
-            Id = $"trn-{_sequence++}", Name = "Neuer Train", Hub = HubType.PoweredUpHub, BleAddress = "",
+            Id = $"trn-{_sequence++}", Name = "Neuer Zug", Hub = HubType.PoweredUpHub, BleAddress = "",
             Color = LedColorType.Green, PortA = DeviceType.TrainMotor, PortB = DeviceType.None, Speed = 70,
             AccelFn = SpeedFunctionType.EaseOut, BrakeFn = SpeedFunctionType.EaseIn, IsActive = true,
         };

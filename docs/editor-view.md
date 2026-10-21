@@ -22,12 +22,12 @@ means, so this file is usable without reading German.
 
 | Page | For | In short |
 |---|---|---|
-| **Train-Konfiguration** — train configuration (`MainPage`) | Creating trains, discovering and connecting hubs, per-train driving behaviour | *What* drives |
+| **Zugkonfiguration** — train configuration (`MainPage`) | Creating trains, discovering and connecting hubs, per-train driving behaviour | *What* drives |
 | **Streckenplaner** — track planner (`SecondPage`) | Drawing the layout, configuring parts, placing sensors | *Where* it drives |
 
 Getting between them: the track-icon button in the train page's header
 ("Streckenplaner öffnen" — open the track planner), and the back arrow in the planner
-("Zurück zur Train-Konfiguration" — back to train configuration).
+("Zurück zur Zugkonfiguration" — back to train configuration).
 
 Both pages are **responsive**. In the wide layout the areas sit side by side. In the narrow one the
 train page shows the list *or* the editor, and the track planner lays the parts list and the
@@ -210,18 +210,18 @@ header and toolbar had taken their share. That is why it is a sheet now.
 
 ---
 
-## Train configuration (Train-Konfiguration)
+## Train configuration (Zugkonfiguration)
 
 ![Train configuration](images/train-konfiguration.png)
 
 *Expected: `docs/images/train-konfiguration.png` — train list left, train editor right.*
 
-Header: **"Train-Konfiguration"** with the subtitle **"Powered Up · Legoino-Schnittstelle"**
+Header: **"Zugkonfiguration"** with the subtitle **"Powered Up · Legoino-Schnittstelle"**
 (*Legoino interface*) and the count `n aktiv · n gesamt` (active, total).
 
 | Area | For |
 |---|---|
-| **Train list** | Every train; "Zurück zur Liste" (*back to the list*) returns there in the narrow layout. The search box filters by name and hub type. An empty list says why: with no trains it names the two ways to a first one ("Hub suchen" and "Neuer Train"), and a search without a hit reads "Kein Train passt zu …" (*no train matches …*). |
+| **Train list** | Every train; "Zurück zur Liste" (*back to the list*) returns there in the narrow layout. The search box filters by name and hub type. An empty list says why: with no trains it names the two ways to a first one ("Hub suchen" and "Neuer Zug"), and a search without a hit reads "Kein Zug passt zu …" (*no train matches …*). |
 | **Train editor** | Name, hub model, BLE address, ports, speed, colour, acceleration and braking function, active yes/no. The active switch, duplicate and delete sit beside the name from a 960 px window up, and on their own row below it under that. |
 | **Hub suchen** (*discover hubs*) | Scans for hubs. Found ones are offered **for confirmation**, not adopted silently; if a train already knows the address, the hub binds to it instead of creating a second train. |
 | **Verbinden / Trennen** (*connect / disconnect*) | Opens the BLE connection — by the device id from discovery, otherwise by the typed-in BLE address. |

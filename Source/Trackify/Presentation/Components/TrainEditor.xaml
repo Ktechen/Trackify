@@ -124,7 +124,7 @@
                          VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                          Visibility="{Binding IsChecked, ElementName=RenameToggle, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
               <TextBox Grid.Column="0" Text="{Binding SelectedTrain.Name, Mode=TwoWay}" FontSize="25" FontWeight="Bold"
-                       Background="Transparent" BorderThickness="0" Padding="0" AutomationProperties.Name="Name des Trains"
+                       Background="Transparent" BorderThickness="0" Padding="0" AutomationProperties.Name="Name des Zugs"
                        Visibility="{Binding IsChecked, ElementName=RenameToggle, Converter={StaticResource BoolToVisibilityConverter}}" />
               <ToggleButton Grid.Column="1" x:Name="RenameToggle" Background="Transparent" BorderThickness="0" Padding="6"
                             MinWidth="{StaticResource TouchTargetSize}" MinHeight="{StaticResource TouchTargetSize}"
@@ -168,7 +168,7 @@
               <FontIcon Glyph="&#xE8C8;" FontSize="15" />
             </Button>
             <Button Grid.Column="4" Style="{StaticResource IconButtonStyle}" Command="{Binding DeleteTrainCommand}"
-                    AutomationProperties.Name="Train löschen" ToolTipService.ToolTip="Löschen" Foreground="{ThemeResource ErrorBrush}">
+                    AutomationProperties.Name="Zug löschen" ToolTipService.ToolTip="Löschen" Foreground="{ThemeResource ErrorBrush}">
               <FontIcon Glyph="&#xE74D;" FontSize="15" />
             </Button>
           </Grid>
@@ -449,9 +449,9 @@
     <StackPanel Visibility="{Binding SelectedTrain, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"
                 HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="24">
       <FontIcon Glyph="&#xE7C0;" FontSize="54" Foreground="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
-      <TextBlock Text="Wähle einen Train aus oder lege einen neuen an." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center"
+      <TextBlock Text="Wähle einen Zug aus oder lege einen neuen an." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center"
                  TextAlignment="Center" TextWrapping="Wrap" />
-      <Button Content="+ Neuer Train" Style="{StaticResource FabButtonStyle}" Command="{Binding AddTrainCommand}" HorizontalAlignment="Center" Padding="20,0" />
+      <Button Content="+ Neuer Zug" Style="{StaticResource FabButtonStyle}" Command="{Binding AddTrainCommand}" HorizontalAlignment="Center" Padding="20,0" />
     </StackPanel>
   </Grid>
 </UserControl>

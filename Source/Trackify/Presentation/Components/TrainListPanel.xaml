@@ -19,8 +19,8 @@
     <StackPanel Grid.Row="0" Padding="16,16,16,14" Spacing="12">
       <Grid>
         <TextBox Text="{Binding Search, Mode=TwoWay}"
-                 PlaceholderText="Train suchen…"
-                 AutomationProperties.Name="Train suchen"
+                 PlaceholderText="Zug suchen…"
+                 AutomationProperties.Name="Zug suchen"
                  Padding="34,11,14,11"
                  BorderThickness="1"
                  BorderBrush="{ThemeResource OutlineVariantBrush}"
@@ -31,7 +31,7 @@
       </Grid>
 
       <!-- Outlined, not a bare Button: Uno.Material's implicit style is a filled, fully rounded pill,
-           which would compete with the one filled action on this rail, "Neuer Train". -->
+           which would compete with the one filled action on this rail, "Neuer Zug". -->
       <Button HorizontalAlignment="Stretch" Style="{StaticResource OutlinedButtonStyle}"
               Command="{Binding DiscoverCommand}" IsEnabled="{Binding IsDiscovering, Converter={StaticResource InverseBoolConverter}}">
         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -117,7 +117,7 @@
     <Button Grid.Row="2" Margin="16,14,16,14" Style="{StaticResource FabButtonStyle}" Command="{Binding AddTrainCommand}">
       <StackPanel Orientation="Horizontal" Spacing="8">
         <FontIcon Glyph="&#xE710;" FontSize="16" />
-        <TextBlock Text="Neuer Train" />
+        <TextBlock Text="Neuer Zug" />
       </StackPanel>
     </Button>
   </Grid>

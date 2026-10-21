@@ -23,7 +23,7 @@
 
         <StackPanel Spacing="4">
           <TextBlock Text="Hub gefunden" FontFamily="{StaticResource HeadingFontFamily}" FontSize="19" FontWeight="SemiBold" />
-          <TextBlock Text="Als Train hinzufügen und verbinden?" FontSize="13"
+          <TextBlock Text="Als Zug hinzufügen und verbinden?" FontSize="13"
                      Foreground="{ThemeResource OnSurfaceVariantBrush}" TextWrapping="Wrap" />
         </StackPanel>
 

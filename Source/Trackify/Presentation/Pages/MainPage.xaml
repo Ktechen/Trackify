@@ -56,7 +56,7 @@
       </Border>
 
       <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1" Margin="0,0,12,0">
-        <TextBlock Text="Train-Konfiguration" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold"
+        <TextBlock Text="Zugkonfiguration" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold"
                    TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="Powered Up · Legoino-Schnittstelle" Style="{StaticResource MonoCaptionTextBlockStyle}"
                    TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />

@@ -1,7 +1,7 @@
 namespace Trackify.Presentation.Layout;
 
 /// <summary>
-/// The Train-Konfiguration page's responsive layout, resolved from width and selection alone — a pure
+/// The Zugkonfiguration page's responsive layout, resolved from width and selection alone — a pure
 /// value, for the same reason as <see cref="EditorPageLayout"/>.
 /// <para>
 /// Wide: list rail | editor, side by side. Narrow it becomes master-detail: the list is the home pane
