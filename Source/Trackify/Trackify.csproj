@@ -47,6 +47,28 @@
         </UnoFeatures>
     </PropertyGroup>
 
+    <!-- App icon and splash screen (Uno.Resizetizer). Sources live in Assets/Icons and Assets/Splash.
+         The background colour is the same value as the fill of Assets/Icons/icon.svg. -->
+    <PropertyGroup>
+        <TrackifyBrandColor>#1D2D3D</TrackifyBrandColor>
+        <UnoSplashScreenColor>$(TrackifyBrandColor)</UnoSplashScreenColor>
+        <!-- Phones: icon.svg is a full-bleed square and the OS masks it (Android adaptive shapes, iOS
+             squircle). The opaque Color keeps the iOS 1024 marketing icon free of transparent pixels,
+             which App Store Connect rejects. icon.svg must keep its name: Info.plist points at
+             Assets.xcassets/icon.appiconset and the Android Application attribute at @mipmap/icon. -->
+        <UnoIconBackgroundColor>$(TrackifyBrandColor)</UnoIconBackgroundColor>
+        <!-- The icon sources are build inputs only. Without this, the default UnoImage glob turns
+             icon_foreground.svg (and whichever background a head does not use) into in-app images. -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);$(AssetsFolder)Icons\**</DefaultItemExcludes>
+    </PropertyGroup>
+    <!-- Windows, desktop and web: nothing masks the icon there, so it brings its own rounded corners
+         on a transparent canvas, and the glyph gets some air from the edge. -->
+    <PropertyGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' Or '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'desktop' Or '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'browserwasm'">
+        <UnoIconBackgroundFile>$(AssetsFolder)Icons\icon_rounded.svg</UnoIconBackgroundFile>
+        <UnoIconBackgroundColor>#00000000</UnoIconBackgroundColor>
+        <UnoIconForegroundScale>0.80</UnoIconForegroundScale>
+    </PropertyGroup>
+
     <!-- The app no longer does Bluetooth: train control lives in the CLI on the Raspberry Pi. It
          registers a no-op ILegoService (Services/UnsupportedLegoService) so the UI still runs. -->
 

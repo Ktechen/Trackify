@@ -21,7 +21,12 @@
     <Application Id="App"
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
-      <uap:VisualElements />
+      <!-- Uno.Resizetizer fills in Square150x150Logo, Square44x44Logo, the DefaultTile logos (Wide310x150,
+           Square71x71, Square310x310), Properties/Logo (StoreLogo) and SplashScreen from the UnoIcon /
+           UnoSplashScreen items, pointing at the files it generates. Leave those attributes out here, or
+           they stop being generated. BackgroundColor stays transparent because the icon carries its own
+           rounded plate; left empty, the generator would derive #000000 from the transparent icon colour. -->
+      <uap:VisualElements BackgroundColor="transparent" />
     </Application>
   </Applications>
 
