@@ -3,13 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:widgets="using:Trackify.Presentation.Widgets"
              xmlns:vm="using:Trackify.Presentation.ViewModels"
+             xmlns:utu="using:Uno.Toolkit.UI"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MainViewModel}">
 
   <!-- Styled modal shown while a discovered hub awaits confirmation (bound to MainViewModel.PendingHub). -->
-  <Grid Background="#B3000000"
+  <Grid Background="{StaticResource OverlayScrimBrush}"
+        utu:SafeArea.Insets="VisibleBounds"
         Visibility="{Binding PendingHub, Converter={StaticResource NullToVisibilityConverter}}">
     <widgets:BlueprintFrame MaxWidth="360" Margin="24" VerticalAlignment="Center" HorizontalAlignment="Center">
     <Border Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="1"
@@ -37,10 +39,10 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <Button Grid.Column="0" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="44" Content="Abbrechen" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+          <Button Grid.Column="0" Style="{StaticResource OutlinedButtonStyle}" Content="Abbrechen" HorizontalAlignment="Stretch"
                   Command="{Binding CancelAddHubCommand}" />
           <Button Grid.Column="1" Content="Verbinden" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                  Style="{StaticResource FabButtonStyle}" Height="44" Command="{Binding ConfirmAddHubCommand}" />
+                  Style="{StaticResource FabButtonStyle}" Height="{StaticResource TouchTargetSize}" Command="{Binding ConfirmAddHubCommand}" />
         </Grid>
       </StackPanel>
     </Border>

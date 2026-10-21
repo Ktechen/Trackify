@@ -70,15 +70,38 @@
               </VisualState.Setters>
             </VisualState>
           </VisualStateGroup>
+
+          <!-- The header's actions (Aktiv switch, Duplizieren, Löschen) take ~200px. Beside the name
+               they starve it to "…" or push Löschen off the edge whenever the editor column is under
+               ~450px: every phone, and two-pane windows up to ~950px (window minus the 346px rail).
+               So by default they sit on their own row under the name, and move up beside it only
+               from 960px, where the column is capped at 560 and has the room. -->
+          <VisualStateGroup>
+            <VisualState x:Name="HeaderStacked" />
+            <VisualState x:Name="HeaderInline">
+              <VisualState.StateTriggers>
+                <AdaptiveTrigger MinWindowWidth="960" />
+              </VisualState.StateTriggers>
+              <VisualState.Setters>
+                <Setter Target="HeaderActions.(Grid.Row)" Value="0" />
+                <Setter Target="HeaderActions.(Grid.Column)" Value="2" />
+                <Setter Target="HeaderActions.(Grid.ColumnSpan)" Value="1" />
+              </VisualState.Setters>
+            </VisualState>
+          </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
         <!-- HEADER ROW -->
-        <Grid Grid.Row="0" Grid.ColumnSpan="2" ColumnSpacing="16" Margin="0,0,0,16">
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" ColumnSpacing="16" RowSpacing="12" Margin="0,0,0,16">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
 
           <Border Width="58" Height="58"
                   Background="{Binding SelectedTrain.ColorHex, Converter={StaticResource HexToBrushConverter}}" Opacity=".88">
@@ -101,31 +124,54 @@
                          VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                          Visibility="{Binding IsChecked, ElementName=RenameToggle, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
               <TextBox Grid.Column="0" Text="{Binding SelectedTrain.Name, Mode=TwoWay}" FontSize="25" FontWeight="Bold"
-                       Background="Transparent" BorderThickness="0" Padding="0"
+                       Background="Transparent" BorderThickness="0" Padding="0" AutomationProperties.Name="Name des Trains"
                        Visibility="{Binding IsChecked, ElementName=RenameToggle, Converter={StaticResource BoolToVisibilityConverter}}" />
               <ToggleButton Grid.Column="1" x:Name="RenameToggle" Background="Transparent" BorderThickness="0" Padding="6"
-                            VerticalAlignment="Center" ToolTipService.ToolTip="Umbenennen">
+                            MinWidth="{StaticResource TouchTargetSize}" MinHeight="{StaticResource TouchTargetSize}"
+                            VerticalAlignment="Center" AutomationProperties.Name="Umbenennen" ToolTipService.ToolTip="Umbenennen">
                 <FontIcon Glyph="&#xE70F;" FontSize="14" />
               </ToggleButton>
             </Grid>
-            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,3,0,0">
-              <TextBlock Text="ID" Style="{StaticResource MonoCaptionTextBlockStyle}" />
-              <TextBlock Text="{Binding SelectedTrain.Id}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
-              <TextBlock Text="·" Style="{StaticResource MonoCaptionTextBlockStyle}" />
-              <TextBlock Text="{Binding SelectedTrain.BleAddress}" Style="{StaticResource MonoCaptionTextBlockStyle}" TextTrimming="CharacterEllipsis" />
-            </StackPanel>
+            <!-- A Grid, not a horizontal StackPanel: only a star column hands the address a width to
+                 trim against. -->
+            <Grid ColumnSpacing="4" Margin="0,3,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Text="ID" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+              <TextBlock Grid.Column="1" Text="{Binding SelectedTrain.Id}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+              <TextBlock Grid.Column="2" Text="·" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+              <TextBlock Grid.Column="3" Text="{Binding SelectedTrain.BleAddress}" Style="{StaticResource MonoCaptionTextBlockStyle}"
+                         TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+            </Grid>
           </StackPanel>
 
-          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-            <TextBlock Text="{Binding SelectedTrain.StatusLabel}" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,2,0" />
-            <ToggleSwitch IsOn="{Binding SelectedTrain.IsActive, Mode=TwoWay}" OnContent="" OffContent="" />
-            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DuplicateTrainCommand}" ToolTipService.ToolTip="Duplizieren">
+          <!-- Row 1 under the name by default; HeaderInline moves it beside the name (see above).
+               MinWidth="0" on the switch: its template keeps a 154px minimum even with empty
+               On/OffContent, which alone was enough to clip Löschen on a phone. -->
+          <Grid x:Name="HeaderActions" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" ColumnSpacing="6" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding SelectedTrain.StatusLabel}" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,2,0" />
+            <ToggleSwitch Grid.Column="1" IsOn="{Binding SelectedTrain.IsActive, Mode=TwoWay}" OnContent="" OffContent="" MinWidth="0"
+                          AutomationProperties.Name="Aktiv" />
+            <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}" Command="{Binding DuplicateTrainCommand}"
+                    AutomationProperties.Name="Duplizieren" ToolTipService.ToolTip="Duplizieren">
               <FontIcon Glyph="&#xE8C8;" FontSize="15" />
             </Button>
-            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DeleteTrainCommand}" ToolTipService.ToolTip="Löschen" Foreground="{ThemeResource ErrorBrush}">
+            <Button Grid.Column="4" Style="{StaticResource IconButtonStyle}" Command="{Binding DeleteTrainCommand}"
+                    AutomationProperties.Name="Train löschen" ToolTipService.ToolTip="Löschen" Foreground="{ThemeResource ErrorBrush}">
               <FontIcon Glyph="&#xE74D;" FontSize="15" />
             </Button>
-          </StackPanel>
+          </Grid>
         </Grid>
 
         <!-- VERBINDUNG -->
@@ -138,7 +184,8 @@
               <StackPanel Spacing="7">
                 <TextBlock Text="Hub-Typ" Style="{StaticResource LabelTextBlockStyle}" />
                 <ComboBox ItemsSource="{Binding HubOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                          SelectedValue="{Binding SelectedTrain.Hub, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                          SelectedValue="{Binding SelectedTrain.Hub, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                          AutomationProperties.Name="Hub-Typ" />
                 <TextBlock Text="{Binding SelectedTrain.HubToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
               </StackPanel>
               <StackPanel Spacing="7">
@@ -156,10 +203,11 @@
                                TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                   </Border>
                   <TextBox Grid.Column="0" Text="{Binding SelectedTrain.BleAddress, Mode=TwoWay}" PlaceholderText="90:84:2B:xx:xx:xx"
-                           FontFamily="{StaticResource MonoFontFamily}" FontSize="12.5"
+                           FontFamily="{StaticResource MonoFontFamily}" FontSize="12.5" AutomationProperties.Name="BLE-Adresse"
                            Visibility="{Binding IsChecked, ElementName=BleEditToggle, Converter={StaticResource BoolToVisibilityConverter}}" />
                   <ToggleButton Grid.Column="1" x:Name="BleEditToggle" Background="Transparent" BorderThickness="0" Padding="6" Margin="6,0,0,0"
-                                VerticalAlignment="Center" ToolTipService.ToolTip="Adresse bearbeiten">
+                                MinWidth="{StaticResource TouchTargetSize}" MinHeight="{StaticResource TouchTargetSize}"
+                                VerticalAlignment="Center" AutomationProperties.Name="Adresse bearbeiten" ToolTipService.ToolTip="Adresse bearbeiten">
                     <FontIcon Glyph="&#xE70F;" FontSize="13" />
                   </ToggleButton>
                 </Grid>
@@ -170,7 +218,9 @@
             <StackPanel Margin="0,16,0,0" Spacing="10">
               <StackPanel Orientation="Horizontal" Spacing="10">
                 <Button Content="Verbinden" Command="{Binding ConnectCommand}" Style="{StaticResource FabButtonStyle}" Padding="16,0" />
-                <Button Content="Trennen" Command="{Binding DisconnectCommand}" Padding="16,0" />
+                <!-- Outlined, not a bare Button: Uno.Material's implicit style would render a filled
+                     pill next to the square, equally filled "Verbinden". -->
+                <Button Content="Trennen" Command="{Binding DisconnectCommand}" Style="{StaticResource OutlinedButtonStyle}" Height="50" Padding="16,0" />
               </StackPanel>
               <Grid ColumnSpacing="6">
                 <Grid.ColumnDefinitions>
@@ -235,13 +285,15 @@
                 <StackPanel Spacing="7">
                   <TextBlock Text="Port A · Gerät" Style="{StaticResource LabelTextBlockStyle}" />
                   <ComboBox ItemsSource="{Binding DeviceOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedTrain.PortA, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                            SelectedValue="{Binding SelectedTrain.PortA, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Port A · Gerät" />
                   <TextBlock Text="{Binding SelectedTrain.PortAToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
                 </StackPanel>
                 <StackPanel Spacing="7">
                   <TextBlock Text="Port B · Gerät" Style="{StaticResource LabelTextBlockStyle}" />
                   <ComboBox ItemsSource="{Binding DeviceOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedTrain.PortB, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                            SelectedValue="{Binding SelectedTrain.PortB, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Port B · Gerät" />
                   <TextBlock Text="{Binding SelectedTrain.PortBToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
                 </StackPanel>
               </StackPanel>
@@ -276,7 +328,8 @@
                   <TextBlock Text="{Binding SelectedTrain.SpeedDirectionLabel}" Style="{StaticResource MonoCaptionTextBlockStyle}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
                 </StackPanel>
               </Grid>
-              <Slider Minimum="-100" Maximum="100" StepFrequency="5" Value="{Binding SelectedTrain.Speed, Mode=TwoWay}" />
+              <Slider Minimum="-100" Maximum="100" StepFrequency="5" Value="{Binding SelectedTrain.Speed, Mode=TwoWay}"
+                      AutomationProperties.Name="Standard-Geschwindigkeit" />
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
@@ -297,15 +350,23 @@
                 <StackPanel Spacing="7">
                   <TextBlock Text="Beschleunigung" Style="{StaticResource LabelTextBlockStyle}" />
                   <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedTrain.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                            SelectedValue="{Binding SelectedTrain.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Beschleunigung" />
                   <Border Visibility="{Binding SelectedTrain.IsAccelCustom, Converter={StaticResource BoolToVisibilityConverter}}"
                           BorderBrush="{Binding SelectedTrain.IsAccelFormulaValid, Converter={StaticResource ValidityToBrushConverter}}"
                           BorderThickness="1" CornerRadius="{StaticResource RadiusMedium}" Padding="12,10">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                      <TextBlock Text="f(x)=" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource MutedTextBrush}" />
-                      <TextBox Text="{Binding SelectedTrain.AccelExpression, Mode=TwoWay}" FontFamily="{StaticResource MonoFontFamily}"
-                               FontSize="12" Background="Transparent" BorderThickness="0" Padding="0" />
-                    </StackPanel>
+                    <!-- A Grid, not a horizontal StackPanel: in a StackPanel the box grows with what is
+                         typed and runs past the card edge, and starts out only a few characters wide. -->
+                    <Grid ColumnSpacing="7">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Grid.Column="0" Text="f(x)=" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource MutedTextBrush}"
+                                 VerticalAlignment="Center" />
+                      <TextBox Grid.Column="1" Text="{Binding SelectedTrain.AccelExpression, Mode=TwoWay}" FontFamily="{StaticResource MonoFontFamily}"
+                               FontSize="12" Background="Transparent" BorderThickness="0" Padding="0" AutomationProperties.Name="Beschleunigungsformel" />
+                    </Grid>
                   </Border>
                   <TextBlock Text="{Binding SelectedTrain.AccelFormulaDisplay}"
                              Foreground="{Binding SelectedTrain.IsAccelFormulaValid, Converter={StaticResource ValidityToBrushConverter}}"
@@ -314,15 +375,23 @@
                 <StackPanel Spacing="7">
                   <TextBlock Text="Bremsen" Style="{StaticResource LabelTextBlockStyle}" />
                   <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedTrain.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                            SelectedValue="{Binding SelectedTrain.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Bremsen" />
                   <Border Visibility="{Binding SelectedTrain.IsBrakeCustom, Converter={StaticResource BoolToVisibilityConverter}}"
                           BorderBrush="{Binding SelectedTrain.IsBrakeFormulaValid, Converter={StaticResource ValidityToBrushConverter}}"
                           BorderThickness="1" CornerRadius="{StaticResource RadiusMedium}" Padding="12,10">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                      <TextBlock Text="f(x)=" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource MutedTextBrush}" />
-                      <TextBox Text="{Binding SelectedTrain.BrakeExpression, Mode=TwoWay}" FontFamily="{StaticResource MonoFontFamily}"
-                               FontSize="12" Background="Transparent" BorderThickness="0" Padding="0" />
-                    </StackPanel>
+                    <!-- A Grid, not a horizontal StackPanel: in a StackPanel the box grows with what is
+                         typed and runs past the card edge, and starts out only a few characters wide. -->
+                    <Grid ColumnSpacing="7">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Grid.Column="0" Text="f(x)=" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource MutedTextBrush}"
+                                 VerticalAlignment="Center" />
+                      <TextBox Grid.Column="1" Text="{Binding SelectedTrain.BrakeExpression, Mode=TwoWay}" FontFamily="{StaticResource MonoFontFamily}"
+                               FontSize="12" Background="Transparent" BorderThickness="0" Padding="0" AutomationProperties.Name="Bremsformel" />
+                    </Grid>
                   </Border>
                   <TextBlock Text="{Binding SelectedTrain.BrakeFormulaDisplay}"
                              Foreground="{Binding SelectedTrain.IsBrakeFormulaValid, Converter={StaticResource ValidityToBrushConverter}}"
@@ -350,12 +419,13 @@
             <ItemsControl ItemsSource="{Binding ColorSwatches}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                  <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="40" ItemHeight="40" MaximumRowsOrColumns="20" />
+                  <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="46" ItemHeight="46" MaximumRowsOrColumns="20" />
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Button Width="34" Height="34" Padding="0" BorderThickness="1" BorderBrush="{ThemeResource OutlineVariantBrush}" Margin="0,0,6,6"
+                  <Button Width="40" Height="40" Padding="0" BorderThickness="1" BorderBrush="{ThemeResource OutlineVariantBrush}" Margin="0,0,6,6"
+                          AutomationProperties.Name="{Binding Name}"
                           d:DataContext="{d:DesignInstance Type=vm:ColorSwatchItemViewModel}"
                           Background="{Binding Hex, Converter={StaticResource HexToBrushConverter}}"
                           Command="{Binding ElementName=Root, Path=DataContext.SetColorCommand}"
@@ -377,9 +447,10 @@
     </ScrollViewer>
 
     <StackPanel Visibility="{Binding SelectedTrain, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"
-                HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="24">
       <FontIcon Glyph="&#xE7C0;" FontSize="54" Foreground="{ThemeResource OutlineVariantBrush}" HorizontalAlignment="Center" />
-      <TextBlock Text="Wähle einen Train aus oder lege einen neuen an." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+      <TextBlock Text="Wähle einen Train aus oder lege einen neuen an." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center"
+                 TextAlignment="Center" TextWrapping="Wrap" />
       <Button Content="+ Neuer Train" Style="{StaticResource FabButtonStyle}" Command="{Binding AddTrainCommand}" HorizontalAlignment="Center" Padding="20,0" />
     </StackPanel>
   </Grid>

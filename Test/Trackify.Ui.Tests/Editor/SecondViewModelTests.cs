@@ -111,6 +111,46 @@ public class SecondViewModelTests
     }
 
     [Fact]
+    public void Closing_the_inspector_clears_the_selection_and_keeps_the_plan()
+    {
+        // On a phone the inspector is a bottom sheet over the canvas, shown while a piece is
+        // selected — and every drawn run selects the piece it laid. Without a way to put the sheet
+        // away, it would cover the canvas after the first stroke.
+        var viewModel = Editor();
+        Drag(viewModel, Forward(viewModel), dx: 300, dy: 0);
+        var laid = viewModel.PieceCount;
+
+        Assert.True(viewModel.HasSelection);
+
+        viewModel.ClearSelectionCommand.Execute(null);
+
+        Assert.Null(viewModel.SelectedPiece);
+        Assert.False(viewModel.HasSelection);
+        Assert.Equal(laid, viewModel.PieceCount);
+    }
+
+    [Fact]
+    public void The_legend_names_every_colour_the_track_can_take()
+    {
+        // The rail is coloured by top speed; a colour on the canvas that the legend does not list is
+        // a colour nobody can read.
+        var viewModel = Editor();
+        var piece = viewModel.Pieces[0];
+        var colours = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        for (var speed = 0; speed <= 100; speed += 5)
+        {
+            piece.MaxSpeed = speed;
+            colours.Add(piece.SpeedColor);
+        }
+
+        Assert.Equal(
+            colours.OrderBy(colour => colour, StringComparer.OrdinalIgnoreCase),
+            viewModel.Legend.Select(item => item.Color).Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(colour => colour, StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void The_oval_template_is_a_closed_loop_of_real_parts()
     {
         var viewModel = Editor();

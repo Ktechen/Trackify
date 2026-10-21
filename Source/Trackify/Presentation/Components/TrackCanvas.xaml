@@ -157,20 +157,25 @@
 
           <!-- Zoom -->
           <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0" Spacing="6">
-            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ZoomInCommand}" ToolTipService.ToolTip="Vergrößern">
+            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ZoomInCommand}"
+                    AutomationProperties.Name="Vergrößern" ToolTipService.ToolTip="Vergrößern">
               <FontIcon Glyph="&#xE710;" FontSize="14" />
             </Button>
-            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ZoomOutCommand}" ToolTipService.ToolTip="Verkleinern">
+            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ZoomOutCommand}"
+                    AutomationProperties.Name="Verkleinern" ToolTipService.ToolTip="Verkleinern">
               <FontIcon Glyph="&#xE738;" FontSize="14" />
             </Button>
-            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ZoomFitCommand}" ToolTipService.ToolTip="Einpassen">
+            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ZoomFitCommand}"
+                    AutomationProperties.Name="Einpassen" ToolTipService.ToolTip="Einpassen">
               <FontIcon Glyph="&#xE9A6;" FontSize="14" />
             </Button>
           </StackPanel>
 
           <!-- How to use it, in one sentence, while the plan is still tiny. -->
-          <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="12,14,12,0" MaxWidth="340"
-                  Background="{ThemeResource PrimaryContainerBrush}" Padding="16,9"
+          <!-- The right margin keeps it clear of the zoom column (10 + 44 + a gap); it is not
+               hit-testable, so where it does overlap the canvas it never swallows a tap or a drag. -->
+          <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="12,14,64,0" MaxWidth="340"
+                  Background="{ThemeResource PrimaryContainerBrush}" Padding="16,9" IsHitTestVisible="False"
                   Visibility="{Binding IsPlanTiny, Converter={StaticResource BoolToVisibilityConverter}}">
             <!-- Wraps, and is bounded: as one line this sentence measures ~430px and a centred
                  overlay that wide is cut off on both sides of a phone — the one instruction the
@@ -182,12 +187,12 @@
 
           <!-- Only ever shown when the user's own connections contradict the geometry. -->
           <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="12,0,12,56" MaxWidth="340"
-                  Background="#E5484D" Padding="16,9"
+                  Background="{ThemeResource ErrorBrush}" Padding="16,9"
                   Visibility="{Binding HasProblem, Converter={StaticResource BoolToVisibilityConverter}}">
             <!-- Wraps for the same reason as the hint, and more so: a mismatch message names the gap
                  in studs, so it is the longest text the canvas ever shows. -->
             <TextBlock Text="{Binding Problem}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"
-                       Foreground="White" />
+                       Foreground="{ThemeResource OnErrorBrush}" />
           </Border>
 
           <!-- Legend. Hidden when the width is tight: it measures ~300px, which on a phone is most of
@@ -227,30 +232,33 @@
            from ~390px to ~190px and fits a phone. Each therefore carries a tooltip: in the compact
            state the glyph is all there is to go on. -->
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0"
-                Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}" ToolTipService.ToolTip="Zurücknehmen">
+        <!-- "Rückgängig", not "Zurück": the header's arrow is already "Zurück", and it leaves the page. -->
+        <Button Style="{StaticResource OutlinedButtonStyle}"
+                Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}"
+                AutomationProperties.Name="Rückgängig" ToolTipService.ToolTip="Rückgängig">
           <StackPanel Orientation="Horizontal" Spacing="7">
             <FontIcon Glyph="&#xE7A7;" FontSize="13" />
-            <TextBlock Text="Zurück" FontSize="12.5"
+            <TextBlock Text="Rückgängig" FontSize="12.5"
                        Visibility="{Binding IsRoomy, Converter={StaticResource BoolToVisibilityConverter}}" />
           </StackPanel>
         </Button>
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0"
-                Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}" ToolTipService.ToolTip="Wiederholen">
+        <Button Style="{StaticResource IconButtonStyle}"
+                Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}"
+                AutomationProperties.Name="Wiederholen" ToolTipService.ToolTip="Wiederholen">
           <FontIcon Glyph="&#xE7A6;" FontSize="13" />
         </Button>
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="14,0"
+        <Button Style="{StaticResource OutlinedButtonStyle}"
                 Command="{Binding CloseLoopCommand}" IsEnabled="{Binding CanCloseLoop}"
-                ToolTipService.ToolTip="Die fehlenden Teile einsetzen, bis der Kreis zu ist">
+                AutomationProperties.Name="Kreis schließen" ToolTipService.ToolTip="Die fehlenden Teile einsetzen, bis der Kreis zu ist">
           <StackPanel Orientation="Horizontal" Spacing="7">
             <FontIcon Glyph="&#xE72C;" FontSize="13" />
             <TextBlock Text="Kreis schließen" FontSize="12.5"
                        Visibility="{Binding IsRoomy, Converter={StaticResource BoolToVisibilityConverter}}" />
           </StackPanel>
         </Button>
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="14,0"
+        <Button Style="{StaticResource OutlinedButtonStyle}"
                 Command="{Binding DeletePieceCommand}" IsEnabled="{Binding HasSelection}"
-                ToolTipService.ToolTip="Das gewählte Teil samt seinen Verbindungen entfernen">
+                AutomationProperties.Name="Teil löschen" ToolTipService.ToolTip="Das gewählte Teil samt seinen Verbindungen entfernen">
           <StackPanel Orientation="Horizontal" Spacing="7">
             <FontIcon Glyph="&#xE74D;" FontSize="13" />
             <TextBlock Text="Teil löschen" FontSize="12.5"
@@ -276,7 +284,7 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Button d:DataContext="{d:DesignInstance Type=vm:PaletteItem}"
-                      Style="{StaticResource IconButtonStyle}" Width="Auto" Height="38" Padding="13,0"
+                      Style="{StaticResource OutlinedButtonStyle}"
                       Content="{Binding Label}"
                       Command="{Binding ElementName=Root, Path=DataContext.AddPartCommand}"
                       CommandParameter="{Binding}" />
@@ -286,11 +294,11 @@
       </ScrollViewer>
 
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="34" Padding="12,0" Content="Oval"
+        <Button Style="{StaticResource OutlinedButtonStyle}" Content="Oval"
                 Command="{Binding TemplateOvalCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="34" Padding="12,0" Content="Strecke"
+        <Button Style="{StaticResource OutlinedButtonStyle}" Content="Strecke"
                 Command="{Binding TemplateLineCommand}" />
-        <Button Style="{StaticResource IconButtonStyle}" Width="Auto" Height="34" Padding="12,0" Content="Leeren"
+        <Button Style="{StaticResource OutlinedButtonStyle}" Content="Leeren"
                 Command="{Binding ClearCommand}" />
       </StackPanel>
     </StackPanel>

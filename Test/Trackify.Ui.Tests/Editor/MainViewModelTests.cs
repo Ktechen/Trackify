@@ -122,6 +122,46 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void An_empty_list_says_how_to_get_a_first_train()
+    {
+        // On a phone the list is all there is until a train is selected, so an empty one has to
+        // point at the two ways in rather than show blank space.
+        var viewModel = Screen();
+
+        Assert.True(viewModel.IsListEmpty);
+        Assert.Contains("„Hub suchen“", viewModel.EmptyListMessage, StringComparison.Ordinal);
+        Assert.Contains("„Neuer Train“", viewModel.EmptyListMessage, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_search_without_a_hit_says_so_instead_of_an_empty_list()
+    {
+        var viewModel = Screen();
+        viewModel.AddTrainCommand.Execute(null);
+
+        Assert.False(viewModel.IsListEmpty);
+
+        viewModel.Search = "gibt-es-nicht";
+
+        Assert.True(viewModel.IsListEmpty);
+        Assert.Contains("„gibt-es-nicht“", viewModel.EmptyListMessage, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_empty_hint_goes_away_as_soon_as_a_train_is_added()
+    {
+        var viewModel = Screen();
+        var raised = new List<string?>();
+        viewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        viewModel.AddTrainCommand.Execute(null);
+
+        Assert.False(viewModel.IsListEmpty);
+        Assert.Contains(nameof(MainViewModel.IsListEmpty), raised);
+        Assert.Contains(nameof(MainViewModel.EmptyListMessage), raised);
+    }
+
+    [Fact]
     public void The_active_count_follows_a_train_being_switched_off()
     {
         var viewModel = Screen();

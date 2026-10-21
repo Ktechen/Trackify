@@ -92,7 +92,10 @@ public partial class SecondViewModel : ObservableObject
 
     public IReadOnlyList<LegendItem> Legend { get; } =
     [
-        new("#E5484D", "Stop"),
+        // One entry per band of TrackPiece.SpeedColor — a rail colour the legend leaves out is one
+        // nobody can read.
+        new("#E5484D", "Stopp"),
+        new("#E5701C", "sehr langsam"),
         new("#F5A623", "langsam"),
         new("#2FAE4A", "mittel"),
         new("#16A34A", "schnell"),
@@ -321,6 +324,13 @@ public partial class SecondViewModel : ObservableObject
 
         Refresh();
     }
+
+    /// <summary>
+    /// Puts the inspector away. On a phone it is a bottom sheet over the canvas, and every drawn run
+    /// selects the piece it laid — without this the sheet would stay over the drawing.
+    /// </summary>
+    [RelayCommand]
+    private void ClearSelection() => SelectedPiece = null;
 
     [RelayCommand]
     private void Undo()

@@ -9,9 +9,12 @@
     icon-button / segmented-pill / tag shapes used across Train-Konfiguration and Streckenplaner.
   -->
 
+  <!-- MutedText carries the small mono captions (ids, tokens, formulas), so it has to clear WCAG AA
+       4.5:1 on Surface/SurfaceVariant: Light #67676B is 4.6:1 on #E9E9EA (the mock's #8A8A8D was
+       2.8:1), Dark #B7B7BA is 5.0:1 on #424244. -->
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
-      <Color x:Key="MutedTextColor">#8A8A8D</Color>
+      <Color x:Key="MutedTextColor">#67676B</Color>
       <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
@@ -29,6 +32,14 @@
   <CornerRadius x:Key="RadiusLarge">0</CornerRadius>
   <CornerRadius x:Key="RadiusExtraLarge">0</CornerRadius>
   <CornerRadius x:Key="RadiusFull">0</CornerRadius>
+
+  <!-- Form · Touch target — the smallest tappable size (Apple HIG 44pt; Android's accessibility
+       scanner flags anything under 48dp, 44 is the compromise that still fits the dense headers).
+       Every button style below starts from it, so no tappable control is smaller. -->
+  <x:Double x:Key="TouchTargetSize">44</x:Double>
+
+  <!-- Scrim behind the inline modals (Verbindung panel, "Hub gefunden"). Same in both themes. -->
+  <SolidColorBrush x:Key="OverlayScrimBrush" Color="#99000000" />
 
   <FontFamily x:Key="MonoFontFamily">Consolas,Courier New,Courier,monospace</FontFamily>
 
@@ -104,17 +115,28 @@
     <Setter Property="HorizontalContentAlignment" Value="Center" />
   </Style>
 
-  <!-- Icon button (Duplizieren, Löschen) — bordered square (.btn-secondary.btn-icon) -->
-  <Style x:Key="IconButtonStyle" TargetType="Button">
-    <Setter Property="Width" Value="40" />
-    <Setter Property="Height" Value="40" />
-    <Setter Property="Padding" Value="0" />
+  <!-- Secondary text button (Speichern, Schließen, Abbrechen, Trennen, the Streckenplaner toolbar) —
+       bordered square (.btn-secondary). Use it instead of a bare <Button>: Uno.Material's implicit
+       Button is a filled, fully rounded pill that clashes with the square Industry look. -->
+  <Style x:Key="OutlinedButtonStyle" TargetType="Button">
+    <Setter Property="MinWidth" Value="{StaticResource TouchTargetSize}" />
+    <Setter Property="MinHeight" Value="{StaticResource TouchTargetSize}" />
+    <Setter Property="Padding" Value="14,0" />
+    <Setter Property="FontSize" Value="13" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="{ThemeResource OutlineVariantBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusSmall}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <!-- Icon button (Duplizieren, Löschen, Zoom) — bordered square (.btn-secondary.btn-icon). Icon-only,
+       so every use needs an AutomationProperties.Name: a ToolTip is not read out on Android/iOS. -->
+  <Style x:Key="IconButtonStyle" TargetType="Button" BasedOn="{StaticResource OutlinedButtonStyle}">
+    <Setter Property="Width" Value="{StaticResource TouchTargetSize}" />
+    <Setter Property="Height" Value="{StaticResource TouchTargetSize}" />
+    <Setter Property="Padding" Value="0" />
   </Style>
 
   <!--
@@ -129,7 +151,7 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusFull}" />
     <Setter Property="FontFamily" Value="{StaticResource HeadingFontFamily}" />
-    <Setter Property="Height" Value="38" />
+    <Setter Property="Height" Value="{StaticResource TouchTargetSize}" />
     <!-- Padding stays tight: these sit two- and three-up in `*` columns inside the narrowest panes
          (segment inspector), where a wider padding pushes the longest labels ("Rückwärts",
          "Stammgleis") past the pane edge instead of shrinking. -->

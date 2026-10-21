@@ -17,9 +17,11 @@
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    <!-- HEADER — background fills behind the status bar; content is padded into the safe area. -->
+    <!-- HEADER — background fills behind the status bar; content is padded into the safe area.
+         The title column is the one that gives way (it trims), so the list button and "Speichern"
+         are never pushed off the right edge: on a 360dp phone the fixed parts alone take ~250px. -->
     <Grid Grid.Row="0"
-          Padding="24,13"
+          Padding="16,12"
           utu:SafeArea.Insets="Top,Left,Right"
           Background="{ThemeResource SurfaceBrush}"
           BorderBrush="{ThemeResource SurfaceVariantBrush}"
@@ -27,14 +29,15 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
 
       <Button Grid.Column="0" Style="{StaticResource IconButtonStyle}" Command="{Binding GoBackCommand}"
-              AutomationProperties.AutomationId="BackButton" Margin="0,0,10,0" ToolTipService.ToolTip="Zurück zur Train-Konfiguration">
+              AutomationProperties.AutomationId="BackButton" AutomationProperties.Name="Zurück zur Train-Konfiguration"
+              Margin="0,0,10,0" ToolTipService.ToolTip="Zurück zur Train-Konfiguration">
         <FontIcon Glyph="&#xE72B;" FontSize="16" />
       </Button>
 
@@ -52,7 +55,7 @@
         </Grid>
       </Border>
 
-      <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
+      <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1" Margin="0,0,8,0">
         <TextBlock Text="Streckenplaner" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold"
                    TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="Zeichnen · echte LEGO-Teile" Style="{StaticResource MonoCaptionTextBlockStyle}"
@@ -61,9 +64,10 @@
 
       <!-- Compact only: the parts list is a sheet there, so it needs a way in. It doubles as the
            count the wide header shows in full. -->
-      <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,8,0"
-              Style="{StaticResource IconButtonStyle}" Width="Auto" Height="36" Padding="12,0"
-              Command="{Binding TogglePieceListCommand}" ToolTipService.ToolTip="Teileliste zeigen oder schließen"
+      <Button Grid.Column="3" VerticalAlignment="Center" Margin="0,0,8,0"
+              Style="{StaticResource OutlinedButtonStyle}" Padding="12,0"
+              Command="{Binding TogglePieceListCommand}"
+              AutomationProperties.Name="Teileliste" ToolTipService.ToolTip="Teileliste zeigen oder schließen"
               Visibility="{Binding IsCompact, Converter={StaticResource BoolToVisibilityConverter}}">
         <StackPanel Orientation="Horizontal" Spacing="7">
           <FontIcon Glyph="&#xE8FD;" FontSize="13" />
@@ -81,10 +85,8 @@
         <TextBlock Text="offen" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
       </StackPanel>
 
-      <Button Grid.Column="5" Style="{StaticResource IconButtonStyle}" Width="Auto" Height="36" Padding="14,0"
-              Command="{Binding SaveCommand}" IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}">
-        <TextBlock Text="Speichern" FontSize="12.5" />
-      </Button>
+      <Button Grid.Column="5" Style="{StaticResource OutlinedButtonStyle}" Content="Speichern"
+              Command="{Binding SaveCommand}" IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}" />
     </Grid>
 
     <!-- CONTENT: canvas+toolbar always visible; the strand list and segment inspector swap between a

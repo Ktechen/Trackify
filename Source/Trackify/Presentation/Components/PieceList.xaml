@@ -44,7 +44,8 @@
               <Border Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"
                       Background="{Binding SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
 
-              <StackPanel Grid.Column="1" VerticalAlignment="Center"
+              <!-- Background="Transparent" makes the whole cell tappable, not only the glyphs of the text. -->
+              <StackPanel Grid.Column="1" VerticalAlignment="Center" Background="Transparent"
                           behaviors:TappedCommandBehavior.Command="{Binding ElementName=Root, Path=DataContext.SelectPieceCommand}">
                 <!-- Trim rather than wrap or overflow: the pane's ScrollViewer has no horizontal
                      scrolling, so anything wider than the pane would simply be cut off. -->
@@ -53,9 +54,10 @@
                 <TextBlock Text="{Binding TypeLabel}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
               </StackPanel>
 
-              <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Width="28" Height="28" ToolTipService.ToolTip="Löschen"
+              <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}"
+                      AutomationProperties.Name="Teil löschen" ToolTipService.ToolTip="Löschen"
                       Command="{Binding ElementName=Root, Path=DataContext.DeletePieceCommand}" CommandParameter="{Binding}">
-                <FontIcon Glyph="&#xE74D;" FontSize="11" />
+                <FontIcon Glyph="&#xE74D;" FontSize="13" />
               </Button>
             </Grid>
           </DataTemplate>

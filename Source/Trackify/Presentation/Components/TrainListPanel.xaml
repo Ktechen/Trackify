@@ -20,6 +20,7 @@
       <Grid>
         <TextBox Text="{Binding Search, Mode=TwoWay}"
                  PlaceholderText="Train suchen…"
+                 AutomationProperties.Name="Train suchen"
                  Padding="34,11,14,11"
                  BorderThickness="1"
                  BorderBrush="{ThemeResource OutlineVariantBrush}"
@@ -29,7 +30,9 @@
         <FontIcon Glyph="&#xE721;" FontSize="14" Margin="13,0,0,0" HorizontalAlignment="Left" Foreground="{ThemeResource OnSurfaceVariantBrush}" IsHitTestVisible="False" />
       </Grid>
 
-      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+      <!-- Outlined, not a bare Button: Uno.Material's implicit style is a filled, fully rounded pill,
+           which would compete with the one filled action on this rail, "Neuer Train". -->
+      <Button HorizontalAlignment="Stretch" Style="{StaticResource OutlinedButtonStyle}"
               Command="{Binding DiscoverCommand}" IsEnabled="{Binding IsDiscovering, Converter={StaticResource InverseBoolConverter}}">
         <StackPanel Orientation="Horizontal" Spacing="8">
           <FontIcon Glyph="&#xE702;" FontSize="15" />
@@ -50,10 +53,10 @@
                         Visibility="{Binding IsDiscovering, Converter={StaticResource BoolToVisibilityConverter}}" />
           <TextBlock Grid.Column="1" Text="{Binding DiscoverStatus}" TextWrapping="Wrap" VerticalAlignment="Center"
                      FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-          <Button Grid.Column="2" Content="Stopp" Padding="12,4" Command="{Binding StopDiscoverCommand}"
+          <Button Grid.Column="2" Content="Stopp" Style="{StaticResource OutlinedButtonStyle}" Margin="8,0,0,0" Command="{Binding StopDiscoverCommand}"
                   Visibility="{Binding IsDiscovering, Converter={StaticResource BoolToVisibilityConverter}}" />
-          <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Command="{Binding ClearDiscoverCommand}"
-                  ToolTipService.ToolTip="Ausblenden"
+          <Button Grid.Column="2" Style="{StaticResource IconButtonStyle}" Command="{Binding ClearDiscoverCommand}" Margin="8,0,0,0"
+                  AutomationProperties.Name="Meldung ausblenden" ToolTipService.ToolTip="Ausblenden"
                   Visibility="{Binding IsDiscovering, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
             <FontIcon Glyph="&#xE711;" FontSize="12" />
           </Button>
@@ -103,6 +106,13 @@
         </DataTemplate>
       </ListView.ItemTemplate>
     </ListView>
+
+    <!-- Empty list: on a phone this rail is all there is until a train is chosen, so instead of blank
+         space it names the two ways to a first train — or says the search found nothing. -->
+    <TextBlock Grid.Row="1" Margin="24,8,24,0" VerticalAlignment="Top"
+               Text="{Binding EmptyListMessage}" TextWrapping="Wrap" FontSize="13"
+               Foreground="{ThemeResource OnSurfaceVariantBrush}"
+               Visibility="{Binding IsListEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
 
     <Button Grid.Row="2" Margin="16,14,16,14" Style="{StaticResource FabButtonStyle}" Command="{Binding AddTrainCommand}">
       <StackPanel Orientation="Horizontal" Spacing="8">

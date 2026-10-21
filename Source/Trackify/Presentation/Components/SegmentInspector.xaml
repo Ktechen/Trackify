@@ -9,8 +9,9 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:SecondViewModel}">
 
-  <!-- Selected-segment inspector (drive behaviour + sensor). Binds to the hosting SecondViewModel. -->
-  <Grid Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource SurfaceVariantBrush}" BorderThickness="1,0,0,0">
+  <!-- Selected-segment inspector (drive behaviour + sensor). Binds to the hosting SecondViewModel.
+       No border of its own: SecondPage draws the pane's hairline, and two of them read as a double line. -->
+  <Grid Background="{ThemeResource SurfaceBrush}">
     <ScrollViewer Visibility="{Binding SelectedPiece, Converter={StaticResource NullToVisibilityConverter}}"
                   HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto" ZoomMode="Disabled">
@@ -33,6 +34,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Border Grid.Column="0" Width="14" Height="14" VerticalAlignment="Center"
                   Background="{Binding SelectedPiece.SpeedColor, Converter={StaticResource HexToBrushConverter}}" />
@@ -42,9 +44,15 @@
           <TextBlock Grid.Column="2" Text="{Binding SelectedPiece.Id}" FontFamily="{StaticResource MonoFontFamily}" FontSize="11"
                      Foreground="{ThemeResource MutedTextBrush}" VerticalAlignment="Center" TextAlignment="Right"
                      TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+          <!-- The way out of the inspector. On a phone it is a bottom sheet over the canvas, and every
+               drawn run selects the piece it laid - without this it would stay over the drawing. -->
+          <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}" Command="{Binding ClearSelectionCommand}"
+                  AutomationProperties.Name="Auswahl schließen" ToolTipService.ToolTip="Schließen">
+            <FontIcon Glyph="&#xE711;" FontSize="13" />
+          </Button>
         </Grid>
         <TextBox Text="{Binding SelectedPiece.Name, Mode=TwoWay}" FontFamily="{StaticResource HeadingFontFamily}" FontSize="22" FontWeight="SemiBold"
-                 Background="Transparent" BorderThickness="0" Padding="0" />
+                 Background="Transparent" BorderThickness="0" Padding="0" AutomationProperties.Name="Name des Teils" />
         </StackPanel>
 
         <!-- FAHRVERHALTEN -->
@@ -67,7 +75,8 @@
                   <TextBlock Text="%" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource MutedTextBrush}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
                 </StackPanel>
               </Grid>
-              <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedPiece.MaxSpeed, Mode=TwoWay}" />
+              <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedPiece.MaxSpeed, Mode=TwoWay}"
+                      AutomationProperties.Name="Max. Geschwindigkeit" />
             </StackPanel>
 
             <StackPanel Spacing="10">
@@ -92,24 +101,26 @@
               <TextBlock Text="Geschwindigkeitsprofil f(x)" Style="{StaticResource LabelTextBlockStyle}" />
               <local:SpeedProfileWidget Graph="{Binding SelectedPiece.Graph}" />
 
-              <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Spacing="7">
+              <!-- Stacked, as in the train editor: two-up in a 340px inspector each box gets ~120px, which
+                   cuts "Exponentiell" and the longer formulas. -->
+              <StackPanel Spacing="14">
+                <StackPanel Spacing="7">
                   <TextBlock Text="Beschleunigung" FontSize="11.5" FontWeight="Medium" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedPiece.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
-                  <TextBlock Text="{Binding SelectedPiece.AccelFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
+                            SelectedValue="{Binding SelectedPiece.AccelFn, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Beschleunigung" />
+                  <TextBlock Text="{Binding SelectedPiece.AccelFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10.5"
+                             Foreground="{ThemeResource MutedTextBrush}" TextWrapping="Wrap" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="7">
+                <StackPanel Spacing="7">
                   <TextBlock Text="Bremsen" FontSize="11.5" FontWeight="Medium" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   <ComboBox ItemsSource="{Binding SpeedFunctionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                            SelectedValue="{Binding SelectedPiece.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch" />
-                  <TextBlock Text="{Binding SelectedPiece.BrakeFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10" Foreground="{ThemeResource MutedTextBrush}" />
+                            SelectedValue="{Binding SelectedPiece.BrakeFn, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Bremsen" />
+                  <TextBlock Text="{Binding SelectedPiece.BrakeFormulaDisplay}" FontFamily="{StaticResource MonoFontFamily}" FontSize="10.5"
+                             Foreground="{ThemeResource MutedTextBrush}" TextWrapping="Wrap" />
                 </StackPanel>
-              </Grid>
+              </StackPanel>
             </StackPanel>
           </StackPanel>
         </Border>
@@ -201,7 +212,8 @@
               <StackPanel Spacing="8">
                 <TextBlock Text="Aktion beim Auslösen" Style="{StaticResource LabelTextBlockStyle}" />
                 <ComboBox ItemsSource="{Binding SensorActionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                          SelectedValue="{Binding SelectedPiece.Action, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                          SelectedValue="{Binding SelectedPiece.Action, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                          AutomationProperties.Name="Aktion beim Auslösen" />
               </StackPanel>
 
               <StackPanel Spacing="10" Visibility="{Binding SelectedPiece.ShowSlowTarget, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -216,7 +228,8 @@
                     <TextBlock Text="%" FontFamily="{StaticResource MonoFontFamily}" FontSize="15" FontWeight="Bold" />
                   </StackPanel>
                 </Grid>
-                <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedPiece.SlowTarget, Mode=TwoWay}" />
+                <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{Binding SelectedPiece.SlowTarget, Mode=TwoWay}"
+                        AutomationProperties.Name="Ziel-Tempo" />
               </StackPanel>
 
               <TextBlock Text="{Binding SelectedPiece.SensorToken}" Style="{StaticResource MonoCaptionTextBlockStyle}" />
@@ -226,27 +239,19 @@
         </ScrollViewer>
         </local:BlueprintFrame>
 
-        <Grid Grid.Row="6" ColumnSpacing="8" Margin="0,16,0,0">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <!-- Reorder and duplicate are gone with the chain: in a graph a part has no "position in
-               the list", it has ports. Building happens on the canvas; what is left here is
-               removing the selected part. -->
-          <Button Grid.Column="0" Grid.ColumnSpan="4" Content="Teil löschen" Style="{StaticResource IconButtonStyle}"
-                  Width="Auto" Height="40" Foreground="{ThemeResource ErrorBrush}"
-                  Command="{Binding DeletePieceCommand}" CommandParameter="{Binding SelectedPiece}" />
-        </Grid>
+        <!-- Reorder and duplicate are gone with the chain: in a graph a part has no "position in the
+             list", it has ports. Building happens on the canvas; what is left here is removing the
+             selected part. -->
+        <Button Grid.Row="6" Margin="0,16,0,0" HorizontalAlignment="Stretch" Content="Teil löschen"
+                Style="{StaticResource OutlinedButtonStyle}" Foreground="{ThemeResource ErrorBrush}"
+                Command="{Binding DeletePieceCommand}" CommandParameter="{Binding SelectedPiece}" />
 
       </Grid>
     </ScrollViewer>
 
     <StackPanel Visibility="{Binding SelectedPiece, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"
                 HorizontalAlignment="Center" VerticalAlignment="Center" Padding="40">
-      <TextBlock Text="Kein Segment ausgewählt." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}"
+      <TextBlock Text="Kein Teil ausgewählt. Tippe ein Teil auf der Fläche an." FontSize="14" Foreground="{ThemeResource OnSurfaceVariantBrush}"
                  HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
     </StackPanel>
   </Grid>

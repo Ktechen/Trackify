@@ -30,6 +30,14 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<Train> FilteredTrains { get; } = [];
 
+    /// <summary>Whether the list shows nothing — no train yet, or none matching the search.</summary>
+    public bool IsListEmpty => FilteredTrains.Count == 0;
+
+    /// <summary>What the empty list says instead: the two ways to a first train, or that the search found none.</summary>
+    public string EmptyListMessage => Trains.Count == 0
+        ? "Noch kein Train angelegt. „Hub suchen“ findet deinen Hub, „Neuer Train“ legt einen von Hand an."
+        : $"Kein Train passt zu „{Search.Trim()}“.";
+
     public ObservableCollection<ColorSwatchItemViewModel> ColorSwatches { get; }
 
     public IReadOnlyList<HubOption> HubOptions => LegoinoCatalog.Hubs;
@@ -235,6 +243,8 @@ public partial class MainViewModel : ObservableObject
         foreach (var train in Trains.Where(MatchesSearch))
             FilteredTrains.Add(train);
 
+        OnPropertyChanged(nameof(IsListEmpty));
+        OnPropertyChanged(nameof(EmptyListMessage));
         RefreshCounts();
     }
 

@@ -19,7 +19,9 @@
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    <!-- HEADER — background fills behind the status bar; content is padded into the safe area. -->
+    <!-- HEADER — background fills behind the status bar; content is padded into the safe area.
+         The title column is the one that gives way (it trims), so the two icon buttons on the right
+         are never pushed off the edge on a phone. -->
     <Grid Grid.Row="0"
           Padding="16,12"
           utu:SafeArea.Insets="Top,Left,Right"
@@ -27,7 +29,6 @@
           BorderBrush="{ThemeResource SurfaceVariantBrush}"
           BorderThickness="0,0,0,1">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
@@ -38,7 +39,8 @@
 
       <!-- Back to list (narrow layout only; toggled from code-behind) -->
       <Button x:Name="BackButton" Grid.Column="0" Style="{StaticResource IconButtonStyle}" Margin="0,0,6,0"
-              Visibility="Collapsed" Command="{Binding BackToListCommand}" ToolTipService.ToolTip="Zurück zur Liste">
+              Visibility="Collapsed" Command="{Binding BackToListCommand}"
+              AutomationProperties.Name="Zurück zur Liste" ToolTipService.ToolTip="Zurück zur Liste">
         <FontIcon Glyph="&#xE72B;" FontSize="16" />
       </Button>
 
@@ -53,13 +55,14 @@
         </Grid>
       </Border>
 
-      <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
+      <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1" Margin="0,0,12,0">
         <TextBlock Text="Train-Konfiguration" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold"
                    TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
-        <TextBlock Text="Powered Up · Legoino-Schnittstelle" Style="{StaticResource MonoCaptionTextBlockStyle}" />
+        <TextBlock Text="Powered Up · Legoino-Schnittstelle" Style="{StaticResource MonoCaptionTextBlockStyle}"
+                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
       </StackPanel>
 
-      <StackPanel x:Name="HeaderStats" Grid.Column="4" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,16,0">
+      <StackPanel x:Name="HeaderStats" Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="0,0,16,0">
         <TextBlock Text="{Binding ActiveCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
         <TextBlock Text="aktiv ·" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
         <TextBlock Text="{Binding TotalCount}" FontFamily="{StaticResource MonoFontFamily}" FontSize="12" FontWeight="SemiBold" />
@@ -67,7 +70,7 @@
       </StackPanel>
 
       <!-- Visibility owned by ApplyResponsiveLayout in code-behind (depends on width AND selection). -->
-      <Border x:Name="HeaderChip" Grid.Column="5" Style="{StaticResource ChipBorderStyle}" Margin="0,0,10,0" Visibility="Collapsed">
+      <Border x:Name="HeaderChip" Grid.Column="4" Style="{StaticResource ChipBorderStyle}" Margin="0,0,10,0" Visibility="Collapsed">
         <StackPanel Orientation="Horizontal" Spacing="5">
           <Ellipse Width="7" Height="7" VerticalAlignment="Center"
                     Fill="{Binding SelectedTrain.IsHardwareConnected, Converter={StaticResource BoolToStatusBrushConverter}}" />
@@ -75,11 +78,13 @@
         </StackPanel>
       </Border>
 
-      <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4">
-        <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ToggleConnectionPanelCommand}" ToolTipService.ToolTip="Verbindung (Direkt/Server)">
+      <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="4">
+        <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ToggleConnectionPanelCommand}"
+                AutomationProperties.Name="Verbindung (Direkt/Server)" ToolTipService.ToolTip="Verbindung (Direkt/Server)">
           <FontIcon Glyph="&#xE713;" FontSize="16" />
         </Button>
-        <Button Style="{StaticResource IconButtonStyle}" Command="{Binding GoToStreckenplanerCommand}" ToolTipService.ToolTip="Streckenplaner öffnen">
+        <Button Style="{StaticResource IconButtonStyle}" Command="{Binding GoToStreckenplanerCommand}"
+                AutomationProperties.Name="Streckenplaner öffnen" ToolTipService.ToolTip="Streckenplaner öffnen">
           <FontIcon Glyph="&#xE8A1;" FontSize="16" />
         </Button>
       </StackPanel>
@@ -107,32 +112,38 @@
     <!-- ADD-HUB POPUP (modal overlay across the whole page) -->
     <local:AddHubDialog Grid.Row="0" Grid.RowSpan="2" />
 
-    <!-- CONNECTION PANEL — inline modal overlay toggled from the header (Direct vs Server, live switch) -->
+    <!-- CONNECTION PANEL — inline modal overlay toggled from the header (Direct vs Server, live switch).
+         MaxWidth rather than a fixed Width so it fits a 360px phone; scrollable and inset by the safe
+         area (incl. the on-screen keyboard) so the address field and buttons stay reachable on a
+         landscape phone. -->
     <Grid Grid.Row="0" Grid.RowSpan="2"
-          Background="#99000000"
+          Background="{StaticResource OverlayScrimBrush}"
+          utu:SafeArea.Insets="VisibleBounds,SoftInput"
           Visibility="{Binding IsConnectionPanelOpen, Converter={StaticResource BoolToVisibilityConverter}}">
-      <widgets:BlueprintFrame VerticalAlignment="Center" HorizontalAlignment="Center">
-        <Border Width="380" Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}"
+      <ScrollViewer HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+      <widgets:BlueprintFrame MaxWidth="380" Margin="24" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Border Background="{ThemeResource SurfaceBrush}" BorderBrush="{ThemeResource OutlineVariantBrush}"
                 BorderThickness="1" Padding="20">
           <StackPanel Spacing="14">
             <TextBlock Text="Verbindung" FontFamily="{StaticResource HeadingFontFamily}" FontSize="19" FontWeight="SemiBold" />
             <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                       Text="Servermodus: Steuerung über einen Trackify-Backend (Raspberry Pi). Aus = Direktmodus über das Bluetooth dieses Geräts." />
+                       Text="Servermodus: Steuerung über ein Trackify-Backend (Raspberry Pi). Aus = Direktmodus über das Bluetooth dieses Geräts." />
             <ToggleSwitch Header="Server verwenden" OnContent="Server" OffContent="Direkt"
                           IsOn="{Binding Connection.UseServer, Mode=TwoWay}" />
-            <TextBox Header="Server-Adresse" PlaceholderText="http://192.168.1.50:5000"
+            <TextBox Header="Server-Adresse" PlaceholderText="http://192.168.1.50:5000" InputScope="Url"
                      IsEnabled="{Binding Connection.UseServer}"
                      Text="{Binding Connection.ServerUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}"
                        Text="{Binding ConnectionStatus}"
                        Visibility="{Binding ConnectionStatus, Converter={StaticResource NullToVisibilityConverter}}" />
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-              <Button Content="Schließen" Style="{StaticResource IconButtonStyle}" Width="Auto" Padding="16,0" Height="40" Command="{Binding ToggleConnectionPanelCommand}" />
-              <Button Content="Übernehmen" Style="{StaticResource FabButtonStyle}" Height="40" Command="{Binding ApplyConnectionCommand}" />
+              <Button Content="Schließen" Style="{StaticResource OutlinedButtonStyle}" Command="{Binding ToggleConnectionPanelCommand}" />
+              <Button Content="Übernehmen" Style="{StaticResource FabButtonStyle}" Height="{StaticResource TouchTargetSize}" Command="{Binding ApplyConnectionCommand}" />
             </StackPanel>
           </StackPanel>
         </Border>
       </widgets:BlueprintFrame>
+      </ScrollViewer>
     </Grid>
   </Grid>
 </Page>
