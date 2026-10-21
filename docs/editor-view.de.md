@@ -25,8 +25,10 @@ Ports ist und keine Koordinatenliste, in [ADR-17](arc42/09-architecture-decision
 Hin und zurück: im Kopf der Train-Seite der Knopf mit dem Gleis-Symbol
 („Streckenplaner öffnen"), im Streckenplaner der Zurück-Pfeil („Zurück zur Train-Konfiguration").
 
-Beide Seiten sind **responsiv**. Im Breiten-Layout stehen die Bereiche nebeneinander, im schmalen
-stapeln sie sich und das Detail-Panel erscheint nur, während etwas ausgewählt ist.
+Beide Seiten sind **responsiv**. Im Breiten-Layout stehen die Bereiche nebeneinander. Im schmalen
+zeigt die Train-Seite die Liste *oder* den Editor, und der Streckenplaner legt Teileliste und
+Inspector als Laschen über die Zeichenfläche. In beiden Kopfzeilen kürzt sich dann der Titel, damit
+die Knöpfe rechts nie aus dem Bild rutschen.
 
 ---
 
@@ -64,7 +66,7 @@ wirklich erreicht, und schließt die Lücke. Ein leerer Plan setzt automatisch e
 
 | Knopf | Wirkung |
 |---|---|
-| **Zurück** | Nimmt den letzten Bau-Schritt zurück: Legen, Löschen, Vorlagen. **Nicht** die Schieberegler im Inspector — die stellt man einfach zurück. |
+| **Rückgängig** | Nimmt den letzten Bau-Schritt zurück: Legen, Löschen, Vorlagen. **Nicht** die Schieberegler im Inspector — die stellt man einfach zurück. Heißt bewusst nicht „Zurück": das ist der Pfeil im Kopf, und der verlässt die Seite. |
 | *(Pfeil, „Wiederholen")* | Macht das Zurückgenommene wieder. |
 | **Kreis schließen** | „Die fehlenden Teile einsetzen, bis der Kreis zu ist." Nur aktiv, wenn zwei offene Enden erreichbar nah sind — das Suchbudget liegt bei zehn Teilen. |
 | **Teil löschen** | Entfernt das gewählte Teil samt seinen Verbindungen. |
@@ -89,7 +91,7 @@ Bahnhöfen) · `Leeren`.
 
 | Anzeige | Bedeutung |
 |---|---|
-| **Farbe des Gleises** | Das Tempo. Legende „Tempo" unten links: rot = Stop bis grün = schnell — im Schmal-Layout ausgeblendet. |
+| **Farbe des Gleises** | Das Tempo. Legende „Tempo" unten links, eine Stufe je Gleisfarbe: „Stopp" (rot), „sehr langsam", „langsam", „mittel", „schnell" (grün) — im Schmal-Layout ausgeblendet. |
 | **Zahl am Gleis** | Das Höchsttempo dieses Teils in Prozent. |
 | **Gestrichelte Linie** | Vorschau während des Ziehens — noch nicht gelegt, zählt noch nicht mit. |
 | **Marke mit „F"** | Farbsensor auf diesem Teil. |
@@ -106,7 +108,10 @@ hält (eine `Viewbox`), kein `ScrollViewer`-Zoom — deshalb verhält er sich au
 
 *Erwartet: `docs/images/streckenplaner-inspector.png` — ein gewähltes Teil mit gesetztem Sensor.*
 
-Ohne Auswahl steht hier **„Kein Segment ausgewählt."** Angetippt erscheinen drei Blöcke:
+Ohne Auswahl steht hier **„Kein Teil ausgewählt. Tippe ein Teil auf der Fläche an."** Angetippt
+erscheinen drei Blöcke. Oben rechts schließt der **×-Knopf** („Auswahl schließen") den Inspector
+wieder — auf dem Handy der Weg, die Lasche von der Zeichenfläche zu nehmen, denn jeder gezogene
+Strich wählt das zuletzt gelegte Teil aus.
 
 **Fahrverhalten**
 
@@ -114,7 +119,7 @@ Ohne Auswahl steht hier **„Kein Segment ausgewählt."** Angetippt erscheinen d
 |---|---|
 | **Max. Geschwindigkeit** (0–100 %) | Höchsttempo über dieses Teil. Färbt gleichzeitig das Gleis auf der Fläche. |
 | **Fahrtrichtung** — `Vorwärts` / `Rückwärts` | Die Richtung, in der dieses Teil durchfahren wird. |
-| **Geschwindigkeitsprofil f(x)** | Zwei Auswahlen, **Beschleunigung** und **Bremsen**: linear, EaseIn, EaseOut, SCurve, Exponential, Custom. Die Kurve darunter zeigt das Ergebnis, der Text darunter die Formel. `Custom` trägt absichtlich keine feste Formel. |
+| **Geschwindigkeitsprofil f(x)** | Zwei Auswahlen untereinander, **Beschleunigung** und **Bremsen**: linear, EaseIn, EaseOut, SCurve, Exponential, Custom. Die Kurve darunter zeigt das Ergebnis, der Text darunter die Formel. `Custom` trägt absichtlich keine feste Formel. |
 
 **Weiche** *(nur bei Weichen-Teilen)*
 
@@ -153,7 +158,7 @@ chain, so there is nothing to reorder — this is a parts list, not a sequence."
 ┌──────────────────────────────────────────────────────────────────────┐
 │ ← │ 🚆 │ Streckenplaner       12 Teile 2 Sensoren 3 offen │Speichern│
 ├──────────────────────────────┬──────────────┬────────────────────────┤
-│                              │ n Teile      │ Fahrverhalten          │
+│                              │ n Teile      │ Fahrverhalten      [×] │
 │   Zeichenfläche              │ n offen      │  Max. Geschw. ───○──   │
 │   • Andockpunkte             ├──────────────┤  Fahrtrichtung         │
 │   • Gleise, nach Tempo       │ ■ Gerade 1   │   [Vorwärts][Rückw.]   │
@@ -163,9 +168,9 @@ chain, so there is nothing to reorder — this is a parts list, not a sequence."
 │                              │              │ Sensor                 │
 │  ┌ Tempo ─────┐    [+][-][⤢] │              │  [Kein][Farbe][Abst.]  │
 ├──────────────────────────────┴──────────────┴────────────────────────┤
-│ [Zurück][↷][Kreis schließen][Teil löschen]                           │
+│ [Rückgängig][↷][Kreis schließen][Teil löschen]                       │
 │ Am gewählten Punkt anhängen                                          │
-│ [Gerade][Kurve l.][Kurve r.][Weiche l.][Weiche r.][Kreuzung][Bahnhof]│
+│ [Gerade][Kurve l.][Kurve r.][Bahnhof][Weiche l.][Weiche r.][Kreuzung]│
 │ [Oval][Strecke][Leeren]                                              │
 └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -181,10 +186,10 @@ Zeichenfläche behält die **ganze** Fläche, und beide Seitenbereiche legen sic
 | | Breit | Schmal |
 |---|---|---|
 | **Teileliste** | Spalte rechts der Fläche | Lasche von unten, über den Knopf mit der Teilezahl im Kopf |
-| **Inspector** | Eigene Spalte | Lasche von unten, solange ein Teil gewählt ist |
+| **Inspector** | Eigene Spalte | Lasche von unten, solange ein Teil gewählt ist; der ×-Knopf schließt sie |
 | **Knöpfe erste Reihe** | Icon **und** Wort | nur Icon (~190 statt ~390 px) — die Beschriftung steht im Tooltip |
 | **Palette** | alle sieben sichtbar | dieselbe Leiste, seitlich gewischt |
-| **Kopf** | Symbol, Untertitel, drei Zähler | nur Titel und Speichern, dazu der Teile-Knopf |
+| **Kopf** | Symbol, Untertitel, drei Zähler | nur Titel (kürzt sich bei Bedarf) und Speichern, dazu der Teile-Knopf |
 | **Tempo-Legende** | unten links | ausgeblendet — Gleisfarbe und Zahl sagen dasselbe |
 
 **Immer nur eine Lasche**: wählst du ein Teil, gewinnt der Inspector und die Teileliste tritt
@@ -206,8 +211,8 @@ und der Zählung `n aktiv · n gesamt`.
 
 | Bereich | Wofür |
 |---|---|
-| **Zugliste** | Alle Züge; „Zurück zur Liste" führt im schmalen Layout dorthin zurück. Das Suchfeld filtert nach Name und Hub-Typ. |
-| **Zug-Editor** | Name, Hub-Modell, BLE-Adresse, Ports, Tempo, Farbe, Beschleunigungs- und Bremsfunktion, aktiv ja/nein. |
+| **Zugliste** | Alle Züge; „Zurück zur Liste" führt im schmalen Layout dorthin zurück. Das Suchfeld filtert nach Name und Hub-Typ. Ist die Liste leer, sagt sie warum: ohne Trains nennt sie die zwei Wege zum ersten („Hub suchen" und „Neuer Train"), bei einer Suche ohne Treffer „Kein Train passt zu …". |
+| **Zug-Editor** | Name, Hub-Modell, BLE-Adresse, Ports, Tempo, Farbe, Beschleunigungs- und Bremsfunktion, aktiv ja/nein. Aktiv-Schalter, Duplizieren und Löschen stehen ab 960 px Fensterbreite neben dem Namen, darunter in einer eigenen Zeile unter ihm. |
 | **Hub suchen** | Scannt nach Hubs. Gefundene werden **zur Bestätigung** angeboten, nicht still übernommen; kennt ein Zug die Adresse schon, bindet sich der Hub an ihn statt einen zweiten Zug anzulegen. |
 | **Verbinden / Trennen** | Baut die BLE-Verbindung auf — über die Geräte-ID aus der Suche, sonst über die eingetippte BLE-Adresse. |
 
@@ -216,7 +221,7 @@ und der Zählung `n aktiv · n gesamt`.
 *Erwartet: `docs/images/verbindung-panel.png` — das Panel offen, Servermodus gewählt.*
 
 Der Knopf **„Verbindung (Direkt/Server)"** öffnet das Panel **„Verbindung"**. Dort steht der
-Unterschied im Klartext: *„Servermodus: Steuerung über einen Trackify-Backend (Raspberry Pi).
+Unterschied im Klartext: *„Servermodus: Steuerung über ein Trackify-Backend (Raspberry Pi).
 Aus = Direktmodus über das Bluetooth dieses Geräts."* Das Adressfeld zeigt als Beispiel
 `http://192.168.1.50:5000`. Das Umschalten wirkt **sofort**, ohne Neustart.
 
@@ -242,6 +247,6 @@ dotnet run --project Source/Trackify/Trackify.csproj -f net10.0-desktop
 
 Aufnehmen mit dem Snipping Tool (`Win`+`Shift`+`S`).
 
-Für das schmale Layout — gestapelte Bereiche, Detail-Panel nur bei Auswahl — das Desktop-Fenster
+Für das schmale Layout — Liste *oder* Editor, Laschen statt Spalten — das Desktop-Fenster
 schmal ziehen, oder die APK aus `android-apk.yml` nehmen und am Gerät aufnehmen. Dort sieht man
 außerdem, wie die Systemleisten über `utu:SafeArea` ausgespart werden.

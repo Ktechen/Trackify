@@ -59,6 +59,7 @@
         <TextBlock Text="Streckenplaner" FontFamily="{StaticResource HeadingFontFamily}" FontSize="18" FontWeight="SemiBold"
                    TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="Zeichnen · echte LEGO-Teile" Style="{StaticResource MonoCaptionTextBlockStyle}"
+                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
                    Visibility="{Binding IsRoomy, Converter={StaticResource BoolToVisibilityConverter}}" />
       </StackPanel>
 

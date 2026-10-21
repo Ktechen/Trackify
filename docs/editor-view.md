@@ -29,8 +29,10 @@ Getting between them: the track-icon button in the train page's header
 ("Streckenplaner öffnen" — open the track planner), and the back arrow in the planner
 ("Zurück zur Train-Konfiguration" — back to train configuration).
 
-Both pages are **responsive**. In the wide layout the areas sit side by side; in the narrow one
-they stack and the detail panel appears only while something is selected.
+Both pages are **responsive**. In the wide layout the areas sit side by side. In the narrow one the
+train page shows the list *or* the editor, and the track planner lays the parts list and the
+inspector over the canvas as sheets. Both headers then trim their title, so the buttons on the
+right never slide off the screen.
 
 ---
 
@@ -70,7 +72,7 @@ drag from in the first place.
 
 | Button | Effect |
 |---|---|
-| **Zurück** (*undo*) | Takes back the last building step: placing, deleting, templates. **Not** the inspector's sliders — those you simply set back. |
+| **Rückgängig** (*undo*) | Takes back the last building step: placing, deleting, templates. **Not** the inspector's sliders — those you simply set back. Deliberately not "Zurück" (*back*): that is the header's arrow, and it leaves the page. |
 | *(arrow, "Wiederholen" — redo)* | Redoes what was undone. |
 | **Kreis schließen** (*close the loop*) | Tooltip: "Die fehlenden Teile einsetzen, bis der Kreis zu ist" — *insert the missing parts until the loop is closed*. Only enabled when two open ends are reachably close; the search budget is ten parts. |
 | **Teil löschen** (*delete part*) | Removes the selected part along with its connections. |
@@ -96,7 +98,7 @@ not guess a switch — you place those on purpose.
 
 | Indication | Meaning |
 |---|---|
-| **Track colour** | The speed. The "Tempo" (*speed*) legend bottom-left runs red = stop to green = fast — hidden in the narrow layout. |
+| **Track colour** | The speed. The "Tempo" (*speed*) legend bottom-left has one step per track colour: "Stopp" (red, *stop*), "sehr langsam" (*very slow*), "langsam" (*slow*), "mittel" (*medium*), "schnell" (green, *fast*) — hidden in the narrow layout. |
 | **Number on the track** | That part's maximum speed, in percent. |
 | **Dashed line** | The preview while dragging — not committed, not counted yet. |
 | **Marker "F"** | Colour sensor on this part (*Farbe* = colour). |
@@ -114,8 +116,10 @@ every target.
 
 *Expected: `docs/images/streckenplaner-inspector.png` — a selected part with a sensor set.*
 
-With nothing selected it reads **"Kein Segment ausgewählt."** — *no segment selected*. Tap a part
-and three blocks appear:
+With nothing selected it reads **"Kein Teil ausgewählt. Tippe ein Teil auf der Fläche an."** —
+*no part selected; tap a part on the canvas*. Tap a part and three blocks appear. The **× button**
+top right ("Auswahl schließen" — *close selection*) puts the inspector away again — on a phone that
+is how the sheet comes off the canvas, since every drawn stroke selects the part it laid.
 
 **Fahrverhalten — driving behaviour**
 
@@ -123,7 +127,7 @@ and three blocks appear:
 |---|---|
 | **Max. Geschwindigkeit** (0–100 %) — maximum speed | Top speed across this part. Also colours the track on the canvas. |
 | **Fahrtrichtung** — direction of travel: `Vorwärts` / `Rückwärts` (forward / reverse) | The direction this part is traversed in. |
-| **Geschwindigkeitsprofil f(x)** — speed profile | Two pickers, **Beschleunigung** (acceleration) and **Bremsen** (braking): linear, EaseIn, EaseOut, SCurve, Exponential, Custom. The curve below shows the result, the text below it the formula. `Custom` deliberately carries no fixed formula. |
+| **Geschwindigkeitsprofil f(x)** — speed profile | Two pickers, one above the other, **Beschleunigung** (acceleration) and **Bremsen** (braking): linear, EaseIn, EaseOut, SCurve, Exponential, Custom. The curve below shows the result, the text below it the formula. `Custom` deliberately carries no fixed formula. |
 
 **Weiche — point/switch** *(only on switch parts)*
 
@@ -164,7 +168,7 @@ nothing to reorder — this is a parts list, not a sequence."*
 ┌──────────────────────────────────────────────────────────────────────┐
 │ ← │ 🚆 │ Streckenplaner       12 Teile 2 Sensoren 3 offen │Speichern│
 ├──────────────────────────────┬──────────────┬────────────────────────┤
-│                              │ n Teile      │ Fahrverhalten          │
+│                              │ n Teile      │ Fahrverhalten      [×] │
 │   drawing canvas             │ n offen      │  Max. Geschw. ───○──   │
 │   • anchor dots              ├──────────────┤  Fahrtrichtung         │
 │   • track, coloured by       │ ■ Gerade 1   │   [Vorwärts][Rückw.]   │
@@ -174,9 +178,9 @@ nothing to reorder — this is a parts list, not a sequence."*
 │                              │              │ Sensor                 │
 │  ┌ Tempo ─────┐    [+][-][⤢] │              │  [Kein][Farbe][Abst.]  │
 ├──────────────────────────────┴──────────────┴────────────────────────┤
-│ [Zurück][↷][Kreis schließen][Teil löschen]                           │
+│ [Rückgängig][↷][Kreis schließen][Teil löschen]                       │
 │ Am gewählten Punkt anhängen                                          │
-│ [Gerade][Kurve l.][Kurve r.][Weiche l.][Weiche r.][Kreuzung][Bahnhof]│
+│ [Gerade][Kurve l.][Kurve r.][Bahnhof][Weiche l.][Weiche r.][Kreuzung]│
 │ [Oval][Strecke][Leeren]                                              │
 └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -192,10 +196,10 @@ keeps the **whole** area and both side panes dock over it as sheets:
 | | Wide | Narrow |
 |---|---|---|
 | **Parts list** | Column beside the canvas | Bottom sheet, opened by the header button showing the part count |
-| **Inspector** | Its own column | Bottom sheet, while a part is selected |
+| **Inspector** | Its own column | Bottom sheet, while a part is selected; the × button closes it |
 | **First-row buttons** | Icon **and** word | Icon only (~190 px instead of ~390) — the wording moves into the tooltip |
 | **Palette** | All seven visible | The same strip, scrolled sideways |
-| **Header** | Emblem, subtitle, three counts | Title and Speichern only, plus the parts button |
+| **Header** | Emblem, subtitle, three counts | Title (trimmed when needed) and Speichern only, plus the parts button |
 | **Speed legend** | Bottom left | Hidden — the track's colour and number say the same thing |
 
 **One sheet at a time**: select a part and the inspector wins, the parts list steps aside. The parts
@@ -217,8 +221,8 @@ Header: **"Train-Konfiguration"** with the subtitle **"Powered Up · Legoino-Sch
 
 | Area | For |
 |---|---|
-| **Train list** | Every train; "Zurück zur Liste" (*back to the list*) returns there in the narrow layout. The search box filters by name and hub type. |
-| **Train editor** | Name, hub model, BLE address, ports, speed, colour, acceleration and braking function, active yes/no. |
+| **Train list** | Every train; "Zurück zur Liste" (*back to the list*) returns there in the narrow layout. The search box filters by name and hub type. An empty list says why: with no trains it names the two ways to a first one ("Hub suchen" and "Neuer Train"), and a search without a hit reads "Kein Train passt zu …" (*no train matches …*). |
+| **Train editor** | Name, hub model, BLE address, ports, speed, colour, acceleration and braking function, active yes/no. The active switch, duplicate and delete sit beside the name from a 960 px window up, and on their own row below it under that. |
 | **Hub suchen** (*discover hubs*) | Scans for hubs. Found ones are offered **for confirmation**, not adopted silently; if a train already knows the address, the hub binds to it instead of creating a second train. |
 | **Verbinden / Trennen** (*connect / disconnect*) | Opens the BLE connection — by the device id from discovery, otherwise by the typed-in BLE address. |
 
@@ -227,7 +231,7 @@ Header: **"Train-Konfiguration"** with the subtitle **"Powered Up · Legoino-Sch
 *Expected: `docs/images/verbindung-panel.png` — the panel open, server mode selected.*
 
 The **"Verbindung (Direkt/Server)"** button (*connection, direct/server*) opens the **"Verbindung"**
-panel. It states the difference plainly: *"Servermodus: Steuerung über einen Trackify-Backend
+panel. It states the difference plainly: *"Servermodus: Steuerung über ein Trackify-Backend
 (Raspberry Pi). Aus = Direktmodus über das Bluetooth dieses Geräts."* — **server mode drives through
 a Trackify backend on a Raspberry Pi; off means direct mode over this device's own Bluetooth.** The
 address field shows `http://192.168.1.50:5000` as its example. Switching takes effect
@@ -255,6 +259,6 @@ dotnet run --project Source/Trackify/Trackify.csproj -f net10.0-desktop
 
 Capture with the Snipping Tool (`Win`+`Shift`+`S`).
 
-For the narrow layout — stacked areas, detail panel only while something is selected — drag the
+For the narrow layout — list *or* editor, sheets instead of columns — drag the
 desktop window narrow, or take the APK from `android-apk.yml` and capture on the device. There you
 also see how the system bars are kept clear via `utu:SafeArea`.
