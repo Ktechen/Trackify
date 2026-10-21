@@ -1,41 +1,66 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-	<!-- see https://aka.platform/uno/apple-privacy-manifest for more information -->
-	
-	<!-- .NET Runtime/BCL -->
-	<dict>
-		<key>NSPrivacyAccessedAPIType</key>
-		<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
-		<key>NSPrivacyAccessedAPITypeReasons</key>
-		<array>
-			<string>C617.1</string>
-		</array>
-	</dict>
-	<dict>
-		<key>NSPrivacyAccessedAPIType</key>
-		<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
-		<key>NSPrivacyAccessedAPITypeReasons</key>
-		<array>
-			<string>35F9.1</string>
-		</array>
-	</dict>
-	<dict>
-		<key>NSPrivacyAccessedAPIType</key>
-		<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
-		<key>NSPrivacyAccessedAPITypeReasons</key>
-		<array>
-			<string>E174.1</string>
-		</array>
-	</dict>
+<!--
+	Apple privacy manifest, bundled by Uno.Sdk as PrivacyInfo.xcprivacy (Uno.SingleProject.iOS.targets).
+	See https://aka.platform.uno/apple-privacy-manifest and
+	https://developer.apple.com/documentation/bundleresources/privacy-manifest-files
 
-	<!-- NSUserDefaults -->
-	<dict>
-		<key>NSPrivacyAccessedAPIType</key>
-		<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
-		<key>NSPrivacyAccessedAPITypeReasons</key>
-		<array>
-			<string>CA92.1</string>
-		</array>
-	</dict>
+	A plist has exactly one root object. The previous version listed the API entries as several
+	top-level <dict>s with no NSPrivacyAccessedAPITypes key around them; a plist parser keeps just one
+	of those dicts and finds no NSPrivacyAccessedAPITypes at all, so every required-reason API below
+	counted as undeclared (App Store Connect warning ITMS-91053).
+
+	Trackify collects nothing and tracks no one: the train store (SQLite) and the settings stay on
+	the device, and Server mode only talks to a backend the user runs and enters themselves.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- .NET runtime/BCL file APIs, and SQLite (e_sqlite3) stat()-ing its own database file —
+		     both only inside the app container. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+		<!-- .NET runtime: elapsed-time measurement (Stopwatch / Environment.TickCount). -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
+			</array>
+		</dict>
+		<!-- .NET runtime: free-space checks before writing files (DriveInfo / statfs). -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>E174.1</string>
+			</array>
+		</dict>
+		<!-- NSUserDefaults: Uno's ApplicationData.LocalSettings, which keeps the Direct/Server mode and
+		     the backend URL (Services/Remote/ConnectionState) — read and written by this app only. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
 </plist>

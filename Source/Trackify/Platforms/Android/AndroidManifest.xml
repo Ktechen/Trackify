@@ -8,6 +8,10 @@
   <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+  <!-- Server mode (Services/Remote: Refit + SignalR to the CLI backend). .NET for Android only adds
+       INTERNET by itself to Debug builds (for the debugger), so without this line a Release/Play build
+       fails every Server-mode request with a socket "permission denied". -->
+  <uses-permission android:name="android.permission.INTERNET" />
   <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
   <!-- allowBackup=false: the store holds device-local hub pairings (BLE ids/MACs of *this* phone's
        hubs), which are meaningless once restored onto another device — so keep them off cloud backup.

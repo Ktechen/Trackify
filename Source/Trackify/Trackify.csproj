@@ -28,7 +28,7 @@
         <!-- Package Publisher -->
         <ApplicationPublisher>Trackify</ApplicationPublisher>
         <!-- Package Description -->
-        <Description>Trackify powered by Uno Platform.</Description>
+        <Description>Züge per Bluetooth steuern und Gleispläne zeichnen.</Description>
 
         <!--
           UnoFeatures are used to quickly add and manage features enabled for your app.
@@ -47,8 +47,31 @@
         </UnoFeatures>
     </PropertyGroup>
 
-    <!-- The app no longer does Bluetooth: train control lives in the CLI on the Raspberry Pi. It
-         registers a no-op ILegoService (Services/UnsupportedLegoService) so the UI still runs. -->
+    <!-- Microsoft Store: the fourth (revision) part of an MSIX version is reserved for the Store and
+         must be 0, but Uno.Resizetizer writes ApplicationVersion into exactly that slot (1.0 + 1 →
+         1.0.0.1, rejected on upload). Zero it for the Windows head, so the package version is
+         ApplicationDisplayVersion.0 — every Store upload therefore needs a higher
+         ApplicationDisplayVersion. Android versionCode and iOS CFBundleVersion keep ApplicationVersion.
+         A -p:ApplicationVersion=… on the command line beats this group, so a Windows release build
+         must pass 0 (or nothing) there. See docs/store-release.md. -->
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+        <ApplicationVersion>0</ApplicationVersion>
+    </PropertyGroup>
+
+    <!-- Android Release (the AAB for Google Play): .NET SDK 10.0.2xx adds the host RID (win-x64) to
+         RuntimeIdentifiers whenever PublishTrimmed is on, and restore then looks for a
+         Microsoft.NETCore.App.Runtime.Mono.win-x64 pack that does not exist (NU1102). The Android
+         workload opts out of this itself from 36.1.30 on (dotnet/android#10722); this line covers an
+         older installed workload. Drop it once every build machine runs workload 36.1.30 or newer. -->
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
+    </PropertyGroup>
+
+    <!-- Bluetooth runs on the device heads: AddTrackifyApplication registers the local ILegoService
+         transport for android/ios (Plugin.BLE) and windows (WinRT); wasm has none, and desktop only
+         on Linux (BlueZ, via AddTrackifyInfrastructure). Server
+         mode (Services/Remote) talks to the CLI backend on a Pi instead. That is why the store
+         manifests declare Bluetooth and network access. -->
 
     <!-- High-performance logging (source-generated LoggerMessage) with a Serilog backend. -->
     <ItemGroup>
