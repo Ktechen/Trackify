@@ -101,6 +101,12 @@ jobs:
       # -f (single TargetFramework) scopes restore+build to the Android head, so the ios/wasm/windows
       # flavors are never touched. AndroidPackageFormats takes a semicolon list, giving us both
       # shapes from one build instead of two passes over the same compile.
+      #
+      # The semicolon MUST be written as %3B. MSBuild splits a -p: value on ';' itself, so
+      # `-p:AndroidPackageFormats=apk;aab` is read as that property plus a stray `aab` property and
+      # the run dies with "MSB1006: property is invalid" before compiling. Shell quoting does not
+      # help - the split happens inside MSBuild. With the escape, one publish emits both
+      # <id>-Signed.apk and <id>-Signed.aab (verified).
       - name: Publish Android APK + AAB (release-signed)
         if: steps.signing.outputs.signed == 'true'
         shell: bash
@@ -113,7 +119,7 @@ jobs:
         run: >
           dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-android
           "-p:TrackifyVersion=$VERSION"
-          "-p:AndroidPackageFormats=apk;aab"
+          -p:AndroidPackageFormats=apk%3Baab
           -p:AndroidKeyStore=true
           "-p:AndroidSigningKeyStore=$KEYSTORE"
           "-p:AndroidSigningStorePass=$STORE_PASS"
@@ -128,7 +134,7 @@ jobs:
         run: >
           dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-android
           "-p:TrackifyVersion=$VERSION"
-          "-p:AndroidPackageFormats=apk;aab"
+          -p:AndroidPackageFormats=apk%3Baab
 
       - name: Upload APK + AAB
         uses: actions/upload-artifact@v4

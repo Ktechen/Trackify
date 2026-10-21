@@ -90,8 +90,14 @@ jobs:
           fi
 
       # UapAppxPackageBuildMode=SideloadOnly + AppxBundle=Never: a single .msix for direct install,
-      # not a Store bundle. x64 only - Windows-on-arm would need a second run with
-      # RuntimeIdentifier=win-arm64.
+      # rather than a Store bundle. The packaging targets delegate the architecture themselves and
+      # the result is an x64 package (verified: Trackify_<version>_X64.msix, manifest
+      # ProcessorArchitecture=x64), so no RuntimeIdentifier is set here.
+      #
+      # Do NOT add -p:RuntimeIdentifier=win-x64. It looks harmless and is not: with a RID on this
+      # head, restore starts demanding Microsoft.NETCore.App.Runtime.Mono.win-x64, which does not
+      # exist for .NET 10 (nuget's newest is a 9.0 preview), and the build fails with NU1102 before
+      # it compiles anything. Without it the same build succeeds.
       #
       # Only -p:TrackifyVersion is passed, deliberately. The package version has to come out as
       # TrackifyVersion + ".0", because the Microsoft Partner Center reserves the fourth part and
@@ -108,7 +114,6 @@ jobs:
         run: >
           dotnet build Source/Trackify/Trackify.csproj
           -f net10.0-windows10.0.19041.0 -c Release
-          -p:RuntimeIdentifier=win-x64
           "-p:TrackifyVersion=$VERSION"
           -p:GenerateAppxPackageOnBuild=true
           -p:UapAppxPackageBuildMode=SideloadOnly
@@ -126,7 +131,6 @@ jobs:
         run: >
           dotnet build Source/Trackify/Trackify.csproj
           -f net10.0-windows10.0.19041.0 -c Release
-          -p:RuntimeIdentifier=win-x64
           "-p:TrackifyVersion=$VERSION"
           -p:GenerateAppxPackageOnBuild=true
           -p:UapAppxPackageBuildMode=SideloadOnly
