@@ -1,0 +1,25 @@
+#!/bin/sh
+# Stop the service before the files go away.
+#
+# `systemctl stop` sends SIGINT (KillSignal in trackify.service), so removing the package stops the
+# trains cleanly rather than leaving one running with no process to talk to it.
+
+set -e
+
+case "$1" in
+remove | deconfigure)
+    if [ -d /run/systemd/system ]; then
+        systemctl stop trackify.service >/dev/null 2>&1 || true
+        systemctl disable trackify.service >/dev/null 2>&1 || true
+    fi
+    ;;
+
+upgrade | failed-upgrade) ;;
+
+*)
+    echo "prerm called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

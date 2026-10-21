@@ -22,9 +22,14 @@
         <ApplicationTitle>Trackify</ApplicationTitle>
         <!-- App Identifier -->
         <ApplicationId>com.ktechen.trackify</ApplicationId>
-        <!-- Versions -->
-        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-        <ApplicationVersion>1</ApplicationVersion>
+        <!--
+          Versions - both derive from TrackifyVersion in Directory.Build.props, the single source of
+          truth for a release. ApplicationDisplayVersion is the user-visible string (Android
+          versionName, MSIX package version); ApplicationVersion is the monotonic integer platforms
+          compare when deciding whether something is an update (Android versionCode, MSIX revision).
+        -->
+        <ApplicationDisplayVersion>$(TrackifyVersion)</ApplicationDisplayVersion>
+        <ApplicationVersion>$(TrackifyVersionCode)</ApplicationVersion>
         <!-- Package Publisher -->
         <ApplicationPublisher>Trackify</ApplicationPublisher>
         <!-- Package Description -->

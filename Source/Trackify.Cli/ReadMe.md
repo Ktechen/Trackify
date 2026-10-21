@@ -49,7 +49,62 @@ with the `TRACKIFY_STORE` environment variable. The schema is created automatica
 enums are stored as readable names. Same schema as the app — copy the `.db` to the Pi, or point both
 at the same file. The hub MAC (`HubId`/`BleAddress`) comes from `trackify discover`.
 
-## Deploy to a Raspberry Pi
+## Install on a Raspberry Pi — the `.deb`
+
+Every `v*` release carries `trackify_<version>_arm64.deb` on the
+[Releases page](https://github.com/Ktechen/Trackify/releases). It is the quickest route to a working
+Pi, and the only one that also deals with the prerequisites:
+
+```bash
+sudo apt install ./trackify_1.0.0_arm64.deb
+```
+
+That one command:
+
+- unpacks the self-contained build to `/usr/lib/trackify` and puts `trackify` on `PATH` — **no .NET
+  runtime needed on the Pi**;
+- **pulls in `bluez`** through `Depends:`, so the stack Trackify talks to over D-Bus is installed and
+  running — the step Ubuntu Server images otherwise leave to you;
+- creates the `trackify` system user and **adds it to the `bluetooth` group** (BlueZ grants
+  `org.bluez` to that group only — the usual cause of "discovery finds nothing");
+- creates the store directory `/var/lib/trackify`; and
+- installs the systemd unit.
+
+Then:
+
+```bash
+trackify discover                     # find your hubs (turn one on first)
+sudo systemctl enable --now trackify  # run the whole fleet, now and at boot
+```
+
+**The service is installed but deliberately not started.** `apt install` has no business setting a
+physical layout in motion, so enabling it stays an explicit step. The unit runs as the `trackify`
+user against `/var/lib/trackify/trackify.db` (`TRACKIFY_STORE` in
+`/lib/systemd/system/trackify.service`).
+
+`apt remove` stops the service cleanly (SIGINT, so no train is left moving) and keeps your trains;
+`apt purge` also deletes `/var/lib/trackify`.
+
+To build the package yourself — exactly what the release workflow runs:
+
+```bash
+dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj \
+  -f net10.0 -c Release -r linux-arm64 --self-contained -o publish/linux-arm64
+.github/scripts/build-deb.sh --version 1.0.0 --publish-dir publish/linux-arm64 --output dist
+```
+
+`dpkg-deb` is Linux-only, so build the package on Linux or in CI. `--stage-only` just lays the
+package tree out for inspection and works anywhere (on Windows the mode bits and the
+`/usr/bin/trackify` symlink will look wrong there — both are correct when built on Linux).
+
+**Why a `.deb` rather than a tarball, a single-file binary, or only Docker?** A tarball still leaves
+BlueZ, the service user, the group membership and the unit file to do by hand — the four steps the
+package removes. [Docker](#docker) remains the right answer if you already run containers on the Pi,
+but it needs a runtime plus host concessions (`network_mode: host`, a D-Bus mount, the `bluetooth`
+GID). The raw `linux-arm64` directory is still published with every release for non-Debian Linux,
+where `apt` is not an option — that is the manual route below.
+
+## Deploy to a Raspberry Pi by hand (any Linux)
 
 ```bash
 # From Windows for the Pi (arm64), self-contained (no .NET needed on the Pi):
@@ -210,7 +265,63 @@ per Umgebungsvariable `TRACKIFY_STORE`. Das Schema wird beim ersten Start automa
 werden als lesbare Namen gespeichert. Gleiches Schema wie die App — die `.db` auf den Pi kopieren oder
 beide auf dieselbe Datei zeigen lassen. Die Hub-MAC (`HubId`/`BleAddress`) liefert `trackify discover`.
 
-## Auf einen Raspberry Pi deployen
+## Auf einem Raspberry Pi installieren — das `.deb`
+
+Jedes `v*`-Release enthält `trackify_<version>_arm64.deb` auf der
+[Releases-Seite](https://github.com/Ktechen/Trackify/releases). Das ist der schnellste Weg zu einem
+laufenden Pi — und der einzige, der auch die Voraussetzungen mitbringt:
+
+```bash
+sudo apt install ./trackify_1.0.0_arm64.deb
+```
+
+Dieser eine Befehl:
+
+- entpackt den self-contained Build nach `/usr/lib/trackify` und legt `trackify` in den `PATH` —
+  **kein .NET-Runtime auf dem Pi nötig**;
+- zieht per `Depends:` **`bluez`** mit, damit der Stack, mit dem Trackify über D-Bus spricht,
+  installiert und gestartet ist — genau der Schritt, den Ubuntu-Server-Images einem sonst überlassen;
+- legt den System-Benutzer `trackify` an und **nimmt ihn in die Gruppe `bluetooth` auf** (BlueZ gibt
+  `org.bluez` nur dieser Gruppe frei — die übliche Ursache für „die Erkennung findet nichts");
+- legt das Store-Verzeichnis `/var/lib/trackify` an; und
+- installiert die systemd-Unit.
+
+Danach:
+
+```bash
+trackify discover                     # Hubs finden (vorher einen einschalten)
+sudo systemctl enable --now trackify  # ganze Flotte fahren, jetzt und bei jedem Boot
+```
+
+**Der Dienst wird installiert, aber absichtlich nicht gestartet.** `apt install` hat nicht die
+Aufgabe, eine echte Anlage in Bewegung zu setzen — das Aktivieren bleibt ein eigener, bewusster
+Schritt. Die Unit läuft als Benutzer `trackify` gegen `/var/lib/trackify/trackify.db`
+(`TRACKIFY_STORE` in `/lib/systemd/system/trackify.service`).
+
+`apt remove` stoppt den Dienst sauber (SIGINT, es bleibt also kein Zug fahren) und behält die Züge;
+`apt purge` löscht zusätzlich `/var/lib/trackify`.
+
+Das Paket selbst bauen — genau das macht der Release-Workflow:
+
+```bash
+dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj \
+  -f net10.0 -c Release -r linux-arm64 --self-contained -o publish/linux-arm64
+.github/scripts/build-deb.sh --version 1.0.0 --publish-dir publish/linux-arm64 --output dist
+```
+
+`dpkg-deb` gibt es nur unter Linux, das Paket also unter Linux oder in der CI bauen. `--stage-only`
+legt nur den Paketbaum zum Ansehen an und läuft überall (unter Windows sehen dort die Rechte-Bits und
+der Symlink `/usr/bin/trackify` falsch aus — unter Linux gebaut sind beide korrekt).
+
+**Warum ein `.deb` und nicht ein Tarball, ein Single-File-Binary oder nur Docker?** Ein Tarball
+ließe BlueZ, den Service-Benutzer, die Gruppenmitgliedschaft und die Unit-Datei weiter von Hand
+übrig — die vier Schritte, die das Paket abnimmt. [Docker](#docker) bleibt die richtige Antwort, wenn
+auf dem Pi ohnehin Container laufen, braucht aber eine Container-Runtime und Zugeständnisse auf dem
+Host (`network_mode: host`, D-Bus-Mount, die `bluetooth`-GID). Das rohe `linux-arm64`-Verzeichnis
+wird weiter mit jedem Release veröffentlicht — für Nicht-Debian-Linux, wo `apt` keine Option ist:
+das ist der manuelle Weg unten.
+
+## Auf einen Raspberry Pi deployen (von Hand, jedes Linux)
 
 ```bash
 # Von Windows aus für den Pi (arm64), self-contained (kein .NET auf dem Pi nötig):

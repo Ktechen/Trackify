@@ -1,0 +1,37 @@
+#!/bin/sh
+# Clean up after the files are gone.
+#
+# `remove` leaves the store and the user in place, so reinstalling keeps your trains. `purge` is the
+# documented way to throw the configuration away as well - which for Trackify means the SQLite store.
+
+set -e
+
+case "$1" in
+remove)
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+    fi
+    ;;
+
+purge)
+    # The train store, created by postinst. Deliberately only on purge, never on remove.
+    rm -rf /var/lib/trackify
+
+    if getent passwd trackify >/dev/null; then
+        deluser --system trackify >/dev/null 2>&1 || true
+    fi
+
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+    fi
+    ;;
+
+upgrade | failed-upgrade | abort-install | abort-upgrade | disappear) ;;
+
+*)
+    echo "postrm called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

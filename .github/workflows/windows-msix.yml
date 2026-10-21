@@ -1,0 +1,136 @@
+name: Windows MSIX
+
+# Packages the Uno app's Windows head as a side-loadable MSIX.
+#
+# Why MSIX and not an MSI: this head is WinUI 3 / Windows App SDK, whose packaging story is MSIX
+# natively — `WindowsPackageType` already evaluates to MSIX for net10.0-windows10.0.19041.0, and
+# Uno.Sdk generates the Package.appxmanifest from the csproj's ApplicationTitle / ApplicationId /
+# ApplicationPublisher / ApplicationDisplayVersion, so there is nothing extra to author. An MSI
+# would mean adding WiX plus a separate installer project, and an *unpackaged* WinUI app also needs
+# the Windows App SDK runtime deployed on the target machine. MSIX additionally gives atomic
+# install/uninstall, per-user install without admin rights, and an update path.
+#
+# This needs its own windows-latest job for the same reason ci.yml does not build the app at all:
+# restore pulls in workload imports for every TFM the project declares, so the Windows head cannot
+# be gated from the ubuntu job even with `-f <head>`.
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version X.Y.Z. Defaults to TrackifyVersion in Directory.Build.props.'
+        required: false
+        type: string
+      ref:
+        description: 'Commit, branch or tag to build. Defaults to the triggering ref.'
+        required: false
+        type: string
+
+jobs:
+  msix:
+    name: Build Windows MSIX
+    runs-on: windows-latest
+    steps:
+      # In release.yml's manual path the caller's SHA predates the version-bump commit, so build the
+      # tag it created. An empty ref falls back to the triggering ref.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup .NET (8, 9, 10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Resolve version
+        id: v
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            version="$INPUT_VERSION"
+          else
+            version="$(dotnet msbuild Source/Trackify.Cli/Trackify.Cli.csproj \
+              -p:TargetFramework=net10.0 -getProperty:TrackifyVersion | tr -d '[:space:]')"
+          fi
+          case "$version" in
+          [0-9]*.[0-9]*.[0-9]*) ;;
+          *)
+            echo "::error::Version '$version' is not X.Y.Z"
+            exit 1
+            ;;
+          esac
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+
+      # Signing is optional, but it matters more here than for the APK: Windows refuses to install an
+      # MSIX that is not signed by a certificate the machine trusts. Without the secret this job
+      # still produces an .msix (useful for inspection, and installable once the user signs it or
+      # trusts a certificate), but it is NOT double-click installable as it stands.
+      #
+      # The .pfx is decoded into RUNNER_TEMP, which is outside every uploaded artifact path.
+      - name: Prepare signing certificate
+        id: signing
+        shell: bash
+        env:
+          CERT_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+        run: |
+          if [ -n "$CERT_BASE64" ]; then
+            pfx="$RUNNER_TEMP/trackify.pfx"
+            printf '%s' "$CERT_BASE64" | base64 --decode >"$pfx"
+            echo "pfx=$pfx" >>"$GITHUB_OUTPUT"
+            echo "signed=true" >>"$GITHUB_OUTPUT"
+            echo "Certificate supplied - the MSIX will be signed."
+          else
+            echo "signed=false" >>"$GITHUB_OUTPUT"
+            echo "::warning::No WINDOWS_CERTIFICATE_BASE64 secret - producing an UNSIGNED MSIX. Windows will not install it until it is signed."
+          fi
+
+      # UapAppxPackageBuildMode=SideloadOnly + AppxBundle=Never: a single .msix for direct install,
+      # not a Store bundle. x64 only - Windows-on-arm would need a second run with
+      # RuntimeIdentifier=win-arm64.
+      - name: Build MSIX (signed)
+        if: steps.signing.outputs.signed == 'true'
+        shell: bash
+        env:
+          CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          PFX: ${{ steps.signing.outputs.pfx }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: >
+          dotnet build Source/Trackify/Trackify.csproj
+          -f net10.0-windows10.0.19041.0 -c Release
+          -p:RuntimeIdentifier=win-x64
+          "-p:TrackifyVersion=$VERSION"
+          -p:GenerateAppxPackageOnBuild=true
+          -p:UapAppxPackageBuildMode=SideloadOnly
+          -p:AppxBundle=Never
+          -p:AppxPackageSigningEnabled=true
+          "-p:PackageCertificateKeyFile=$PFX"
+          "-p:PackageCertificatePassword=$CERT_PASSWORD"
+          "-p:AppxPackageDir=$GITHUB_WORKSPACE/dist/msix/"
+
+      - name: Build MSIX (unsigned)
+        if: steps.signing.outputs.signed != 'true'
+        shell: bash
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: >
+          dotnet build Source/Trackify/Trackify.csproj
+          -f net10.0-windows10.0.19041.0 -c Release
+          -p:RuntimeIdentifier=win-x64
+          "-p:TrackifyVersion=$VERSION"
+          -p:GenerateAppxPackageOnBuild=true
+          -p:UapAppxPackageBuildMode=SideloadOnly
+          -p:AppxBundle=Never
+          -p:AppxPackageSigningEnabled=false
+          "-p:AppxPackageDir=$GITHUB_WORKSPACE/dist/msix/"
+
+      - name: Upload MSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: trackify-msix
+          path: dist/msix/**/*.msix
+          if-no-files-found: error

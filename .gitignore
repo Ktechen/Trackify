@@ -12,3 +12,7 @@ riderModule.iml
 coverage.cobertura.xml
 coverage.json
 coverage.opencover.xml
+# Release output: `dotnet publish -o publish/...` (the documented Pi route) and the .deb that
+# .github/scripts/build-deb.sh writes.
+/publish/
+/dist/

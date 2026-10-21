@@ -1,3 +1,12 @@
 # Shell scripts must always use LF line endings so they run on Linux (the
 # Raspberry Pi / Docker), even when checked out or edited on a Windows box.
 *.sh text eol=lf
+
+# The Debian maintainer scripts have no extension, so *.sh does not cover them. With CRLF endings
+# dpkg would fail them on the Pi with "/bin/sh^M: bad interpreter".
+packaging/debian/postinst text eol=lf
+packaging/debian/prerm text eol=lf
+packaging/debian/postrm text eol=lf
+
+# systemd parses unit files line by line; keep them LF for the same reason.
+*.service text eol=lf

@@ -1,19 +1,41 @@
 name: Android APK
 
-# APK builds are heavier, so run them on demand or when tagging a release — not on every PR.
+# Builds the Uno app's Android head in both shipping shapes:
+#
+#   .apk - side-loadable: what a person installs directly onto a phone
+#   .aab - Android App Bundle: the only format Google Play accepts for upload, and NOT installable
+#          directly, so it cannot replace the APK
+#
+# Android builds are heavy, so run them on demand or as part of a release — not on every PR.
+#
+# Two ways in: on its own (workflow_dispatch) it builds artifacts and publishes nothing. release.yml
+# calls it as a reusable workflow, passing the version and the tag to build.
 on:
   workflow_dispatch:
-  push:
-    tags: [ 'v*' ]
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version X.Y.Z. Defaults to TrackifyVersion in Directory.Build.props.'
+        required: false
+        type: string
+      ref:
+        description: 'Commit, branch or tag to build. Defaults to the triggering ref.'
+        required: false
+        type: string
 
 jobs:
   apk:
-    name: Build Android APK
+    name: Build Android APK + AAB
     # Windows runner: Trackify.Application already includes its net10.0-android flavor here (its TFMs
     # are host-conditioned), so the app's Android head resolves the mobile ILegoService transport.
     runs-on: windows-latest
     steps:
+      # In release.yml's manual path the caller's SHA predates the version-bump commit, so build the
+      # tag it created rather than whatever the branch pointed at when the run started. An empty
+      # ref falls back to the triggering ref.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
@@ -21,26 +43,97 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup .NET (9, 10)
+      - name: Setup .NET (8, 9, 10)
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
+            8.0.x
             9.0.x
             10.0.x
 
       - name: Install Android workload
         run: dotnet workload install android
 
-      # -f (single TargetFramework) scopes restore+build to the Android head, so the ios/wasm/windows
-      # flavors are never touched. Produces the (debug-keystore-signed) APK; a store build needs your
-      # own keystore.
-      - name: Publish Android APK
-        run: dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-android
+      - name: Resolve version
+        id: v
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            version="$INPUT_VERSION"
+          else
+            version="$(dotnet msbuild Source/Trackify.Cli/Trackify.Cli.csproj \
+              -p:TargetFramework=net10.0 -getProperty:TrackifyVersion | tr -d '[:space:]')"
+          fi
+          case "$version" in
+          [0-9]*.[0-9]*.[0-9]*) ;;
+          *)
+            echo "::error::Version '$version' is not X.Y.Z"
+            exit 1
+            ;;
+          esac
+          echo "version=$version" >>"$GITHUB_OUTPUT"
 
-      - name: Upload APK
+      # Signing is optional. With no keystore secret the build is signed with the Android debug key:
+      # that side-loads fine but is NOT suitable for distribution, and Google Play rejects it.
+      # Set ANDROID_KEYSTORE_BASE64 (+ the passwords and alias) to get release-signed output.
+      #
+      # The keystore is decoded into RUNNER_TEMP, which is outside every path uploaded as an
+      # artifact, so the key material cannot leave the runner.
+      - name: Prepare signing keystore
+        id: signing
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            keystore="$RUNNER_TEMP/trackify.keystore"
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode >"$keystore"
+            echo "keystore=$keystore" >>"$GITHUB_OUTPUT"
+            echo "signed=true" >>"$GITHUB_OUTPUT"
+            echo "Keystore supplied - the APK and AAB will be release-signed."
+          else
+            echo "signed=false" >>"$GITHUB_OUTPUT"
+            echo "::warning::No ANDROID_KEYSTORE_BASE64 secret - falling back to the Android debug key. Side-loadable, but not distributable and rejected by Google Play."
+          fi
+
+      # -f (single TargetFramework) scopes restore+build to the Android head, so the ios/wasm/windows
+      # flavors are never touched. AndroidPackageFormats takes a semicolon list, giving us both
+      # shapes from one build instead of two passes over the same compile.
+      - name: Publish Android APK + AAB (release-signed)
+        if: steps.signing.outputs.signed == 'true'
+        shell: bash
+        env:
+          STORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEYSTORE: ${{ steps.signing.outputs.keystore }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: >
+          dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-android
+          "-p:TrackifyVersion=$VERSION"
+          "-p:AndroidPackageFormats=apk;aab"
+          -p:AndroidKeyStore=true
+          "-p:AndroidSigningKeyStore=$KEYSTORE"
+          "-p:AndroidSigningStorePass=$STORE_PASS"
+          "-p:AndroidSigningKeyAlias=$KEY_ALIAS"
+          "-p:AndroidSigningKeyPass=$KEY_PASS"
+
+      - name: Publish Android APK + AAB (debug-signed)
+        if: steps.signing.outputs.signed != 'true'
+        shell: bash
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: >
+          dotnet publish Source/Trackify/Trackify.csproj -c Release -f net10.0-android
+          "-p:TrackifyVersion=$VERSION"
+          "-p:AndroidPackageFormats=apk;aab"
+
+      - name: Upload APK + AAB
         uses: actions/upload-artifact@v4
         with:
-          name: trackify-apk
+          name: trackify-android
           path: |
             Source/Trackify/bin/Release/net10.0-android/**/*.apk
             Source/Trackify/bin/Release/net10.0-android/**/*.aab

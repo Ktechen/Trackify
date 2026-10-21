@@ -23,4 +23,36 @@
     -->
     <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257;MVVMTK0045;NETSDK1198</NoWarn>
   </PropertyGroup>
+
+  <!--
+    ============================= Release version =============================
+    THE single source of truth for Trackify's version. Bump it in the PR that prepares a release,
+    then tag that commit `v<TrackifyVersion>`. Everything downstream derives from this one property:
+
+      * Version / assembly + file version        - every project (set below)
+      * ApplicationDisplayVersion                - Uno app: Android versionName, MSIX package version
+      * ApplicationVersion (TrackifyVersionCode) - Uno app: Android versionCode, MSIX revision
+      * the .deb package version                 - .github/scripts/build-deb.sh, from the tag
+      * the GitHub Release name                  - .github/workflows/release.yml
+
+    `release.yml` refuses to publish when the tag and this property disagree, so a mistyped tag can
+    never ship artifacts labelled with a different version than they were built with. Both are
+    overridable on the command line (`-p:TrackifyVersion=...`) for test builds.
+    ===========================================================================
+  -->
+  <PropertyGroup>
+    <TrackifyVersion Condition="'$(TrackifyVersion)' == ''">1.0.0</TrackifyVersion>
+    <Version>$(TrackifyVersion)</Version>
+
+    <!--
+      Android's versionCode and the MSIX revision are single integers that MUST increase with every
+      release or the platform refuses the update. Deriving them from TrackifyVersion leaves just one
+      number to maintain: two digits each for minor and patch, so 1.0.0 -> 10000, 1.2.3 -> 10203.
+      (Minor and patch therefore have to stay below 100 - fine for this project.)
+    -->
+    <_TrackifyVersionMajor>$(TrackifyVersion.Split('.')[0])</_TrackifyVersionMajor>
+    <_TrackifyVersionMinor>$(TrackifyVersion.Split('.')[1])</_TrackifyVersionMinor>
+    <_TrackifyVersionPatch>$(TrackifyVersion.Split('.')[2])</_TrackifyVersionPatch>
+    <TrackifyVersionCode Condition="'$(TrackifyVersionCode)' == ''">$([MSBuild]::Add($([MSBuild]::Add($([MSBuild]::Multiply($(_TrackifyVersionMajor), 10000)), $([MSBuild]::Multiply($(_TrackifyVersionMinor), 100)))), $(_TrackifyVersionPatch)))</TrackifyVersionCode>
+  </PropertyGroup>
 </Project>

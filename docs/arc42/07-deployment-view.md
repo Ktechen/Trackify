@@ -66,8 +66,15 @@ scp -r publish/ pi@raspberrypi:/opt/trackify/
 ssh pi@raspberrypi 'chmod +x /opt/trackify/trackify'
 ```
 
-Self-contained means the Pi needs no .NET runtime. The `cli-arm64.yml` workflow produces exactly this
-artifact on tag `v*`.
+Self-contained means the Pi needs no .NET runtime. `cli-arm64.yml` produces exactly this artifact
+(`trackify-cli-linux-arm64`) for every release.
+
+> **This is the manual route, kept for non-Debian Linux.** On a Raspberry Pi prefer the `.deb` that
+> every release ships: `sudo apt install ./trackify_<version>_arm64.deb` does the publish, the BlueZ
+> prerequisite, the service user and group, the store directory and the systemd unit in one step —
+> see [§7.6](#76-build-and-delivery-pipeline) and
+> [`Source/Trackify.Cli/ReadMe.md`](../../Source/Trackify.Cli/ReadMe.md). Everything below is what
+> the package automates, and remains the documented path when `apt` is not available.
 
 **Prerequisite — BlueZ must be installed and the radio powered.** Raspberry Pi OS usually ships it;
 Ubuntu Server images do **not**. The bundled idempotent script does the whole job:
@@ -184,21 +191,105 @@ graph LR
     PR["PR → master"] --> CI["ci.yml<br/>ubuntu-latest"]
     PR --> SON["SonarCloud<br/>automatic analysis"]
     PR --> CQL["CodeQL<br/>default setup"]
-    TAG["tag v*"] --> APK["android-apk.yml<br/>windows-latest"]
-    TAG --> ARM["cli-arm64.yml<br/>self-contained linux-arm64"]
 
     CI --> G{"merge gate"}
     SON -.->|"informational"| G
     CQL -.->|"informational"| G
-    APK --> ART1["artifact: trackify-apk"]
-    ARM --> ART2["artifact: trackify-cli-linux-arm64"]
+
+    TAG["push tag vX.Y.Z"] --> REL
+    MAN["manual run<br/>patch / minor / major"] --> REL
+    REL["release.yml<br/>bump · tag · changelog"]
+    REL --> APK["android-apk.yml<br/>windows-latest"]
+    REL --> MSX["windows-msix.yml<br/>windows-latest"]
+    REL --> ARM["cli-arm64.yml<br/>ubuntu-latest"]
+    APK --> A1["trackify-android<br/>.apk + .aab"]
+    MSX --> A2["trackify-msix<br/>.msix"]
+    ARM --> A3["trackify-cli-deb<br/>.deb + raw arm64 dir"]
+    A1 --> DR["draft GitHub Release"]
+    A2 --> DR
+    A3 --> DR
 ```
 
 | Workflow | Trigger | Runner | Does |
 |---|---|---|---|
 | `ci.yml` | PR / push to `master` | ubuntu-latest | Builds the CLI + shared core, runs the tests. **The pre-merge gate** |
-| `android-apk.yml` | tag `v*` / manual | windows-latest | JDK 17 + `android` workload, `-f net10.0-android` → `trackify-apk` |
-| `cli-arm64.yml` | tag `v*` / manual | ubuntu-latest | `-f net10.0 -r linux-arm64 --self-contained` → `trackify-cli-linux-arm64` |
+| `release.yml` | tag `v*.*.*` **or** manual | ubuntu-latest | Resolves the version (checks the tag, or bumps patch/minor/major and tags), builds the changelog, calls the three build workflows, opens a **draft** release carrying every artifact |
+| `android-apk.yml` | manual / called | windows-latest | JDK 17 + `android` workload, `-f net10.0-android`, `AndroidPackageFormats=apk;aab` → `trackify-android` |
+| `windows-msix.yml` | manual / called | windows-latest | `-f net10.0-windows10.0.19041.0`, side-load MSIX → `trackify-msix` |
+| `cli-arm64.yml` | manual / called | ubuntu-latest | `-f net10.0 -r linux-arm64 --self-contained`, then `dpkg-deb` → `trackify-cli-deb` + `trackify-cli-linux-arm64` |
+
+**Two entry points, one orchestrated run.** Versions are Semantic Versions and tags are `vX.Y.Z`.
+
+1. **Push a tag `vX.Y.Z`** — releases exactly that commit. The tag must equal `TrackifyVersion`, or
+   the run fails rather than ship artifacts labelled with a version nobody chose.
+2. **Run `release.yml` manually** and pick `patch` / `minor` / `major` — it computes the next
+   version with [`bump-version.sh`](../../.github/scripts/bump-version.sh), rewrites
+   `Directory.Build.props`, commits, tags and pushes, then releases that commit. No tagging by hand.
+
+Both paths live in **one** workflow on purpose: a tag pushed with `GITHUB_TOKEN` does **not** trigger
+other workflows (GitHub blocks that recursion), so a separate "prepare release" workflow would create
+a tag that never started a build. Staying in the same run avoids needing a personal access token.
+The manual path pushes the version bump to the default branch, so that branch has to accept a push
+from `github-actions[bot]`; if it is protected, use the tag path instead.
+
+The three build workflows are **reusable** (`workflow_call`), so each build has exactly one
+definition, and each also keeps its own `workflow_dispatch` that produces artifacts and publishes
+nothing — that is how a packaging change gets tested without creating a release.
+
+**Versioning has a single source of truth:** `TrackifyVersion` in
+[`Directory.Build.props`](../../Directory.Build.props). `Version`, the Uno app's
+`ApplicationDisplayVersion`, the derived `ApplicationVersion`, the `.deb` version and the release
+title all come from it, and the builds receive it as `-p:TrackifyVersion=…` rather than counting
+anything up in a file.
+
+**The `versionCode` formula and its limits.** Android refuses an update whose `versionCode` is not a
+strictly larger integer than the installed one, and MSIX compares its revision the same way. Both are
+derived — not maintained — as `major × 10000 + minor × 100 + patch`, so `1.2.3` → `10203`. Two
+consequences worth knowing before they bite:
+
+- **minor and patch must stay below 100.** `1.0.100` would collide with `1.1.0` (both 10100). Bump
+  the minor instead of running a patch number into three digits.
+- The formula is monotonic only while that holds; it is checked nowhere, because the realistic
+  failure (a rejected Play Store upload) is loud and this project's numbering is nowhere near 100.
+
+MSIX additionally needs a four-part version, which Uno composes from `ApplicationDisplayVersion` plus
+this integer. The non-SemVer `Alpha` tag predates all of this: every lookup of "the previous release"
+globs `v[0-9]*.[0-9]*.[0-9]*` so it can never be mistaken for one.
+
+**Store formats.** Google Play accepts only an **`.aab`**, which cannot be installed directly, so the
+Android job emits `apk;aab` from one compile — the APK for side-loading, the AAB for Play. The
+Microsoft Store takes the **`.msix`**; a Store *submission* would additionally want
+`UapAppxPackageBuildMode=StoreUpload` (a `.msixupload`), which this pipeline does not produce, since
+its MSIX is built for side-loading.
+
+**Signing is optional and off by default**, because the keystore and the certificate belong to the
+maintainer. Without the secrets the pipeline still completes: the APK is debug-signed (side-loadable,
+not distributable) and the MSIX is unsigned (Windows will not install it until it is signed). Adding
+`ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` /
+`ANDROID_KEY_PASSWORD` and `WINDOWS_CERTIFICATE_BASE64` / `WINDOWS_CERTIFICATE_PASSWORD` as
+repository secrets switches both to properly signed builds. Key material is decoded into
+`RUNNER_TEMP`, outside every uploaded artifact path.
+
+**Why MSIX and not an MSI.** The Windows head is WinUI 3 / Windows App SDK, where
+`WindowsPackageType` already evaluates to `MSIX` and Uno.Sdk generates the `Package.appxmanifest`
+from the csproj properties — so nothing extra is authored. An MSI would add WiX plus a separate
+installer project, and an *unpackaged* WinUI app additionally needs the Windows App SDK runtime on
+the target machine. MSIX also gives atomic install/uninstall, per-user install without admin, and an
+update path. iOS is absent from the pipeline entirely: it needs a macOS build host.
+
+**Why a `.deb` for the Pi** rather than a tarball, a single-file binary or only the Docker image:
+`apt install ./trackify_<version>_arm64.deb` is the one command that also pulls in `bluez`
+(`Depends:`), creates the service user, puts it in the `bluetooth` group, makes `/var/lib/trackify`
+and registers the systemd unit — the four steps that are otherwise manual
+([§7.2](#72-raspberry-pi--bare-deployment)). The unit is installed but **not enabled**: `apt install`
+has no business setting a physical layout in motion. The raw `linux-arm64` directory is still
+published for non-Debian Linux. Packaging lives in [`packaging/debian/`](../../packaging/debian) and
+[`.github/scripts/build-deb.sh`](../../.github/scripts/build-deb.sh).
+
+**The changelog is generated, not maintained.** [`release-notes.sh`](../../.github/scripts/release-notes.sh)
+lists every non-merge commit since the previous `v*` tag — no Conventional Commits machinery and no
+file to keep in sync. `release.yml` checks out with `fetch-depth: 0`, because that walk needs the
+full history and all tags.
 
 Two analyses run **without a workflow file in this repo**, so they have no `.yml` to read:
 
@@ -207,7 +298,7 @@ Two analyses run **without a workflow file in this repo**, so they have no `.yml
 | SonarCloud | [`.sonarcloud.properties`](../../.sonarcloud.properties) + the GitHub app | **Automatic analysis** — never builds, so it reports no coverage and analyses C# without a compilation. A scanner workflow cannot coexist with it → [R-9](11-risks-and-technical-debt.md) |
 | CodeQL | GitHub **default setup** (`dynamic/github-code-scanning/codeql`) | Runs `csharp`, `javascript-typescript` and `actions`. Configured in the repo's Security settings, not in version control |
 
-All workflows provision the .NET 8, 9 and 10 SDKs; `global.json` pins `9.0.100` with
+All workflows provision the .NET 8, 9 and 10 SDKs; `global.json` pins `10.0.0` with
 `rollForward: latestMajor`, so the newest installed major is used.
 
 **The Uno app is intentionally not built by `ci.yml`.** Its five heads trigger workload imports and

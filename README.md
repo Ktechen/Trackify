@@ -6,7 +6,9 @@
 | --- | --- |
 | CI | [![CI](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/ci.yml) |
 | CodeQL | [![CodeQL](https://img.shields.io/badge/CodeQL-default%20setup-2088FF?logo=github)](https://github.com/Ktechen/Trackify/security/code-scanning) |
+| Release | [![Release](https://github.com/Ktechen/Trackify/actions/workflows/release.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/release.yml) |
 | Android APK | [![Android APK](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/android-apk.yml) |
+| Windows MSIX | [![Windows MSIX](https://github.com/Ktechen/Trackify/actions/workflows/windows-msix.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/windows-msix.yml) |
 | CLI linux-arm64 | [![CLI linux-arm64](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml/badge.svg)](https://github.com/Ktechen/Trackify/actions/workflows/cli-arm64.yml) |
 | License | [![License](https://img.shields.io/github/license/Ktechen/Trackify)](LICENSE) |
 | Framework | [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com) |
@@ -125,8 +127,21 @@ Docker, systemd autostart).
 | Workflow | Trigger | Does |
 |---|---|---|
 | `ci.yml` | PR / push to `master` | Build the CLI + shared core and run tests (pre-merge gate) |
-| `android-apk.yml` | tag `v*` / manual | Build the Android APK |
-| `cli-arm64.yml` | tag `v*` / manual | Publish the self-contained `linux-arm64` CLI for the Pi |
+| `release.yml` | tag `v*.*.*` **or** manual | Resolve the version, build the changelog, run the three builds below, open a **draft** release with every artifact |
+| `android-apk.yml` | manual / called | Build the Android `.apk` (side-load) and `.aab` (Google Play) |
+| `windows-msix.yml` | manual / called | Package the Windows head as a side-loadable MSIX |
+| `cli-arm64.yml` | manual / called | Publish the self-contained `linux-arm64` CLI and pack it into a `.deb` |
+
+**Releasing** uses Semantic Versioning (`vMAJOR.MINOR.PATCH`), and there are two ways to do it:
+
+- **Easiest:** Actions → *Release* → **Run workflow**, pick `patch`, `minor` or `major`. It computes
+  the next version, bumps `Directory.Build.props`, commits, tags, builds and opens the draft release.
+- **By hand:** bump `TrackifyVersion` in `Directory.Build.props` (the single source of truth for the
+  version), merge, then tag that commit `v<TrackifyVersion>` and push the tag.
+
+See [CHANGELOG.md](CHANGELOG.md) and
+[§7.6](docs/arc42/07-deployment-view.md#76-build-and-delivery-pipeline). Signing is optional —
+without the repository secrets the Android output is debug-signed and the MSIX unsigned.
 
 ---
 
@@ -226,5 +241,20 @@ Deployment (Raspberry Pi, Docker, systemd-Autostart) siehe [Source/Trackify.Cli/
 | Workflow | Auslöser | Zweck |
 |---|---|---|
 | `ci.yml` | PR / Push auf `master` | CLI + gemeinsamen Kern bauen und Tests laufen lassen (Pre-Merge-Gate) |
-| `android-apk.yml` | Tag `v*` / manuell | Android-APK bauen |
-| `cli-arm64.yml` | Tag `v*` / manuell | Self-contained `linux-arm64`-CLI für den Pi veröffentlichen |
+| `release.yml` | Tag `v*.*.*` **oder** manuell | Version ermitteln, Changelog bauen, die drei Builds unten starten und ein **Draft**-Release mit allen Artefakten anlegen |
+| `android-apk.yml` | manuell / aufgerufen | Android-`.apk` (Side-Load) und `.aab` (Google Play) bauen |
+| `windows-msix.yml` | manuell / aufgerufen | Windows-Head als side-loadbares MSIX paketieren |
+| `cli-arm64.yml` | manuell / aufgerufen | Self-contained `linux-arm64`-CLI veröffentlichen und als `.deb` paketieren |
+
+**Release bauen** läuft über Semantic Versioning (`vMAJOR.MINOR.PATCH`), auf zwei Wegen:
+
+- **Am einfachsten:** Actions → *Release* → **Run workflow**, dann `patch`, `minor` oder `major`
+  wählen. Der Workflow berechnet die nächste Version, zieht `Directory.Build.props` hoch, committet,
+  taggt, baut und legt das Draft-Release an.
+- **Von Hand:** `TrackifyVersion` in `Directory.Build.props` hochziehen (die einzige Quelle der
+  Wahrheit für die Versionsnummer), mergen, dann diesen Commit `v<TrackifyVersion>` taggen und den
+  Tag pushen.
+
+Siehe [CHANGELOG.md](CHANGELOG.md) und
+[§7.6](docs/arc42/07-deployment-view.md#76-build-and-delivery-pipeline). Signieren ist optional —
+ohne die Repository-Secrets ist die Android-Ausgabe Debug-signiert und das MSIX unsigniert.

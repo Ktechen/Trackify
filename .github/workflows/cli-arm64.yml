@@ -1,18 +1,35 @@
 name: CLI linux-arm64
 
-# Self-contained arm64 build of the CLI for a Raspberry Pi. BlueZ is always compiled in; the real
-# transport is selected at runtime on the Pi (OperatingSystem.IsLinux()) — no build flags needed.
+# Self-contained arm64 build of the CLI for a Raspberry Pi, packed into an installable .deb. BlueZ is
+# always compiled in; the real transport is selected at runtime on the Pi (OperatingSystem.IsLinux())
+# — no build flags needed.
+#
+# Two ways in: on its own (workflow_dispatch) it builds artifacts and publishes nothing, which is how
+# you test a packaging change without tagging. release.yml calls it as a reusable workflow for a
+# `v*` tag, passing the version it has already checked against Directory.Build.props.
 on:
   workflow_dispatch:
-  push:
-    tags: [ 'v*' ]
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version X.Y.Z. Defaults to TrackifyVersion in Directory.Build.props.'
+        required: false
+        type: string
+      ref:
+        description: 'Commit, branch or tag to build. Defaults to the triggering ref.'
+        required: false
+        type: string
 
 jobs:
   publish:
-    name: Publish self-contained arm64
+    name: Publish self-contained arm64 + .deb
     runs-on: ubuntu-latest
     steps:
+      # In release.yml's manual path the caller's SHA predates the version-bump commit, so build the
+      # tag it created. An empty ref falls back to the triggering ref.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Setup .NET (8, 9, 10)
         uses: actions/setup-dotnet@v4
@@ -22,14 +39,58 @@ jobs:
             9.0.x
             10.0.x
 
-      # Self-contained → the Pi needs no .NET runtime installed; just unzip and run ./trackify.
+      # The version is single-sourced in Directory.Build.props. A manual run just reads that
+      # property; release.yml passes the tag's version instead (having already verified the two
+      # agree). Validated here so it can be interpolated into later commands safely.
+      - name: Resolve version
+        id: v
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            version="$INPUT_VERSION"
+          else
+            version="$(dotnet msbuild Source/Trackify.Cli/Trackify.Cli.csproj \
+              -p:TargetFramework=net10.0 -getProperty:TrackifyVersion | tr -d '[:space:]')"
+          fi
+          case "$version" in
+          [0-9]*.[0-9]*.[0-9]*) ;;
+          *)
+            echo "::error::Version '$version' is not X.Y.Z"
+            exit 1
+            ;;
+          esac
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+          echo "Building Trackify CLI $version"
+
+      # Self-contained → the Pi needs no .NET runtime installed. Not trimmed on purpose: EF Core,
+      # Spectre.Console and SharpBrick all use reflection, so trimming risks runtime surprises on a
+      # machine that is awkward to debug. The cost is size (~125 MB unpacked).
       - name: Publish linux-arm64
         run: >
           dotnet publish Source/Trackify.Cli/Trackify.Cli.csproj
           -f net10.0 -c Release -r linux-arm64 --self-contained
+          -p:TrackifyVersion=${{ steps.v.outputs.version }}
           -o publish/linux-arm64
 
-      - name: Upload artifact
+      # dpkg-deb ships with ubuntu-latest, so packaging needs no extra tooling.
+      - name: Build .deb
+        run: >
+          .github/scripts/build-deb.sh
+          --version ${{ steps.v.outputs.version }}
+          --publish-dir publish/linux-arm64
+          --output dist
+
+      - name: Upload .deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: trackify-cli-deb
+          path: dist/*.deb
+          if-no-files-found: error
+
+      # Kept beside the .deb: the plain directory still serves the documented scp route for
+      # non-Debian Linux, where apt is not an option.
+      - name: Upload raw publish output
         uses: actions/upload-artifact@v4
         with:
           name: trackify-cli-linux-arm64

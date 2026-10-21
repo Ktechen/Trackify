@@ -1,0 +1,254 @@
+name: Release
+
+# Produces the installable artifacts for a Semantic Version and a GitHub Release carrying them:
+#
+#   trackify-android   .apk (side-load) + .aab (Google Play upload)
+#   trackify-msix      .msix  (Windows 10 19041+, side-load / Microsoft Store)
+#   trackify-cli-deb   .deb   (Raspberry Pi arm64: apt install ./trackify_*.deb)
+#
+# iOS is deliberately absent: it needs a macOS build host.
+#
+# TWO WAYS IN, both ending in the same jobs:
+#
+#   1. Push a tag vX.Y.Z          - releases exactly that commit. The tag must match
+#                                   TrackifyVersion in Directory.Build.props, or the run fails.
+#   2. Run this workflow manually - pick patch / minor / major. It computes the next version,
+#      ("Release" -> Run workflow)  bumps Directory.Build.props, commits, tags and pushes, then
+#                                   releases that commit. No tagging by hand.
+#
+# Why both paths live in ONE workflow rather than a separate "prepare release" workflow: a tag
+# pushed with GITHUB_TOKEN does not trigger other workflows (GitHub blocks that recursion), so a
+# workflow that only created the tag would never kick off the build. Staying in the same run avoids
+# needing a personal access token.
+on:
+  push:
+    # Glob, not regex - Actions tag filters are globs. Keeps the non-SemVer `Alpha` tag out.
+    tags: ['v[0-9]*.[0-9]*.[0-9]*']
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Which part of MAJOR.MINOR.PATCH to increase'
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Resolve version, tag, changelog
+    runs-on: ubuntu-latest
+    permissions:
+      # The manual path commits the version bump and pushes the tag.
+      contents: write
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      # fetch-depth: 0 - the changelog walks the commits since the previous release tag, so the whole
+      # history and all tags have to be present. The default shallow clone has neither.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET (8, 9, 10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Resolve version and tag
+        id: v
+        env:
+          BUMP: ${{ inputs.bump }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            # Releasing a side branch would tag a commit that is not on the mainline and leave
+            # Directory.Build.props bumped only there, so the next bump would compute from a stale
+            # number. Refuse instead.
+            if [ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ]; then
+              echo "::error::Run this from $DEFAULT_BRANCH (you are on $GITHUB_REF_NAME)."
+              exit 1
+            fi
+
+            version="$(.github/scripts/bump-version.sh "$BUMP")"
+            tag="v$version"
+
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "::error::Tag $tag already exists. Bump a different part, or delete that tag."
+              exit 1
+            fi
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add Directory.Build.props
+            git commit -m "Release $tag"
+            git tag -a "$tag" -m "Trackify $tag"
+
+            # Branch first, then the tag, so the tagged commit is already reachable on the remote.
+            # NOTE: this needs the default branch to accept a push from github-actions[bot]. If it
+            # is protected, either allow that actor or use the tag-push path instead.
+            git push origin "HEAD:$GITHUB_REF_NAME"
+            git push origin "$tag"
+            echo "Bumped to $version, tagged $tag, pushed to $GITHUB_REF_NAME."
+          else
+            tag="$GITHUB_REF_NAME"
+            version="${tag#v}"
+
+            # The tag says what we are releasing; Directory.Build.props says what the build stamps
+            # into the artifacts. If they disagree the artifacts would carry a version nobody chose,
+            # so stop rather than ship a mislabelled release.
+            declared="$(dotnet msbuild Source/Trackify.Cli/Trackify.Cli.csproj \
+              -p:TargetFramework=net10.0 -getProperty:TrackifyVersion | tr -d '[:space:]')"
+
+            if [ "$version" != "$declared" ]; then
+              echo "::error::Tag $tag means version $version, but TrackifyVersion in Directory.Build.props is $declared. Bump the property and re-tag, or use the manual Run workflow button instead."
+              exit 1
+            fi
+            echo "Releasing $version from tag $tag."
+          fi
+
+          case "$version" in
+          [0-9]*.[0-9]*.[0-9]*) ;;
+          *)
+            echo "::error::'$version' is not MAJOR.MINOR.PATCH"
+            exit 1
+            ;;
+          esac
+
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+          echo "tag=$tag" >>"$GITHUB_OUTPUT"
+
+      - name: Build changelog
+        run: .github/scripts/release-notes.sh "${{ steps.v.outputs.tag }}" | tee release-notes.md
+
+      - name: Upload changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes.md
+          if-no-files-found: error
+
+  # The three build workflows, reused as they are so each build has exactly one definition.
+  # secrets: inherit passes the optional signing secrets through; without them the builds still
+  # succeed and produce debug-signed / unsigned artifacts.
+  android:
+    name: Android
+    needs: version
+    uses: ./.github/workflows/android-apk.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.version.outputs.version }}
+      ref: ${{ needs.version.outputs.tag }}
+
+  windows:
+    name: Windows
+    needs: version
+    uses: ./.github/workflows/windows-msix.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.version.outputs.version }}
+      ref: ${{ needs.version.outputs.tag }}
+
+  cli:
+    name: CLI
+    needs: version
+    uses: ./.github/workflows/cli-arm64.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.version.outputs.version }}
+      ref: ${{ needs.version.outputs.tag }}
+
+  release:
+    name: Publish GitHub Release
+    needs: [version, android, windows, cli]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download changelog
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: notes
+
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: trackify-android
+          path: assets/android
+
+      - name: Download MSIX
+        uses: actions/download-artifact@v4
+        with:
+          name: trackify-msix
+          path: assets/msix
+
+      - name: Download .deb
+        uses: actions/download-artifact@v4
+        with:
+          name: trackify-cli-deb
+          path: assets/deb
+
+      # The artifacts keep whatever subdirectory structure each build produced, so collect by
+      # extension instead of guessing paths - and fail loudly if one is missing, because a release
+      # carrying three of the four files is worse than no release at all.
+      - name: Collect release assets
+        run: |
+          : >assets.txt
+          for kind in apk aab msix deb; do
+            found="$(find assets -type f -name "*.$kind" | sort)"
+            if [ -z "$found" ]; then
+              echo "::error::No .$kind found among the downloaded artifacts."
+              exit 1
+            fi
+            echo "$found" >>assets.txt
+          done
+          echo "Release assets:"
+          cat assets.txt
+
+      # The changelog answers "what changed"; this table answers "which file do I take?", which the
+      # commit list cannot.
+      - name: Compose release body
+        run: |
+          cp notes/release-notes.md body.md
+          cat >>body.md <<'EOF'
+
+          ## Downloads
+
+          | File | For |
+          |---|---|
+          | `*.apk` | **Android** — install straight onto a phone (side-load) |
+          | `*.aab` | **Android** — upload to Google Play; not installable directly |
+          | `*.msix` | **Windows** 10 19041+ — side-load. Windows installs it only once it trusts the signature |
+          | `trackify_*_arm64.deb` | **Raspberry Pi / arm64 Linux** — `sudo apt install ./trackify_*_arm64.deb`, which also pulls in BlueZ and installs the service |
+          EOF
+          cat body.md
+
+      # --draft on purpose: the release is assembled with its notes and artifacts, and a human
+      # presses Publish. That stops a mistyped tag from going public and lets the changelog be read
+      # before anyone else sees it. Drop --draft if you want a tag to publish straight away.
+      - name: Create draft GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.version.outputs.version }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          # Word splitting on assets.txt is intended: each line is one asset path.
+          # shellcheck disable=SC2046
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Trackify $VERSION" \
+            --notes-file body.md \
+            --draft \
+            $(tr '\n' ' ' <assets.txt)
+
+          echo "::notice::Draft release $TAG created with all artifacts. Review it and press Publish."

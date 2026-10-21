@@ -1,0 +1,59 @@
+#!/bin/sh
+# Debian post-install script: make `trackify` genuinely ready to use after `apt install`.
+#
+# Three things the README used to ask the operator to do by hand:
+#   1. a user that may talk to BlueZ   -> create `trackify`, put it in the `bluetooth` group
+#   2. a writable place for the store  -> /var/lib/trackify, owned by that user
+#   3. a systemd unit                  -> shipped by the package, registered here
+#
+# `bluez` itself comes from Depends:, so apt has already installed and started bluetoothd.
+
+set -e
+
+case "$1" in
+configure)
+    # A system user with no login shell - it only ever runs the service.
+    if ! getent passwd trackify >/dev/null; then
+        adduser --system --group --no-create-home --home /var/lib/trackify \
+            --gecos "Trackify LEGO train control" trackify
+    fi
+
+    # BlueZ's D-Bus policy grants org.bluez to root and to the `bluetooth` group only. Without this
+    # the service starts and then fails every scan with an AccessDenied - the single most common
+    # Trackify deployment problem, so the package fixes it instead of documenting it.
+    if getent group bluetooth >/dev/null; then
+        adduser trackify bluetooth >/dev/null || true
+    fi
+
+    # The SQLite store (TRACKIFY_STORE in the unit). Trackify applies its EF Core migrations on
+    # first run (arc42 ADR-18), so the directory just has to exist and be writable.
+    mkdir -p /var/lib/trackify
+    chown trackify:trackify /var/lib/trackify
+    chmod 755 /var/lib/trackify
+
+    # Register the unit without enabling it. Enabling is deliberately left to the operator: the
+    # service drives real trains the moment it starts.
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload >/dev/null || true
+    fi
+
+    echo ""
+    echo "Trackify installed. The hub control service is registered but NOT started."
+    echo ""
+    echo "  trackify discover                     # find your hubs (turn one on first)"
+    echo "  sudo systemctl enable --now trackify  # run the whole fleet at boot"
+    echo ""
+    echo "The train store lives at /var/lib/trackify/trackify.db."
+    echo "If discovery finds nothing, log out and back in once so the bluetooth group applies."
+    echo ""
+    ;;
+
+abort-upgrade | abort-remove | abort-deconfigure) ;;
+
+*)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

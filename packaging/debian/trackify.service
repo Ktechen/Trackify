@@ -1,0 +1,33 @@
+# Trackify autostart unit, installed to /lib/systemd/system/trackify.service by the .deb.
+#
+# NOT enabled automatically on install - starting it drives every saved train immediately, which is
+# a surprising thing for `apt install` to do to a physical layout. The package's postinst prints the
+# one command that turns it on:  sudo systemctl enable --now trackify
+#
+# `auto` runs the whole fleet and re-scans on an interval; swap ExecStart for
+# `drive "Blauer Zug" --speed 40` to run a single train instead.
+
+[Unit]
+Description=Trackify LEGO train control
+Documentation=https://github.com/Ktechen/Trackify
+After=bluetooth.target
+Requires=bluetooth.service
+
+[Service]
+ExecStart=/usr/bin/trackify auto --interval 60
+Restart=on-failure
+RestartSec=5
+
+# The package creates this system user and adds it to the `bluetooth` group, which is what BlueZ's
+# D-Bus policy grants org.bluez to. Running as root would work too, but is not needed.
+User=trackify
+Group=trackify
+Environment=TRACKIFY_STORE=/var/lib/trackify/trackify.db
+
+# Load-bearing: routes `systemctl stop` into the clean-shutdown path (stop every motor, then
+# disconnect) instead of killing the process with a train still moving.
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
