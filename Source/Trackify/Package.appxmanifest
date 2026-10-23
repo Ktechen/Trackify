@@ -5,6 +5,12 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
+  <!-- Uno.Resizetizer fills empty attributes from the csproj: Name ← ApplicationId,
+       Publisher ← "O=" + ApplicationPublisher, Version ← ApplicationDisplayVersion with
+       ApplicationVersion as the 4th part. For the Microsoft Store, copy Name and Publisher (CN=…) from
+       Partner Center → Product identity onto this element, and PublisherDisplayName into <Properties>:
+       values written here win over the generated ones. Leave Version to the build — the release
+       pipeline sets it from the vX.Y.Z tag, with the 4th part 0 as the Store requires. -->
   <Identity />
   <Properties />
 
@@ -25,7 +31,13 @@
     </Application>
   </Applications>
 
+  <!-- What the packaged app does, so the WinRT Bluetooth APIs are allowed and the Store's "this app
+       can" list is truthful: the hubs over Bluetooth LE (WindowsLegoService), and Server mode reaching
+       the Pi backend on the home network or at a remote URL. DeviceCapability must come last. -->
   <Capabilities>
+    <Capability Name="internetClient" />
+    <Capability Name="privateNetworkClientServer" />
     <rescap:Capability Name="runFullTrust" />
+    <DeviceCapability Name="bluetooth" />
   </Capabilities>
 </Package>

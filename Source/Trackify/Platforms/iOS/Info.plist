@@ -9,10 +9,14 @@
 			<integer>1</integer>
 			<integer>2</integer>
 		</array>
+		<!-- The binary is arm64-only (armv7 was the template's 32-bit leftover). bluetooth-le mirrors
+		     Android's required bluetooth_le feature; every device that runs iOS 14.2+ has it, so it
+		     excludes no one — but Apple only lets an update ADD a capability that existing users'
+		     devices also have, so it is set from the first upload. -->
 		<key>UIRequiredDeviceCapabilities</key>
 		<array>
-			<string>armv7</string>
 			<string>arm64</string>
+			<string>bluetooth-le</string>
 		</array>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
@@ -34,14 +38,26 @@
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 
-		<!-- Required to scan for and connect to LEGO Powered Up hubs over Bluetooth LE. -->
-		<key>NSBluetoothAlwaysUsageDescription</key>
-		<string>Trackify verwendet Bluetooth, um LEGO Powered Up Hubs zu finden und zu steuern.</string>
+		<!-- The UI is German only; this tells iOS (and the App Store's language list) so. -->
+		<key>CFBundleDevelopmentRegion</key>
+		<string>de</string>
 
-		<!--
-		Adjust this to your application's encryption usage.
+		<!-- Required to scan for and connect to LEGO Powered Up hubs over Bluetooth LE. Shown in the
+		     system permission prompt, so it says what happens with the access. The trademark stays
+		     descriptive (with ®) and is not the subject of the sentence. -->
+		<key>NSBluetoothAlwaysUsageDescription</key>
+		<string>Trackify nutzt Bluetooth, um die Hubs von Zügen (LEGO® Powered Up) in der Nähe zu finden und Fahrt und Licht zu steuern.</string>
+
+		<!-- Server mode reaches the Trackify backend on the home network (a Pi), which raises iOS's
+		     local-network prompt; this is its text. App Transport Security keeps its defaults (no
+		     exceptions), mirroring Android's usesCleartextTraffic=false; whether a plain-http backend
+		     is reachable on iOS is still to be checked on a device (docs/store-release.md). -->
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>Im Servermodus verbindet sich Trackify mit dem Trackify-Server (zum Beispiel einem Raspberry Pi) im lokalen Netzwerk.</string>
+
+		<!-- Export compliance: the only encryption is TLS for Server mode, through the OS's own
+		     networking stack (exempt). Declaring it here skips the encryption question on every upload. -->
 		<key>ITSAppUsesNonExemptEncryption</key>
 		<false/>
-		-->
 	</dict>
 </plist>
